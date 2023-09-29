@@ -1,0 +1,29 @@
+server:
+  # Compression is by default disabled???? Need compression for backend?
+  compression:
+    enabled: true
+  # Http 1.0 is default for some reason
+  http2:
+    enabled: true
+  port: 8080
+logging:
+  level:
+    org:
+      springframework:
+        security: TRACE
+spring:
+  data:
+    rest:
+      base-path: "/api"
+#  http-port: 8080
+#  port: 8443
+#  ssl:
+#    bundle: "web-server"
+#spring:
+#  ssl:
+#    bundle:
+#      pem:
+#        web-server:
+#          keystore:
+#            certificate: "classpath:cert.pem"
+#            private-key: "classpath:key.pem"
