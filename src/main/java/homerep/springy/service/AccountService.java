@@ -8,6 +8,8 @@ public interface AccountService {
 
     Account registerAccount(AccountModel accountModel);
 
+    void sendEmailVerification(Account account);
+
     boolean verifyAccount(String token);
 
 }

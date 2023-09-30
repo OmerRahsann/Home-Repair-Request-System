@@ -16,7 +16,9 @@ repositories {
 }
 
 dependencies {
+	implementation("jakarta.mail:jakarta.mail-api:2.1.2") // For Email API
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+	implementation("org.springframework.boot:spring-boot-starter-mail")
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.security:spring-security-crypto")
