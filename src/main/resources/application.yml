@@ -11,19 +11,3 @@ logging:
     org:
       springframework:
         security: TRACE
-spring:
-  data:
-    rest:
-      base-path: "/api"
-#  http-port: 8080
-#  port: 8443
-#  ssl:
-#    bundle: "web-server"
-#spring:
-#  ssl:
-#    bundle:
-#      pem:
-#        web-server:
-#          keystore:
-#            certificate: "classpath:cert.pem"
-#            private-key: "classpath:key.pem"
