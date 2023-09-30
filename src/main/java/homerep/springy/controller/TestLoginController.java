@@ -25,7 +25,7 @@ public class TestLoginController {
 
     @PostMapping("/api/login")
     public void login(@RequestBody AccountModel accountModel, HttpServletRequest request, HttpServletResponse response) {
-        UsernamePasswordAuthenticationToken token = UsernamePasswordAuthenticationToken.unauthenticated(accountModel.getEmail(), accountModel.getPassword());
+        UsernamePasswordAuthenticationToken token = UsernamePasswordAuthenticationToken.unauthenticated(accountModel.email(), accountModel.password());
         Authentication authentication = authenticationManager.authenticate(token);
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(authentication);

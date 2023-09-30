@@ -35,8 +35,8 @@ public class AccountServiceImpl implements AccountService, UserDetailsService {
     @Override
     public Account registerAccount(AccountModel accountModel) {
         Account account = new Account();
-        account.setEmail(accountModel.getEmail());
-        account.setPassword(passwordEncoder.encode(accountModel.getPassword()));
+        account.setEmail(accountModel.email());
+        account.setPassword(passwordEncoder.encode(accountModel.password()));
         account.setVerificationToken(UUID.randomUUID().toString());
         account.setType(Account.AccountType.SERVICE_REQUESTER);
         // TODO generate url and send email

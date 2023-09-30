@@ -20,15 +20,15 @@ public class RegistrationController {
 
     @PostMapping("/api/register")
     public ResponseEntity<Object> register(@RequestBody AccountModel accountModel) {
-        if (!validateEmail(accountModel.getEmail())) {
+        if (!validateEmail(accountModel.email())) {
             // TODO proper error class? or move to exceptions from registration service?
             return ResponseEntity.badRequest().body("Invalid email");
         }
-        if (!validatePassword(accountModel.getPassword())) {
+        if (!validatePassword(accountModel.password())) {
             return ResponseEntity.badRequest().body("Invalid password");
         }
 
-        if (accountService.isRegistered(accountModel.getEmail())) {
+        if (accountService.isRegistered(accountModel.email())) {
             return ResponseEntity.badRequest().body("Account already exists");
         }
         accountService.registerAccount(accountModel);

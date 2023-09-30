@@ -20,14 +20,6 @@ public class Account {
 
     private String verificationToken;
 
-    public AccountType getType() {
-        return type;
-    }
-
-    public void setType(AccountType type) {
-        this.type = type;
-    }
-
     private AccountType type;
 
     public String getEmail() {
@@ -60,6 +52,14 @@ public class Account {
 
     public void setVerificationToken(String verificationToken) {
         this.verificationToken = verificationToken;
+    }
+
+    public AccountType getType() {
+        return type;
+    }
+
+    public void setType(AccountType type) {
+        this.type = type;
     }
 
     @Override
