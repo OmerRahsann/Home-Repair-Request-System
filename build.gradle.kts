@@ -31,6 +31,8 @@ dependencies {
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.springframework.security:spring-security-test")
+	testImplementation("com.icegreen:greenmail-spring:2.1.0-alpha-2")
+	testImplementation("org.eclipse.angus:angus-mail:2.0.2") // For GreenMail to properly start
 	testRuntimeOnly("com.h2database:h2")
 }
 
