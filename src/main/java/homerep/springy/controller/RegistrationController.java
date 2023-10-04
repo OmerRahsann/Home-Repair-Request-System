@@ -4,6 +4,8 @@ import homerep.springy.entity.Account;
 import homerep.springy.model.AccountModel;
 import homerep.springy.repository.AccountRepository;
 import homerep.springy.service.AccountService;
+import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -50,7 +52,17 @@ public class RegistrationController {
     }
 
     private boolean validateEmail(String email) {
-        return email != null && email.contains("@");
+        if (email == null) {
+            return false;
+        }
+        try {
+            // Try parsing the Email address
+            InternetAddress address = new InternetAddress(email, true);
+            // Should only contain a single email address without any additional info
+            return !address.isGroup() && address.getPersonal() == null;
+        } catch (AddressException e) {
+            return false;
+        }
     }
 
     private boolean validatePassword(String password) {
