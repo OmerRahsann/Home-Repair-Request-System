@@ -20,6 +20,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -47,7 +49,9 @@ class RegistrationTests {
 	private GreenMailBean greenMailBean;
 
 	private static final String TEST_EMAIL = "example@example.com";
-	private static final String TEST_PASSWORD = "example@example.com";
+	private static final String TEST_PASSWORD = "ProAsHeckZoey";
+	private static final String TEST2_EMAIL = "example2@example.com";
+	private static final String TEST2_PASSWORD = "Hunter42";
 	private static final String INVALID_TOKEN = "ObviouslyNotAToken";
 
 	@BeforeEach
@@ -116,6 +120,49 @@ class RegistrationTests {
 		this.mvc.perform(postJson("/api/login", new AccountModel(TEST_EMAIL, TEST_PASSWORD)))
 				.andExpect(status().isOk())
 				.andExpect(authenticated());
+	}
+
+	@Test
+	void registerMultipleTest() throws Exception {
+		this.mvc.perform(postJson("/api/register", new AccountModel(TEST_EMAIL, TEST_PASSWORD)))
+				.andExpect(status().isOk());
+		this.mvc.perform(postJson("/api/register", new AccountModel(TEST2_EMAIL, TEST2_PASSWORD)))
+				.andExpect(status().isOk());
+		List<Account> accounts = accountRepository.findAll();
+		assertEquals(2, accounts.size());
+
+		Account account1 = accountRepository.findByEmail(TEST_EMAIL);
+		assertEquals(TEST_EMAIL, account1.getEmail());
+		assertTrue(passwordEncoder.matches(TEST_PASSWORD, account1.getPassword()));
+		assertFalse(account1.isVerified());
+		assertNotNull(account1.getVerificationToken());
+
+		Account account2 = accountRepository.findByEmail(TEST2_EMAIL);
+		assertEquals(TEST2_EMAIL, account2.getEmail());
+		assertTrue(passwordEncoder.matches(TEST2_PASSWORD, account2.getPassword()));
+		assertFalse(account2.isVerified());
+		assertNotNull(account2.getVerificationToken());
+	}
+
+	@Test
+	void registerEmailValidation() throws Exception {
+		// Valid email addresses
+		this.mvc.perform(postJson("/api/register", new AccountModel(TEST_EMAIL, TEST_PASSWORD)))
+				.andExpect(status().isOk());
+		this.mvc.perform(postJson("/api/register", new AccountModel(TEST2_EMAIL, TEST_PASSWORD)))
+				.andExpect(status().isOk());
+		// Valid email addresses taken from Wikipedia
+		this.mvc.perform(postJson("/api/register", new AccountModel("a@localhost", TEST_PASSWORD)))
+				.andExpect(status().isOk());
+		this.mvc.perform(postJson("/api/register", new AccountModel("long.email-address-with-hyphens@and.subdomains.example.com", TEST_PASSWORD)))
+				.andExpect(status().isOk());
+		this.mvc.perform(postJson("/api/register", new AccountModel("user.name+tag+sorting@example.com", TEST_PASSWORD)))
+				.andExpect(status().isOk());
+		// Invalid email addresses taken from Wikipedia
+		this.mvc.perform(postJson("/api/register", new AccountModel("abc.example.com", TEST_PASSWORD)))
+				.andExpect(status().isBadRequest());
+		this.mvc.perform(postJson("/api/register", new AccountModel("a@b@c@example.com", TEST_PASSWORD)))
+				.andExpect(status().isBadRequest());
 	}
 
 	private MockHttpServletRequestBuilder postJson(String url, Object content) throws JsonProcessingException {

@@ -13,6 +13,7 @@ public class TestMailConfig {
     @Bean
     public GreenMailBean greenMailBean() {
         GreenMailBean mailBean = new GreenMailBean();
+        mailBean.setPortOffset(4000); // Just in case GreenMail is already running with default ports
         mailBean.setPop3Protocol(false); // No need to retrieve mail
         mailBean.setUsers(List.of("noreply:abc123@localhost", "test:abc123@localhost", "test2:abc123@localhost"));
         return mailBean;
