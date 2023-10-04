@@ -1,0 +1,21 @@
+MIME-Version: 1.0
+Content-Language: en-US
+From: noreply@localhost
+Subject: Start {{subject-var}} End
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE html>
+<html>
+  <head>
+
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  </head>
+  <body>
+    This is a single part HTML email test.
+    {{body}}
+    {{unspecified-var}}
+    - Signature
+    <p></p>
+  </body>
+</html>

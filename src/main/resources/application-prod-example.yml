@@ -30,3 +30,6 @@ spring:
       "[mail.smtp.connectiontimeout]": 5000
       "[mail.smtp.timeout]": 3000
       "[mail.smtp.writetimeout]": 5000
+homerep:
+  email-templates:
+    email-verification: actual-templates/email-verification.eml

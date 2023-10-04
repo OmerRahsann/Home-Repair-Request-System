@@ -4,9 +4,8 @@ import homerep.springy.entity.Account;
 import homerep.springy.model.AccountModel;
 import homerep.springy.repository.AccountRepository;
 import homerep.springy.service.AccountService;
+import homerep.springy.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -20,6 +19,7 @@ import org.springframework.web.util.UriBuilderFactory;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -31,7 +31,7 @@ public class AccountServiceImpl implements AccountService, UserDetailsService {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private JavaMailSender mailSender;
+    private EmailService emailService;
 
     @Autowired
     private UriBuilderFactory uriBuilderFactory;
@@ -62,17 +62,14 @@ public class AccountServiceImpl implements AccountService, UserDetailsService {
         account.setVerificationToken(UUID.randomUUID().toString());
         account = repository.save(account);
 
-        SimpleMailMessage mailMessage = new SimpleMailMessage();
-        mailMessage.setTo(account.getEmail());
-        mailMessage.setFrom("noreply@localhost"); // TODO make configurable or leave in template?
-
         URI verifyUri = uriBuilderFactory
                 .uriString("/api/verify")
                 .queryParam("token", "{token}")
                 .build(account.getVerificationToken());
 
-        mailMessage.setText(verifyUri.toASCIIString()); // TODO pretty email templates?
-        mailSender.send(mailMessage); // TODO handle MailException gracefully?
+        emailService.sendEmail(account.getEmail(), "email-verification", Map.of(
+                "token-url", verifyUri.toASCIIString()
+        ));
     }
 
     @Override

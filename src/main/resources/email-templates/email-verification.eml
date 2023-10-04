@@ -1,0 +1,19 @@
+MIME-Version: 1.0
+Content-Language: en-US
+From: noreply@localhost
+Subject: Verify your email address
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE html>
+<html>
+  <head>
+
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  </head>
+  <body>
+    <p>Please verify your email address by clicking the link below.</p>
+    <a href="{{token-url}}">{{token-url}}</a>
+    <p></p>
+  </body>
+</html>
