@@ -1,10 +1,18 @@
 package homerep.springy.service.impl;
 
 import homerep.springy.entity.Account;
+import homerep.springy.entity.Customer;
+import homerep.springy.entity.ServiceProvider;
 import homerep.springy.model.AccountModel;
+import homerep.springy.model.RegisterModel;
+import homerep.springy.model.accountinfo.CustomerInfoModel;
+import homerep.springy.model.accountinfo.ServiceProviderInfoModel;
 import homerep.springy.repository.AccountRepository;
+import homerep.springy.repository.CustomerRepository;
+import homerep.springy.repository.ServiceProviderRepository;
 import homerep.springy.service.AccountService;
 import homerep.springy.service.EmailService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -25,7 +33,13 @@ import java.util.UUID;
 @Service
 public class AccountServiceImpl implements AccountService, UserDetailsService {
     @Autowired
-    private AccountRepository repository;
+    private AccountRepository accountRepository;
+
+    @Autowired
+    private CustomerRepository customerRepository;
+
+    @Autowired
+    private ServiceProviderRepository serviceProviderRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -38,17 +52,40 @@ public class AccountServiceImpl implements AccountService, UserDetailsService {
 
     @Override
     public boolean isRegistered(String email) {
-        return repository.findByEmail(email) != null;
+        return accountRepository.findByEmail(email) != null;
     }
 
     @Override
-    public Account registerAccount(AccountModel accountModel) {
+    @Transactional
+    public Account registerAccount(RegisterModel registerModel) {
+        AccountModel accountModel = registerModel.account();
         Account account = new Account();
         account.setEmail(accountModel.email());
         account.setPassword(passwordEncoder.encode(accountModel.password()));
-        account.setType(Account.AccountType.SERVICE_REQUESTER);
+        account.setType(registerModel.type());
+        account = accountRepository.save(account);
 
-        account = repository.save(account);
+        // registerModel should be valid, just check the instance type
+        if (registerModel.accountInfo() instanceof ServiceProviderInfoModel infoModel) {
+            ServiceProvider serviceProvider = new ServiceProvider(account);
+            serviceProvider.setName(infoModel.name());
+            serviceProvider.setDescription(infoModel.description());
+            // TODO Services
+            serviceProvider.setPhoneNumber(infoModel.phoneNumber());
+            serviceProvider.setContactEmailAddress(infoModel.contactEmailAddress());
+
+            serviceProvider = serviceProviderRepository.save(serviceProvider);
+        } else if (registerModel.accountInfo() instanceof CustomerInfoModel infoModel) {
+            Customer customer = new Customer(account);
+            customer.setFirstName(infoModel.firstName());
+            customer.setMiddleName(infoModel.middleName());
+            customer.setLastName(infoModel.lastName());
+            customer.setAddress(infoModel.address());
+            customer.setPhoneNumber(infoModel.phoneNumber());
+
+            customer = customerRepository.save(customer);
+        }
+
         sendEmailVerification(account);
         return account;
     }
@@ -60,7 +97,7 @@ public class AccountServiceImpl implements AccountService, UserDetailsService {
             return;
         }
         account.setVerificationToken(UUID.randomUUID().toString());
-        account = repository.save(account);
+        account = accountRepository.save(account);
 
         URI verifyUri = uriBuilderFactory
                 .uriString("/api/verify")
@@ -78,20 +115,20 @@ public class AccountServiceImpl implements AccountService, UserDetailsService {
             return false;
         }
 
-        Account account = repository.findByVerificationToken(token);
+        Account account = accountRepository.findByVerificationToken(token);
         // TODO should tokens expire?
         if (account == null) {
             return false; // TODO exception?
         }
         account.setVerified(true);
         account.setVerificationToken(null);
-        repository.save(account);
+        accountRepository.save(account);
         return true;
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Account account = repository.findByEmail(username);
+        Account account = accountRepository.findByEmail(username);
         if (account != null) {
             List<GrantedAuthority> authorities = new ArrayList<>();
             authorities.add(account.getType());
