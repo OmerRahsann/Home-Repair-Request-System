@@ -5,19 +5,29 @@ import homerep.springy.entity.Account;
 import homerep.springy.model.accountinfo.AccountInfoModel;
 import homerep.springy.model.accountinfo.CustomerInfoModel;
 import homerep.springy.model.accountinfo.ServiceProviderInfoModel;
+import homerep.springy.validator.annotation.ValidRegisterModel;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.Objects;
 
-public class RegisterModel implements Model {
+@ValidRegisterModel
+public class RegisterModel {
     @JsonUnwrapped
+    @NotNull
+    @Valid
     private AccountModel account;
     @JsonProperty
+    @NotNull
+    @Valid
     private Account.AccountType type;
     @JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
     @JsonSubTypes({@JsonSubTypes.Type(CustomerInfoModel.class), @JsonSubTypes.Type(ServiceProviderInfoModel.class)})
+    @NotNull
+    @Valid
     private AccountInfoModel accountInfo;
 
-    public RegisterModel() {}
+    private RegisterModel() {}
 
     public RegisterModel(
             AccountModel account,
@@ -27,17 +37,6 @@ public class RegisterModel implements Model {
         this.account = account;
         this.type = type;
         this.accountInfo = accountInfo;
-    }
-
-    @Override
-    public boolean isValid() {
-        if (account == null || type == null || accountInfo == null || !account.isValid() || !accountInfo.isValid()) {
-            return false;
-        }
-        return switch (type) {
-            case SERVICE_REQUESTER -> accountInfo instanceof CustomerInfoModel;
-            case SERVICE_PROVIDER -> accountInfo instanceof ServiceProviderInfoModel;
-        };
     }
 
     public AccountModel account() {

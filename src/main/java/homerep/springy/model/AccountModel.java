@@ -1,14 +1,11 @@
 package homerep.springy.model;
 
-import homerep.springy.util.ValidationUtil;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import org.hibernate.validator.constraints.Length;
 
-public record AccountModel(String email, String password) implements Model {
-    @Override
-    public boolean isValid() {
-        return ValidationUtil.validateEmail(email) && validatePassword(password);
-    }
-
-    private static boolean validatePassword(String password) {
-        return password != null && password.length() >= 8; // TODO password strength and other requirements?
-    }
+public record AccountModel(
+        @NotBlank @Email String email,
+        @NotBlank @Length(min = 8) String password // TODO password strength and other requirements?
+) {
 }

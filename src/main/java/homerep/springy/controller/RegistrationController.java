@@ -1,11 +1,12 @@
 package homerep.springy.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import homerep.springy.model.RegisterModel;
 import homerep.springy.service.AccountService;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,13 +18,7 @@ public class RegistrationController {
     private ObjectMapper objectMapper;
 
     @PostMapping("/api/register")
-    public ResponseEntity<Object> register(@RequestBody RegisterModel registerModel) throws JsonProcessingException {
-        if (!registerModel.isValid()) {
-            // TODO proper error class? or move to exceptions from registration service?
-            // TODO Need proper error messages? Yes. TODO figure out how
-            return ResponseEntity.badRequest().body("Invalid registration data");
-        }
-
+    public ResponseEntity<Object> register(@RequestBody @Validated RegisterModel registerModel) {
         if (accountService.isRegistered(registerModel.account().email())) {
             return ResponseEntity.badRequest().body("Account already exists");
         }
@@ -33,7 +28,7 @@ public class RegistrationController {
     }
 
     @GetMapping("/api/verify")
-    public ResponseEntity<Object> verify(@RequestParam(name = "token") String token) {
+    public ResponseEntity<Object> verify(@RequestParam(name = "token") @NotBlank String token) {
         if (accountService.verifyAccount(token)) {
             return ResponseEntity.ok("Successfully verified!");
         }

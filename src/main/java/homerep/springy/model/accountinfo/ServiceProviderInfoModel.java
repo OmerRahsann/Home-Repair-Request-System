@@ -1,24 +1,18 @@
 package homerep.springy.model.accountinfo;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+
 import java.util.List;
 
-import static homerep.springy.util.ValidationUtil.isFilled;
-import static homerep.springy.util.ValidationUtil.validateEmail;
-
 public record ServiceProviderInfoModel(
-        String name,
-        String description,
-        List<String> services,
-        String phoneNumber,
-        String address,
-        String contactEmailAddress
+        @NotBlank String name,
+        @NotBlank String description,
+        @NotNull @NotEmpty List<@NotBlank String> services,
+        @NotBlank String phoneNumber, // TODO how do you validate phone numbers?
+        @NotBlank String address,
+        @NotBlank @Email String contactEmailAddress
 ) implements AccountInfoModel {
-    @Override
-    public boolean isValid() {
-        if (services == null || services.isEmpty()) {
-            return false;
-        }
-        return isFilled(name) && isFilled(description) && isFilled(phoneNumber) && isFilled(address) && // TODO how do you validate phone numbers?
-                validateEmail(contactEmailAddress);
-    }
 }

@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,7 +25,7 @@ public class TestLoginController {
     private final SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
 
     @PostMapping("/api/login")
-    public void login(@RequestBody AccountModel accountModel, HttpServletRequest request, HttpServletResponse response) {
+    public void login(@RequestBody @Validated AccountModel accountModel, HttpServletRequest request, HttpServletResponse response) {
         UsernamePasswordAuthenticationToken token = UsernamePasswordAuthenticationToken.unauthenticated(accountModel.email(), accountModel.password());
         Authentication authentication = authenticationManager.authenticate(token);
         SecurityContext context = SecurityContextHolder.createEmptyContext();
