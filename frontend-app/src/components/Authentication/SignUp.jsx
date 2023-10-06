@@ -1,29 +1,74 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+
 function SignUpForm() {
-  const [state, setState] = React.useState({
-    userName: "",
+  const navigate = useNavigate()
+  const [formData, setFormData] = useState({
     email: "",
-    password: ""
+    password: "",
+    type: "SERVICE_REQUESTER",
+    accountInfo: {
+      firstName:"",
+      middleName:"",
+      lastName:"",
+      address:"",
+      phoneNumber:""
+  }
+
   });
-  const handleChange = evt => {
-    const value = evt.target.value;
-    setState({
-      ...state,
-      [evt.target.name]: value
-    });
+  const passwordsMatch = () => formData.password === formData.confirmPassword;
+
+  const handleConfirmPasswordChange = (e) => {
+    const { value } = e.target;
+    // Update the confirmPassword field
+    setFormData((prevData) => ({
+      ...prevData,
+      confirmPassword: value
+    }));
   };
+ 
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+  
+    // For nested objects (accountInfo), you need to spread them correctly
+    if (name.includes('accountInfo.')) {
+      const accountInfo = { ...formData.accountInfo };
+      const field = name.split('.')[1];
+      accountInfo[field] = value;
+  
+      setFormData({
+        ...formData,
+        accountInfo: accountInfo
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value
+      });
+    }
+  };
+  
 
   async function save(event) {
     event.preventDefault();
     try {
-      const {userName, email, password} = state;
-      await axios.post("http://localhost:8090/api/v1/user/save", {
-        userName: userName,
+      const { email, password, type, accountInfo } = formData;
+      await axios.post("http://localhost:8080/api/register", {
         email: email,
         password: password,
+        type: type,
+        accountInfo: {
+          firstName: accountInfo.firstName,
+          middleName: accountInfo.middleName,
+          lastName: accountInfo.lastName,
+          address: accountInfo.address,
+          phoneNumber: accountInfo.phoneNumber
+        }
       });
       alert("user Registation Successfully");
+      navigate("/home")
     } catch (err) {
       alert(err);
     }
@@ -33,28 +78,77 @@ function SignUpForm() {
     <div className="form-container sign-up-container">
       <form onSubmit={save}>
         <h1>Create Account</h1>
-        <input
-          type="text"
-          name="name"
-          value={state.name}
-          onChange={handleChange}
-          placeholder="Name"
-        />
+        <div className="flex justify-between">
+          <input
+            type="text"
+            name="accountInfo.firstName"
+            value={formData.accountInfo.firstName}
+            onChange={handleChange}
+            placeholder="First Name"
+            required
+          />
+          <div className="p-3"></div>
+          <input
+            type="text"
+            name="accountInfo.lastName"
+            value={formData.accountInfo.lastName}
+            onChange={handleChange}
+            placeholder="Last Name"
+            required
+          />
+        </div>
         <input
           type="email"
           name="email"
-          value={state.email}
+          value={formData.email}
           onChange={handleChange}
           placeholder="Email"
         />
+        <input 
+          type="text"
+          name="accountInfo.address"
+          value={formData.accountInfo.address}
+          onChange={handleChange}
+          placeholder="Address"
+          required
+        /> 
+        <input 
+          type="text"
+          name="accountInfo.phoneNumber"
+          value={formData.accountInfo.phoneNumber}
+          onChange={handleChange}
+          placeholder="Phone Number"
+          required
+        /> 
+      
         <input
           type="password"
           name="password"
-          value={state.password}
+          value={formData.password}
           onChange={handleChange}
           placeholder="Password"
+          pattern=".{8,}"
+          required
+          title="Password must be at least 8 characters long."
         />
-        <button>Sign Up</button>
+     
+        <input
+          type="password"
+          name="confirmPassword"
+          value={formData.confirmPassword}
+          onChange={handleConfirmPasswordChange}
+          placeholder="Confirm Password"
+          required
+        />
+        {formData.confirmPassword && (
+          <span className={`text-${passwordsMatch() ? 'green' : 'red'}-500`}>
+            {passwordsMatch() ? '✓ Passwords match' : '✗ Passwords do not match'}
+          </span>
+        )}
+        <div className="p-1"></div>
+        <button disabled={!passwordsMatch()}className={`${passwordsMatch() ? '' : 'cursor-not-allowed'}` }>
+          Sign Up
+        </button>
       </form>
     </div>
   );

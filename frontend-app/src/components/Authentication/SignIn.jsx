@@ -11,7 +11,7 @@ function SignInForm() {
     event.preventDefault();
     try {
         const {email, password} = state;
-        await axios.post("http://localhost:8090/api/v1/user/login", {
+        await axios.post("http://localhost:8080/api/login", {
             email: email,
             password: password,
         }).then((res) => {
