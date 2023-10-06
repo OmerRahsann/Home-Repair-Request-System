@@ -1,7 +1,6 @@
 package homerep.springy.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import homerep.springy.model.RegisterModel;
 import homerep.springy.service.AccountService;
