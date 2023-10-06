@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import SignInForm from "../../components/Authentication/SignIn";
 import SignUpForm from "../../components/Authentication/SignUp";
-import "../../components/Authentication/style.css"
+import "../../components/Authentication/userStyle.css"
 
 export default function ControllerLogin() {
   const [type, setType] = useState("signIn");
@@ -40,7 +40,7 @@ export default function ControllerLogin() {
               </div>
               <div className="overlay-panel overlay-right">
                 <h1>Welcome to RepairRadar!</h1>
-                <p>Enter your personal details and start journey with us</p>
+                <p>Enter your personal details and start your journey with us</p>
                 <button
                   className="ghost "
                   id="signUp"

@@ -10,6 +10,7 @@ module.exports = {
         'custom-black' : '#565656',
         'custom-tan': '#C09F80',
         'custom-grain': '#D7CEC7', // You can change 'custom-gray' to a more descriptive class name
+        'custom-gray' : "#eeeeee"
       },
     },
   },

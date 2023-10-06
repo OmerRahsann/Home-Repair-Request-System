@@ -68,7 +68,7 @@ function SignUpForm() {
         }
       });
       alert("user Registation Successfully");
-      navigate("/home")
+      navigate("/")
     } catch (err) {
       alert(err);
     }
@@ -77,7 +77,7 @@ function SignUpForm() {
   return (
     <div className="form-container sign-up-container">
       <form onSubmit={save}>
-        <h1>Create Account</h1>
+        <h1 style={{color: "#565656"}}>Create Account</h1>
         <div className="flex justify-between">
           <input
             type="text"
@@ -87,7 +87,7 @@ function SignUpForm() {
             placeholder="First Name"
             required
           />
-          <div className="p-3"></div>
+          <div className="p-1"></div>
           <input
             type="text"
             name="accountInfo.lastName"
@@ -141,11 +141,11 @@ function SignUpForm() {
           required
         />
         {formData.confirmPassword && (
-          <span className={`text-${passwordsMatch() ? 'green' : 'red'}-500`}>
-            {passwordsMatch() ? '✓ Passwords match' : '✗ Passwords do not match'}
-          </span>
+         <span className={passwordsMatch() ? 'text-green-500' : 'text-red-500'}>
+         {passwordsMatch() ? '✓ Passwords match' : '✗ Passwords do not match'}
+       </span>
         )}
-        <div className="p-1"></div>
+        <div className="p-1 bg-blue"></div>
         <button disabled={!passwordsMatch()}className={`${passwordsMatch() ? '' : 'cursor-not-allowed'}` }>
           Sign Up
         </button>

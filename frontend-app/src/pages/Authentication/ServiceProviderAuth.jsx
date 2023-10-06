@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import SignInForm from "../../components/Authentication/SignIn";
-import SignUpForm from "../../components/Authentication/SignUp";
-import "../../components/Authentication/style.css"
+import ServiceProviderSignUp from "../../components/Authentication/ProviderAuth/ServiceProviderSignUp";
+import "../../components/Authentication/ProviderAuth/providerStyle.css"
 
 export default function ControllerLogin() {
   const [type, setType] = useState("signIn");
@@ -20,7 +20,7 @@ export default function ControllerLogin() {
       </div>
       <div className="Authentication">
         <div className={containerClass} id="container">
-          <SignUpForm />
+          <ServiceProviderSignUp />
           <SignInForm />
           <div className="overlay-container">
             <div className="overlay">
@@ -38,8 +38,8 @@ export default function ControllerLogin() {
                 </button>
               </div>
               <div className="overlay-panel overlay-right">
-                <h1>Welcome to RepairRadar!</h1>
-                <p>Enter your personal details and start journey with us</p>
+                <h1>Want to Provide Services?</h1>
+                <p>Enter your personal details and start your journey with RepairRadar.</p>
                 <button
                   className="ghost "
                   id="signUp"
