@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import SignInForm from "../../components/Authentication/SignIn";
-import SignUpForm from "../../components/Authentication/SignUp";
-import "../../components/Authentication/userStyle.css"
+import SignInForm from "../../components/Authentication/CustomerAuth/SignIn";
+import SignUpForm from "../../components/Authentication/CustomerAuth/SignUp";
+import "../../components/Authentication/auth.css"
 
 export default function ControllerLogin() {
   const [type, setType] = useState("signIn");

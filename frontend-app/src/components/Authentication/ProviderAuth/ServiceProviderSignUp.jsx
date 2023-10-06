@@ -12,8 +12,14 @@ function SignUpForm() {
         { value: "plumbing", label: "Plumbing" },
         { value: "yardwork", label: "Yardwork" },
         { value: "roofing", label: "Roofing" },
-      ];
+    ];
     const [selectedServices, setSelectedServices] = useState();
+    const [description, setDescription] = useState('');
+
+    // Callback function to set the description in the parent component's state
+    const handleDescriptionChange = (newDescription) => {
+        setDescription(newDescription);
+    };
     const [formData, setFormData] = useState({
         email: "",
         password: "",
@@ -62,23 +68,24 @@ function SignUpForm() {
 
     function handleSelect(data) {
         setSelectedServices(data);
-      }
+    }
 
     async function save(event) {
         event.preventDefault();
         try {
             const { email, password, type, accountInfo } = formData;
+            const selectedServiceValues = selectedServices.map((selectedService) => selectedService.value);
             await axios.post("http://localhost:8080/api/register", {
                 email: email,
                 password: password,
                 type: type,
                 accountInfo: {
                     name: accountInfo.name,
-                    description: accountInfo.description,
-                    services: accountInfo.services,
+                    description: description,
+                    services: selectedServiceValues,
                     phoneNumber: accountInfo.phoneNumber,
                     address: accountInfo.address,
-                    contactEmailAddress: accountInfo.contactEmailAddress
+                    contactEmailAddress: email
                 }
             });
             alert("user Registation Successfully");
@@ -91,7 +98,7 @@ function SignUpForm() {
     return (
         <div className="form-container sign-up-container">
             <form onSubmit={save}>
-                <h1 style={{ color: "#565656" }}>Create Account</h1>
+                <h1 style={{ color: "#565656" }}>Create a Provider Account!</h1>
 
                 <input
                     type="text"
@@ -126,7 +133,7 @@ function SignUpForm() {
                     required
                 />
                 <div className="m-1"></div>
-                <ProviderDescription/>
+                <ProviderDescription onDescriptionChange={handleDescriptionChange}/>
                 <div className="m-1"></div>
                 <div className="m-1"> </div>
                 <Select

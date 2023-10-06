@@ -76,9 +76,12 @@
   
   form {
     background-color: #ffffff;
+    display: flex;
+    justify-content: center;
     flex-direction: column;
     padding: 0 50px;
     height: 100%;
+    text-align: center;
   }
   
   input {
@@ -97,7 +100,7 @@
     overflow: hidden;
     width: 900px;
     max-width: 100%;
-    min-height: 650px;
+    min-height: 630px;
   }
   
   .form-container {
@@ -131,6 +134,7 @@
     animation: show 0.6s;
   }
   
+  
   @keyframes show {
     0%,
     49.99% {
@@ -163,8 +167,29 @@
   .overlay {
     background: #565656;
   
-  /* Gradient background using variations of #c09f80 */
   
+    /* Gradient background using variations of #c09f80 */
+    background: -webkit-linear-gradient(to left, #999999, #565656);
+    background: linear-gradient(to right, #999999, #565656);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: 0 0;
+    color: #ffffff;
+    position: relative;
+    left: -100%;
+    height: 100%;
+    width: 200%;
+    transform: translateX(0);
+    transition: transform 0.6s ease-in-out;
+  }
+
+  .overlay2 {
+   /* background: #171799;  */
+  
+  
+    /* Gradient background using variations of #c09f80 */
+    /* background: -webkit-linear-gradient(to left, #6a533e, #C09F80); */
+    background: linear-gradient(to right,#b9a290, #76323f, #b9a290);
     background-repeat: no-repeat;
     background-size: cover;
     background-position: 0 0;
@@ -180,6 +205,10 @@
   .container.right-panel-active .overlay {
     transform: translateX(50%);
   }
+
+  .container.right-panel-active .overlay2 {
+    transform: translateX(50%);
+  }
   
   .overlay-panel {
     position: absolute;
@@ -193,14 +222,37 @@
     height: 100%;
     width: 50%;
     transform: translateX(0);
-    transition: transform 0.6s ease-in-out;
+    transition: transform .6s ease-in-out;
+  }
+
+  .overlay2-panel {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 0 40px;
+    text-align: center;
+    top: 0;
+    height: 100%;
+    width: 50%;
+    transform: translateX(0);
+    transition: transform .6s ease-in-out;
   }
   
   .overlay-left {
     transform: translateX(-20%);
   }
+
+  .overlay2-left {
+    transform: translateX(-20%);
+  }
   
   .container.right-panel-active .overlay-left {
+    transform: translateX(0);
+  }
+
+  .container.right-panel-active .overlay2-left {
     transform: translateX(0);
   }
   
@@ -210,6 +262,15 @@
   }
   
   .container.right-panel-active .overlay-right {
+    transform: translateX(20%);
+  }
+
+  .overlay2-right {
+    right: 0;
+    transform: translateX(0);
+  }
+  
+  .container.right-panel-active .overlay2-right {
     transform: translateX(20%);
   }
   
@@ -252,4 +313,5 @@
     color: #3c97bf;
     text-decoration: none;
   }
+  
   

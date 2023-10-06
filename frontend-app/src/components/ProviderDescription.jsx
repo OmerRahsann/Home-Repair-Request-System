@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-function ProviderDescription() {
+function ProviderDescription(props) {
   const [description, setDescription] = useState('');
   const maxCharacters = 100;
 
@@ -9,6 +9,7 @@ function ProviderDescription() {
 
     if (text.length <= maxCharacters) {
       setDescription(text);
+      props.onDescriptionChange(text);
     }
   };
 
@@ -23,7 +24,7 @@ function ProviderDescription() {
         spellCheck
         style={{ resize: 'none' }}
       />
-      <text className="text-xs" style={{color: "#565656"}}>Characters remaining: {maxCharacters - description.length}</text>
+      <text className="text-xs text-gray-400">Characters remaining: {maxCharacters - description.length}</text>
     </div>
   );
 }
