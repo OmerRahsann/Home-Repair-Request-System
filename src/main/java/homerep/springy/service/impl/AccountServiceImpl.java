@@ -70,7 +70,7 @@ public class AccountServiceImpl implements AccountService, UserDetailsService {
             ServiceProvider serviceProvider = new ServiceProvider(account);
             serviceProvider.setName(infoModel.name());
             serviceProvider.setDescription(infoModel.description());
-            // TODO Services
+            serviceProvider.setServices(infoModel.services());
             serviceProvider.setPhoneNumber(infoModel.phoneNumber());
             serviceProvider.setContactEmailAddress(infoModel.contactEmailAddress());
 
@@ -111,14 +111,9 @@ public class AccountServiceImpl implements AccountService, UserDetailsService {
 
     @Override
     public boolean verifyAccount(String token) {
-        if (token == null || token.isBlank()) {
-            return false;
-        }
-
         Account account = accountRepository.findByVerificationToken(token);
-        // TODO should tokens expire?
         if (account == null) {
-            return false; // TODO exception?
+            return false;
         }
         account.setVerified(true);
         account.setVerificationToken(null);

@@ -1,10 +1,12 @@
 package homerep.springy.config;
 
 import com.icegreen.greenmail.spring.GreenMailBean;
+import com.icegreen.greenmail.util.ServerSetup;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.test.util.TestSocketUtils;
 
 import java.util.List;
 
@@ -13,7 +15,8 @@ public class TestMailConfig {
     @Bean
     public GreenMailBean greenMailBean() {
         GreenMailBean mailBean = new GreenMailBean();
-        mailBean.setPortOffset(4000); // Just in case GreenMail is already running with default ports
+        // Avoid conflicts between tests
+        mailBean.setPortOffset(TestSocketUtils.findAvailableTcpPort() - ServerSetup.PORT_SMTP);
         mailBean.setPop3Protocol(false); // No need to retrieve mail
         mailBean.setUsers(List.of("noreply:abc123@localhost", "test:abc123@localhost", "test2:abc123@localhost"));
         return mailBean;

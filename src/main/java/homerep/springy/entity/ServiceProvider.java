@@ -1,9 +1,8 @@
 package homerep.springy.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
+
+import java.util.List;
 
 @Entity
 public class ServiceProvider {
@@ -17,13 +16,15 @@ public class ServiceProvider {
     private String name;
 
     private String description;
-    // TODO services
+
+    @ElementCollection
+    private List<String> services;
 
     private String phoneNumber;
 
     private String contactEmailAddress;
 
-    private ServiceProvider() {}
+    protected ServiceProvider() {}
 
     public ServiceProvider(Account account) {
         this.account = account;
@@ -47,6 +48,14 @@ public class ServiceProvider {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public List<String> getServices() {
+        return services;
+    }
+
+    public void setServices(List<String> services) {
+        this.services = services;
     }
 
     public String getPhoneNumber() {

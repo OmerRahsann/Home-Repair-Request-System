@@ -24,7 +24,7 @@ public class Customer {
 
     private String phoneNumber;
 
-    private Customer() {}
+    protected Customer() {}
 
     public Customer(Account account) {
         this.account = account;

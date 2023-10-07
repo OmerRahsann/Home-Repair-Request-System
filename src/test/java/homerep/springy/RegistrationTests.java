@@ -212,6 +212,7 @@ class RegistrationTests {
     }
 
     @Test
+    @Transactional
     void registerServiceProvider() throws Exception {
         this.mvc.perform(postJson("/api/register", VALID_SERVICE_PROVIDER))
                 .andExpect(status().isOk());
@@ -233,7 +234,7 @@ class RegistrationTests {
         assertNotNull(serviceProvider);
         assertEquals(serviceInfo.name(), serviceProvider.getName());
         assertEquals(serviceInfo.description(), serviceProvider.getDescription());
-        // TODO services
+        assertEquals(serviceInfo.services(), serviceProvider.getServices());
         assertEquals(serviceInfo.phoneNumber(), serviceProvider.getPhoneNumber());
         assertEquals(serviceInfo.contactEmailAddress(), serviceProvider.getContactEmailAddress());
     }
