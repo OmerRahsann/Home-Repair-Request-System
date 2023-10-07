@@ -1,5 +1,6 @@
 package homerep.springy.model.accountinfo;
 
+import homerep.springy.validator.annotation.PhoneNumber;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -9,6 +10,6 @@ public record CustomerInfoModel(
         @NotNull String middleName,
         @NotBlank String lastName,
         @NotBlank String address,
-        @NotBlank String phoneNumber // TODO how do you validate phone numbers?
+        @NotBlank @PhoneNumber String phoneNumber
 ) implements AccountInfoModel {
 }
