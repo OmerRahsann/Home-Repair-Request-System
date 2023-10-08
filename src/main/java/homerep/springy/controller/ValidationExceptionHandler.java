@@ -1,6 +1,6 @@
 package homerep.springy.controller;
 
-import homerep.springy.model.error.ApiErrorModel;
+import homerep.springy.model.error.ValidationErrorModel;
 import homerep.springy.model.error.FieldErrorModel;
 import homerep.springy.model.error.ObjectErrorModel;
 import org.springframework.http.HttpHeaders;
@@ -30,7 +30,7 @@ public class ValidationExceptionHandler extends ResponseEntityExceptionHandler {
             objectErrors.add(new ObjectErrorModel(objectError.getDefaultMessage()));
         }
 
-        ApiErrorModel errorModel = new ApiErrorModel(System.currentTimeMillis(), fieldErrors, objectErrors);
+        ValidationErrorModel errorModel = new ValidationErrorModel(fieldErrors, objectErrors);
         return ResponseEntity.badRequest().body(errorModel);
     }
 }

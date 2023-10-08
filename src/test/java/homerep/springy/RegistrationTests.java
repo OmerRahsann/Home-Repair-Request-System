@@ -34,8 +34,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
@@ -123,7 +122,9 @@ class RegistrationTests {
 
         // Attempting to register twice fails
         this.mvc.perform(postJson("/api/register", VALID_CUSTOMER1))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("timestamp").isNumber())
+                .andExpect(jsonPath("type").value("already_registered"));
         // and no verification email is sent
         assertEquals(1, greenMailBean.getReceivedMessages().length);
     }
@@ -142,7 +143,9 @@ class RegistrationTests {
 
         // Invalid verification tokens are rejected
         this.mvc.perform(get("/api/verify?token={token}", INVALID_TOKEN))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("timestamp").isNumber())
+                .andExpect(jsonPath("type").value("invalid_token"));
         // No change to the account
         Account afterFailedVerifyaccount = accountRepository.findByEmail(TEST_EMAIL);
         assertEquals(account, afterFailedVerifyaccount);
@@ -155,7 +158,9 @@ class RegistrationTests {
         assertNull(afterVerifyaccount.getVerificationToken());
         // Token is invalidated
         this.mvc.perform(get("/api/verify?token={token}", account.getVerificationToken()))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("timestamp").isNumber())
+                .andExpect(jsonPath("type").value("invalid_token"));
         // Authenticated after login
         this.mvc.perform(postJson("/api/login", new AccountModel(TEST_EMAIL, TEST_PASSWORD)))
                 .andExpect(status().isOk())
@@ -248,6 +253,7 @@ class RegistrationTests {
                 )))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("timestamp").isNumber())
+                .andExpect(jsonPath("type").value("validation_error"))
                 .andExpect(jsonPath("fieldErrors").isArray())
                 .andExpect(jsonPath("fieldErrors").isNotEmpty())
                 .andExpect(jsonPath("objectErrors").isArray())
