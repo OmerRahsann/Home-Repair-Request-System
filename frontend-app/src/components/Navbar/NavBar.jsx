@@ -2,6 +2,7 @@ import { Fragment, useState } from 'react'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { Link, useNavigate } from 'react-router-dom'
+import logo from '../Logos/logo.png'
 
 const navigation = [
   { name: 'Link 1', href: '#', current: true },
@@ -42,7 +43,7 @@ export default function NavBar() {
                 <div className="flex flex-shrink-0 items-center">
                   <img
                     className="h-8 w-auto"
-                    src=""
+                    src={logo}
                     alt="Website name"
                   />
                 </div>

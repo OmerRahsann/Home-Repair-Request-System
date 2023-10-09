@@ -26,9 +26,9 @@ export default function ControllerLogin() {
           <div className="overlay-container">
             <div className="overlay">
               <div className="overlay-panel overlay-left">
-                <h1>Welcome Back!</h1>
+                <h1>Have an account?</h1>
                 <p>
-                  To keep connected with us please login with your personal info
+                  Login to get back on The Radar.
                 </p>
                 <button
                   className="ghost"
@@ -40,7 +40,7 @@ export default function ControllerLogin() {
               </div>
               <div className="overlay-panel overlay-right">
                 <h1>Welcome to RepairRadar!</h1>
-                <p>Enter your personal details and start your journey with us</p>
+                <p> Sign up today to get on The Radar. </p>
                 <button
                   className="ghost "
                   id="signUp"
