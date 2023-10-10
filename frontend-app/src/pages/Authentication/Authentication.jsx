@@ -17,7 +17,10 @@ export default function ControllerLogin() {
   return (
     <div>
       <div className="absolute inset-x-0 top-0 h-16 p-2 flex justify-between">
-        <h1 class="text-2xl font-semibold"> RepairRadar </h1>
+        <div className="flex">
+          <h1 class="text-2xl font-semibold text-custom-black"> Repair </h1>
+          <h1 class="text-2xl font-semibold text-custom-maroon"> Radar </h1>
+        </div>
         <img className = "absolute inset-x-40 top-0 h-12 p-3 flex justify-start" src = {logo} alt = 'logo on sign-in page'/>
         <a href="/provider/auth" className="text-blue-500 hover:underline">Are you a service provider?</a>
       </div>
