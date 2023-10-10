@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import SignInForm from "../../components/Authentication/CustomerAuth/SignIn";
 import SignUpForm from "../../components/Authentication/CustomerAuth/SignUp";
 import "../../components/Authentication/auth.css"
-import logo from '../../components/Logos/logo.png'
-
+import logo from '../../components/Logos/logo1.png'
 export default function ControllerLogin() {
   const [type, setType] = useState("signIn");
+  
   const handleOnClick = text => {
     if (text !== type) {
       setType(text);
@@ -15,16 +15,18 @@ export default function ControllerLogin() {
   const containerClass =
     "container " + (type === "signUp" ? "right-panel-active" : "");
   return (
-    <div>
-      <div className="absolute inset-x-0 top-0 h-16 p-2 flex justify-between">
-        <div className="flex">
-          <h1 class="text-2xl font-semibold text-custom-black"> Repair </h1>
-          <h1 class="text-2xl font-semibold text-custom-maroon"> Radar </h1>
+    <div className="flex justify-center align-middle min-h-full mt-20 mb-50">
+      <div className="flex justify-between absolute inset-x-0  top-0 p-3">
+        <div className="bg-gray-100">
+          <img className = "absolute top-0 h-36 p-3 flex justify-star" src = {logo} alt = 'logo on sign-in page'/>
         </div>
-        <img className = "absolute inset-x-40 top-0 h-12 p-3 flex justify-start" src = {logo} alt = 'logo on sign-in page'/>
-        <a href="/provider/auth" className="text-blue-500 hover:underline">Are you a service provider?</a>
+        <a href="/provider/auth" className="text-blue-500 hover:underlin">Are you a service provider?</a>
       </div>
-      <div className="Authentication">
+      {/* <img className = "absolute inset-x-40 top-0 h-32 p-3 flex justify-start" src = {logo} alt = 'logo on sign-in page'/>
+      <div className="absolute inset-x-0 top-0 h-16 p-2 flex justify-between">
+        <a href="/provider/auth" className="text-blue-500 hover:underline">Are you a service provider?</a>
+      </div> */}
+      <div className="Authenticatio">
         <div className={containerClass} id="container">
           <SignUpForm />
           <SignInForm />

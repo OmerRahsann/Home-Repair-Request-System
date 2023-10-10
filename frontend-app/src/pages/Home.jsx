@@ -5,7 +5,6 @@ function Home() {
      
       <div >
         <Navbar/>
-        content 
       </div>
       
     );

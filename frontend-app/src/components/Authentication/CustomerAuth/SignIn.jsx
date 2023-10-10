@@ -1,6 +1,7 @@
-import React from "react";
+import React, {useState} from "react";
 import axios from "axios";
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from "../../../AuthContext";
 
 
 function SignInForm() {
@@ -8,6 +9,7 @@ function SignInForm() {
     email: "",
     password: ""
   });
+  const {accessAcount} = useAuth();
   const navigate = useNavigate();
   async function login(event) {
     event.preventDefault();
@@ -19,17 +21,10 @@ function SignInForm() {
         }).then((res) => {
             console.log(res.data);
 
-            if (res.data.message == "Email does not exits") {
-                alert("Email not exits");
-            }
-            else if (res.data.message == "Login Success") {
-
-                navigate('/home');
-            }
-            else {
-                alert("Incorrect Email or Email and Password do not match");
-            }
+                accessAcount()
+                navigate('/');
         }, fail => {
+            alert('Unrecognized email or password')
             console.error(fail); // Error!
         });
     }

@@ -3,11 +3,14 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import ProviderDescription from "../../ProviderDescription";
 import Select from 'react-select'
+import { useAuth } from "../../../AuthContext";
+
 
 
 
 function SignUpForm() {
     const navigate = useNavigate()
+    const {accessAcount} = useAuth();
     const services = [
         { value: "plumbing", label: "Plumbing" },
         { value: "yardwork", label: "Yardwork" },
@@ -89,6 +92,7 @@ function SignUpForm() {
                 }
             });
             alert("user Registation Successfully");
+            accessAcount()
             navigate("/")
         } catch (err) {
             alert(err);

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import SignInForm from "../../components/Authentication/CustomerAuth/SignIn";
 import ServiceProviderSignUp from "../../components/Authentication/ProviderAuth/ServiceProviderSignUp";
 import "../../components/Authentication/auth.css"
-import logo from "../../components/Logos/logo.png"
+import logo from "../../components/Logos/logo1.png"
 
 export default function ControllerLogin() {
   const [type, setType] = useState("signIn");
@@ -15,13 +15,11 @@ export default function ControllerLogin() {
   const containerClass =
     "container " + (type === "signUp" ? "right-panel-active" : "");
   return (
-    <div>
-      <div className="absolute inset-x-0 top-0 h-16 p-2 flex justify-between">
-      <div className="flex">
-          <h1 class="text-2xl font-semibold text-custom-black"> Repair </h1>
-          <h1 class="text-2xl font-semibold text-custom-maroon"> Radar </h1>
+    <div className="flex justify-center align-middle min-h-full mt-20 mb-50">
+      <div className="flex justify-between absolute inset-x-0  top-0 p-3">
+        <div>
+          <img className = "absolute top-0 h-36 p-3 flex justify-start" src = {logo} alt = 'logo on sign-in page'/>
         </div>
-        <img className = "absolute inset-x-40 top-0 h-12 p-3 flex justify-start" src = {logo} alt = 'logo on sign-in page'/>
       </div>
       <div className="Authentication">
         <div className={containerClass} id="container">

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../AuthContext";
 
 function SignUpForm() {
   const navigate = useNavigate()
+  const {accessAcount} = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -68,6 +70,7 @@ function SignUpForm() {
         }
       });
       alert("user Registation Successfully");
+      accessAcount()
       navigate("/")
     } catch (err) {
       alert(err);
