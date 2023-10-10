@@ -1,5 +1,7 @@
 package homerep.springy.controller;
 
+import homerep.springy.exception.ApiException;
+import homerep.springy.model.error.ApiErrorModel;
 import homerep.springy.model.error.ValidationErrorModel;
 import homerep.springy.model.error.FieldErrorModel;
 import homerep.springy.model.error.ObjectErrorModel;
@@ -10,6 +12,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
@@ -17,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @ControllerAdvice
-public class ValidationExceptionHandler extends ResponseEntityExceptionHandler {
+public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         List<FieldErrorModel> fieldErrors = new ArrayList<>(ex.getFieldErrorCount());
@@ -31,6 +34,12 @@ public class ValidationExceptionHandler extends ResponseEntityExceptionHandler {
         }
 
         ValidationErrorModel errorModel = new ValidationErrorModel(fieldErrors, objectErrors);
+        return ResponseEntity.badRequest().body(errorModel);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ApiErrorModel> handleApiException(ApiException ex) {
+        ApiErrorModel errorModel = new ApiErrorModel(ex.getType(), ex.getMessage());
         return ResponseEntity.badRequest().body(errorModel);
     }
 }
