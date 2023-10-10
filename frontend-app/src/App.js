@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Authentication from "./pages/Authentication/Authentication";
 import LocationFetcher from "./LocationFetcher";
@@ -10,14 +10,14 @@ function App() {
   return (
     <div>
       <AuthProvider>
-        <BrowserRouter>
+        <Router>
           {/* <LocationFetcher /> */}
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/auth" element={<Authentication />} />
             <Route path="/provider/auth" element={<ServiceProviderAuth />} />
           </Routes>
-        </BrowserRouter>
+        </Router>
       </AuthProvider>
     </div>
   );

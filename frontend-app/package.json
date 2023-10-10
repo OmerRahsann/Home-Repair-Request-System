@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@headlessui/react": "^1.7.17",
     "@heroicons/react": "^2.0.18",
     "@testing-library/jest-dom": "^5.17.0",
@@ -20,8 +21,16 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "react-scripts test --watchAll --coverage",
     "eject": "react-scripts eject"
+  },
+  "transform": {
+    "^.+\\.(js|jsx)$": "babel-jest"
+  },
+  "jest": {
+    "moduleNameMapper": {
+      "axios": "axios/dist/node/axios.cjs"
+    }
   },
   "eslintConfig": {
     "extends": [
@@ -42,6 +51,10 @@
     ]
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.22.20",
+    "@babel/preset-react": "^7.22.15",
+    "babel-jest": "^29.7.0",
+    "esm": "^3.2.25",
     "tailwindcss": "^3.3.3"
   }
 }
