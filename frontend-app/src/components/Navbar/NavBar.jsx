@@ -3,7 +3,7 @@ import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { UserCircleIcon } from '@heroicons/react/24/outline';
 import { Link, useNavigate } from 'react-router-dom'
-import logo from '../Logos/logo2.png'
+import logo from '../Logos/mainLogo.png'
 import { useAuth, checkIsLoggedIn, logout } from '../../AuthContext'
 
 const navigation = [
@@ -29,8 +29,8 @@ export default function NavBar() {
         <Disclosure as="nav" className="absolute inset-x-0 top-0 h-20 bg-gray">
             {({ open }) => (
                 <>
-                    <div className="pt-1 bg-gray-100">
-                        <div className="relative flex h-16 items-center justify-between">
+                    <div className="pt-2 bg-gray-100 p-4">
+                        <div className="relative flex h-24 items-center justify-between p-2">
                             <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
                                 {/* Mobile menu button*/}
                                 <Disclosure.Button className="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
@@ -43,10 +43,10 @@ export default function NavBar() {
                                     )}
                                 </Disclosure.Button>
                             </div>
-                            <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
+                            <div className="flex flex-1 items-center justify-center  sm:justify-start">
                                 <div className="flex flex-shrink-0 items-center">
                                     <img
-                                        className="h-16"
+                                        className="h-36"
                                         src={logo}
                                         alt="RepairRadar"
                                     />

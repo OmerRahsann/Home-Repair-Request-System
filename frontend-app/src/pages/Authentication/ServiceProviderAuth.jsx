@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import SignInForm from "../../components/Authentication/CustomerAuth/SignIn";
 import ServiceProviderSignUp from "../../components/Authentication/ProviderAuth/ServiceProviderSignUp";
 import "../../components/Authentication/auth.css"
-import logo from "../../components/Logos/logo1.png"
+import logo from "../../components/Logos/mainLogo.png"
 
 export default function ControllerLogin() {
   const [type, setType] = useState("signIn");

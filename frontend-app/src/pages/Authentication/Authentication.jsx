@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import SignInForm from "../../components/Authentication/CustomerAuth/SignIn";
 import SignUpForm from "../../components/Authentication/CustomerAuth/SignUp";
 import "../../components/Authentication/auth.css"
-import logo from '../../components/Logos/logo1.png'
+import logo from '../../components/Logos/mainLogo.png'
 export default function ControllerLogin() {
   const [type, setType] = useState("signIn");
   
@@ -18,7 +18,7 @@ export default function ControllerLogin() {
     <div className="flex justify-center align-middle min-h-full mt-20 mb-50">
       <div className="flex justify-between absolute inset-x-0  top-0 p-3">
         <div className="bg-gray-100">
-          <img className = "absolute top-0 h-36 p-3 flex justify-star" src = {logo} alt = 'logo on sign-in page'/>
+          <img className = "absolute top-0 h-40 p-3 flex justify-star" src = {logo} alt = 'logo on sign-in page'/>
         </div>
         <a href="/provider/auth" className="text-blue-500 hover:underlin">Are you a service provider?</a>
       </div>
