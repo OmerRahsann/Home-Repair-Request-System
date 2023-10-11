@@ -95,7 +95,7 @@ function SignUpForm() {
                     navigate('/');
                     accessAcount()
             }, fail => {
-                alert('Unrecognized email or password')
+                alert('An account with that email already exists.')
                 console.error(fail); // Error!
             });
         }

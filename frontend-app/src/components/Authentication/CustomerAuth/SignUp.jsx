@@ -70,7 +70,7 @@ function SignUpForm() {
         }
       }).then((res) => {
         console.log(res.data);
-        alert("user Registation Successfully");
+        alert("User Registation Successful");
         navigate('/');
         accessAcount()
       }, fail => {
