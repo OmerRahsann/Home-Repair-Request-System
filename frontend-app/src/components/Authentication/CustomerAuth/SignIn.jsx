@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from "../../../AuthContext";
 
 
-function SignInForm() {
+export function SignInForm() {
   const [state, setState] = React.useState({
     email: "",
     password: ""

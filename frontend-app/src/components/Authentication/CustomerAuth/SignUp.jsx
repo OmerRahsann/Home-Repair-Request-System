@@ -5,18 +5,18 @@ import { useAuth } from "../../../AuthContext";
 
 function SignUpForm() {
   const navigate = useNavigate()
-  const {accessAcount} = useAuth();
+  const { accessAcount } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     type: "SERVICE_REQUESTER",
     accountInfo: {
-      firstName:"",
-      middleName:"",
-      lastName:"",
-      address:"",
-      phoneNumber:""
-  }
+      firstName: "",
+      middleName: "",
+      lastName: "",
+      address: "",
+      phoneNumber: ""
+    }
 
   });
   const passwordsMatch = () => formData.password === formData.confirmPassword;
@@ -29,17 +29,17 @@ function SignUpForm() {
       confirmPassword: value
     }));
   };
- 
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-  
+
     // For nested objects (accountInfo), you need to spread them correctly
     if (name.includes('accountInfo.')) {
       const accountInfo = { ...formData.accountInfo };
       const field = name.split('.')[1];
       accountInfo[field] = value;
-  
+
       setFormData({
         ...formData,
         accountInfo: accountInfo
@@ -51,7 +51,7 @@ function SignUpForm() {
       });
     }
   };
-  
+
 
   async function save(event) {
     event.preventDefault();
@@ -68,12 +68,19 @@ function SignUpForm() {
           address: accountInfo.address,
           phoneNumber: accountInfo.phoneNumber
         }
+      }).then((res) => {
+        console.log(res.data);
+        alert("user Registation Successfully");
+        navigate('/');
+        accessAcount()
+      }, fail => {
+        alert("An account with that email already exists.")
+        console.error(fail); // Error!
       });
-      alert("user Registation Successfully");
-      accessAcount()
-      navigate("/")
-    } catch (err) {
-      alert(err);
+    }
+    catch (err) {
+      // Handle other errors
+      alert("An unexpected error occurred. Please try again.");
     }
   }
 

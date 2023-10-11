@@ -90,11 +90,17 @@ function SignUpForm() {
                     address: accountInfo.address,
                     contactEmailAddress: email
                 }
+            }).then((res) => {
+                console.log(res.data);
+                    navigate('/');
+                    accessAcount()
+            }, fail => {
+                alert('Unrecognized email or password')
+                console.error(fail); // Error!
             });
-            alert("user Registation Successfully");
-            accessAcount()
-            navigate("/")
-        } catch (err) {
+        }
+    
+        catch (err) {
             alert(err);
         }
     }
