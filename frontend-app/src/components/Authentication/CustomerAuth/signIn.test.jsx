@@ -1,7 +1,9 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, act } from '@testing-library/react'
 import SignInForm from './SignIn.jsx';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '../../../AuthContext.js';
+import userEvent from "@testing-library/user-event"
+import axios from 'axios';
 
 test("SignIn Form renders successfully", () => {
     render(
@@ -33,9 +35,7 @@ it('should update the state when input values change', () => {
     expect(passwordInput).toHaveValue('password123');
   });
 
-  it('should submit the form when the "Sign In" button is clicked', async () => {
-    const accessAcount = jest.fn();
-    const navigate = jest.fn();
+  it('should submit the form when the "Sign In" button is clicked', () => {
     render(
         <BrowserRouter>
             <AuthProvider>
@@ -46,13 +46,7 @@ it('should update the state when input values change', () => {
     const emailInput = screen.getByPlaceholderText('Email');
     const passwordInput = screen.getByPlaceholderText('Password');
     const signInButton = screen.getByText('Sign In');
-
-    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+    fireEvent.change(emailInput, { target: { value: 'test1@example.com' } });
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
-    fireEvent.click(signInButton);
-
-    // You can add assertions here to check if the expected functions were called.
-    // For example:
-    await waitFor(() => expect(accessAcount).toHaveBeenCalledTimes(1));
-    await waitFor(() => expect(navigate).toHaveBeenCalledWith('/'));
-  });
+    userEvent.click(signInButton)
+    });

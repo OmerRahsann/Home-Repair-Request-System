@@ -20,9 +20,8 @@ function SignInForm() {
             password: password,
         }).then((res) => {
             console.log(res.data);
-
-                accessAcount()
                 navigate('/');
+                accessAcount()
         }, fail => {
             alert('Unrecognized email or password')
             console.error(fail); // Error!
