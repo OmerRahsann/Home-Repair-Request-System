@@ -6,8 +6,6 @@ import Select from 'react-select'
 import { useAuth } from "../../../AuthContext";
 
 
-
-
 function SignUpForm() {
     const navigate = useNavigate()
     const {accessAcount} = useAuth();
