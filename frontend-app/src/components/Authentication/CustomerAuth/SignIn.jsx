@@ -1,33 +1,29 @@
-import React from "react";
+import React, {useState} from "react";
 import axios from "axios";
 import { useNavigate } from 'react-router-dom';
-function SignInForm() {
+import { useAuth } from "../../../AuthContext";
+
+
+export function SignInForm() {
   const [state, setState] = React.useState({
     email: "",
     password: ""
   });
+  const {accessAcount} = useAuth();
   const navigate = useNavigate();
   async function login(event) {
     event.preventDefault();
     try {
         const {email, password} = state;
-        await axios.post("http://localhost:8090/api/v1/user/login", {
+        await axios.post("http://localhost:8080/api/login", {
             email: email,
             password: password,
         }).then((res) => {
             console.log(res.data);
-
-            if (res.data.message == "Email does not exits") {
-                alert("Email not exits");
-            }
-            else if (res.data.message == "Login Success") {
-
-                navigate('/home');
-            }
-            else {
-                alert("Incorrect Email or Email and Password do not match");
-            }
+                navigate('/');
+                accessAcount()
         }, fail => {
+            alert('Unrecognized email or password')
             console.error(fail); // Error!
         });
     }
@@ -47,7 +43,7 @@ function SignInForm() {
 
   return (
     <div className="form-container sign-in-container">
-      <form onSubmit={login}>
+      <form id="login" onSubmit={login}>
         <h1>Sign in</h1>
         <input
           type="email"
