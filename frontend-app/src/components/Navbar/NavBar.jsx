@@ -3,7 +3,7 @@ import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { UserCircleIcon } from '@heroicons/react/24/outline';
 import { Link, useNavigate } from 'react-router-dom'
-import logo from '../Logos/mainLogo.png'
+import logo from '../../Logos/mainLogo.png'
 import { useAuth, checkIsLoggedIn, logout } from '../../AuthContext'
 
 const navigation = [
@@ -22,11 +22,11 @@ export default function NavBar() {
     
     const navigate = useNavigate()
     const handleSignIn = () => {
-        navigate("/auth");
+        navigate("/customer/signup");
     }
     const isLoggedIn = checkIsLoggedIn();
     return (
-        <Disclosure as="nav" className="absolute inset-x-0 top-0 h-20 bg-gray">
+        <Disclosure as="nav">
             {({ open }) => (
                 <>
                     <div className="pt-2 bg-gray-100 p-4">
@@ -73,7 +73,7 @@ export default function NavBar() {
                             <div className="absolute inset-y-0 right-4 flex items-center space-x-2 pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-2">
                                 {!isLoggedIn ? (
                                     <a
-                                        href={'/auth'}
+                                        href={'/customer/login'}
                                         className='bg-custom-black text-white text-black hover:bg-custom-grain hover:text-white rounded-md px-3 py-2 text-sm font-medium'>
                                         Sign In
                                     </a>) : null}
