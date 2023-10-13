@@ -23,6 +23,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.security:spring-security-crypto")
+	implementation("org.springframework.session:spring-session-jdbc")
 	implementation("org.bouncycastle:bcpkix-jdk15on:1.70") // For Argon2
 
 	runtimeOnly("com.mysql:mysql-connector-j")
