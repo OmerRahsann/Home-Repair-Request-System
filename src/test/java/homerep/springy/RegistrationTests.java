@@ -16,6 +16,7 @@ import homerep.springy.model.accountinfo.ServiceProviderInfoModel;
 import homerep.springy.repository.AccountRepository;
 import homerep.springy.repository.CustomerRepository;
 import homerep.springy.repository.ServiceProviderRepository;
+import homerep.springy.service.ResetService;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,6 +64,9 @@ class RegistrationTests {
     @Autowired
     private GreenMailBean greenMailBean;
 
+    @Autowired
+    private ResetService resetService;
+
     private static final String TEST_EMAIL = "example@example.com";
     private static final String TEST_PASSWORD = "ProAsHeckZoey";
     private static final String TEST2_EMAIL = "example2@example.com";
@@ -96,9 +100,7 @@ class RegistrationTests {
     void reset() throws FolderException {
         // Clean slate for each test
         greenMailBean.getGreenMail().purgeEmailFromAllMailboxes();
-        customerRepository.deleteAll();
-        serviceProviderRepository.deleteAll();
-        accountRepository.deleteAll();
+        resetService.resetAll();
     }
 
     @Test

@@ -7,6 +7,7 @@ import homerep.springy.authorities.Verified;
 import homerep.springy.entity.Account;
 import homerep.springy.model.AccountModel;
 import homerep.springy.repository.AccountRepository;
+import homerep.springy.service.ResetService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,9 @@ public class LoginTests {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private ResetService resetService;
+
     private static final String TEST_EMAIL = "example@example.com";
     private static final String TEST_PASSWORD = "ProAsHeckZoey";
 
@@ -54,8 +58,7 @@ public class LoginTests {
 
     @BeforeEach
     void reset() {
-        // Clean slate for each test
-        accountRepository.deleteAll();
+        resetService.resetAll();
 
         Account account = new Account();
         account.setEmail(TEST_EMAIL);

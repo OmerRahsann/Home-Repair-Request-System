@@ -2,89 +2,84 @@ package homerep.springy.entity;
 
 import jakarta.persistence.*;
 
-import java.sql.Timestamp;
+import java.util.Date;
 
 @Entity
-@Table(name = "service_request")
 public class ServiceRequest {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "request_id")
-    private int requestId;
+    @GeneratedValue
+    private int id;
 
-    @Column(name = "customer_id")
-    private int customerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Customer customer;
 
-    @Column(name = "request_description", length = 256)
-    private String requestDescription;
+    private String title;
 
-    @Column(name = "request_status", length = 16)
-    private String requestStatus;
+    private String description;
 
-    @Column(name = "request_date")
-    private Timestamp requestDate;
+    private int dollars;
 
-    @Column(name = "geo_location", length = 128)
-    private String geoLocation;
+    private Date date;
 
-    public ServiceRequest() {
+    private String location;
+
+    protected ServiceRequest() {}
+
+    public ServiceRequest(Customer customer) {
+        this.customer = customer;
     }
 
-    public ServiceRequest(int customerId, String requestDescription, String requestStatus, Timestamp requestDate, String geoLocation) {
-        this.customerId = customerId;
-        this.requestDescription = requestDescription;
-        this.requestStatus = requestStatus;
-        this.requestDate = requestDate;
-        this.geoLocation = geoLocation;
+    public int getId() {
+        return id;
     }
 
-    public int getRequestId() {
-        return requestId;
+    public Customer getCustomer() {
+        return customer;
     }
 
-    public void setRequestId(int requestId) {
-        this.requestId = requestId;
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
     }
 
-    public int getCustomerId() {
-        return customerId;
+    public String getTitle() {
+        return title;
     }
 
-    public void setCustomerId(int customerId) {
-        this.customerId = customerId;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
-    public String getRequestDescription() {
-        return requestDescription;
+    public String getDescription() {
+        return description;
     }
 
-    public void setRequestDescription(String requestDescription) {
-        this.requestDescription = requestDescription;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
-    public String getRequestStatus() {
-        return requestStatus;
+    public int getDollars() {
+        return dollars;
     }
 
-    public void setRequestStatus(String requestStatus) {
-        this.requestStatus = requestStatus;
+    public void setDollars(int dollars) {
+        this.dollars = dollars;
     }
 
-    public Timestamp getRequestDate() {
-        return requestDate;
+    public Date getDate() {
+        return date;
     }
 
-    public void setRequestDate(Timestamp requestDate) {
-        this.requestDate = requestDate;
+    public void setDate(Date date) {
+        this.date = date;
     }
 
-    public String getGeoLocation() {
-        return geoLocation;
+    public String getLocation() {
+        return location;
     }
 
-    public void setGeoLocation(String geoLocation) {
-        this.geoLocation = geoLocation;
+    public void setLocation(String location) {
+        this.location = location;
     }
 }
 

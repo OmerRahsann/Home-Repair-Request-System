@@ -1,11 +1,15 @@
 package homerep.springy.config;
 
+import homerep.springy.authorities.AccountType;
+import homerep.springy.authorities.Verified;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.authorization.AuthorityAuthorizationManager;
+import org.springframework.security.authorization.AuthorizationManagers;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -51,6 +55,12 @@ public class SecurityConfig {
                         .requestMatchers(mvc.pattern("/api/verify")).permitAll()
                         .requestMatchers(mvc.pattern("/api/login")).permitAll()
                         .requestMatchers(mvc.pattern("/api/logout")).permitAll()
+                        .requestMatchers(mvc.pattern("/api/customer/**")).access(
+                                AuthorizationManagers.allOf(
+                                        AuthorityAuthorizationManager.hasAuthority(AccountType.CUSTOMER.getAuthority()),
+                                        AuthorityAuthorizationManager.hasAuthority(Verified.INSTANCE.getAuthority())
+                                )
+                        ) // Argh, this is not nice
                         .anyRequest().authenticated()
         );
         http.logout(logout -> logout
