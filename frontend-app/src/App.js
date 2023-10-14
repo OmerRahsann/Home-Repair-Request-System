@@ -1,10 +1,10 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
-import Authentication from "./pages/Authentication/Authentication";
-import LocationFetcher from "./LocationFetcher";
-import ServiceProviderSignUp from "./components/Authentication/ProviderAuth/ServiceProviderSignUp";
-import ServiceProviderAuth from "./pages/Authentication/ServiceProviderAuth"
 import { AuthProvider } from "./AuthContext";
+import CustomerSignIn from "./pages/Authentication/CustomerSignIn";
+import CustomerSignUp from "./pages/Authentication/CustomerSignUp";
+import ProviderSignUp from "./pages/Authentication/ProviderSignUp";
+import ProviderSignIn from "./pages/Authentication/ProviderSignIn";
 
 function App() {
   return (
@@ -13,9 +13,11 @@ function App() {
         <Router>
           {/* <LocationFetcher /> */}
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/auth" element={<Authentication />} />
-            <Route path="/provider/auth" element={<ServiceProviderAuth />} />
+            <Route path="/" element={<Home/>} />
+            <Route path="/customer/login" element={<CustomerSignIn />} />
+            <Route path="/customer/signup" element={<CustomerSignUp/>} />
+            <Route path="/provider/signup" element={<ProviderSignUp/>} />
+            <Route path="/provider/login" element={<ProviderSignIn/>} />
           </Routes>
         </Router>
       </AuthProvider>

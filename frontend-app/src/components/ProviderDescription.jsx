@@ -14,7 +14,7 @@ function ProviderDescription(props) {
   };
 
   return (
-    <div className='bg-custom-gray'>
+    <div className='bg-custom-gray items-center'>
       <textarea
         value={description}
         onChange={handleDescriptionChange}
@@ -23,8 +23,9 @@ function ProviderDescription(props) {
         maxLength={maxCharacters}
         spellCheck
         style={{ resize: 'none' }}
+        required
       />
-      <text className="text-xs text-gray-400">Characters remaining: {maxCharacters - description.length}</text>
+      <p className="text-xs text-gray-400 text-center">Characters remaining: {maxCharacters - description.length}</p>
     </div>
   );
 }
