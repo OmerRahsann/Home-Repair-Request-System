@@ -2,6 +2,8 @@ package homerep.springy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import homerep.springy.authorities.AccountType;
+import homerep.springy.authorities.Verified;
 import homerep.springy.entity.Account;
 import homerep.springy.model.AccountModel;
 import homerep.springy.repository.AccountRepository;
@@ -11,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -59,14 +60,14 @@ public class LoginTests {
         Account account = new Account();
         account.setEmail(TEST_EMAIL);
         account.setPassword(passwordEncoder.encode(TEST_PASSWORD));
-        account.setType(Account.AccountType.SERVICE_REQUESTER);
+        account.setType(AccountType.SERVICE_REQUESTER);
         account.setVerified(true);
         accountRepository.save(account);
 
         Account account2 = new Account();
         account2.setEmail(TEST2_EMAIL);
         account2.setPassword(passwordEncoder.encode(TEST2_PASSWORD));
-        account2.setType(Account.AccountType.SERVICE_PROVIDER);
+        account2.setType(AccountType.SERVICE_PROVIDER);
         account2.setVerified(true);
         accountRepository.save(account2);
     }
@@ -78,7 +79,7 @@ public class LoginTests {
                 .andExpect(status().isOk())
                 .andExpect(authenticated()
                         .withUsername(TEST_EMAIL)
-                        .withAuthorities(List.of(Account.AccountType.SERVICE_REQUESTER, new SimpleGrantedAuthority("VERIFIED"))))
+                        .withAuthorities(List.of(AccountType.SERVICE_REQUESTER, Verified.INSTANCE)))
                 .andExpect(cookie().exists("SESSION"))
                 .andExpect(cookie().httpOnly("SESSION", true))
                 .andExpect(cookie().attribute("SESSION", "SameSite", "Lax"));
@@ -96,13 +97,13 @@ public class LoginTests {
                 .andExpect(status().isOk())
                 .andExpect(authenticated()
                         .withUsername(TEST2_EMAIL)
-                        .withAuthorities(List.of(Account.AccountType.SERVICE_PROVIDER, new SimpleGrantedAuthority("VERIFIED"))));
+                        .withAuthorities(List.of(AccountType.SERVICE_PROVIDER, Verified.INSTANCE)));
         // Can log in to another account without logout
         this.mvc.perform(login(TEST_EMAIL, TEST_PASSWORD))
                 .andExpect(status().isOk())
                 .andExpect(authenticated()
                         .withUsername(TEST_EMAIL)
-                        .withAuthorities(List.of(Account.AccountType.SERVICE_REQUESTER, new SimpleGrantedAuthority("VERIFIED"))));
+                        .withAuthorities(List.of(AccountType.SERVICE_REQUESTER, Verified.INSTANCE)));
     }
 
     @Test

@@ -1,7 +1,10 @@
 package homerep.springy.model;
 
-import com.fasterxml.jackson.annotation.*;
-import homerep.springy.entity.Account;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import homerep.springy.authorities.AccountType;
 import homerep.springy.model.accountinfo.AccountInfoModel;
 import homerep.springy.model.accountinfo.CustomerInfoModel;
 import homerep.springy.model.accountinfo.ServiceProviderInfoModel;
@@ -20,7 +23,7 @@ public class RegisterModel {
     @JsonProperty
     @NotNull
     @Valid
-    private Account.AccountType type;
+    private AccountType type;
     @JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
     @JsonSubTypes({@JsonSubTypes.Type(CustomerInfoModel.class), @JsonSubTypes.Type(ServiceProviderInfoModel.class)})
     @NotNull
@@ -31,7 +34,7 @@ public class RegisterModel {
 
     public RegisterModel(
             AccountModel account,
-            Account.AccountType type,
+            AccountType type,
             AccountInfoModel accountInfo
     ) {
         this.account = account;
@@ -43,7 +46,7 @@ public class RegisterModel {
         return account;
     }
 
-    public Account.AccountType type() {
+    public AccountType type() {
         return type;
     }
 

@@ -1,5 +1,6 @@
 package homerep.springy.service.impl;
 
+import homerep.springy.authorities.Verified;
 import homerep.springy.entity.Account;
 import homerep.springy.entity.Customer;
 import homerep.springy.entity.ServiceProvider;
@@ -128,7 +129,7 @@ public class AccountServiceImpl implements AccountService, UserDetailsService {
             List<GrantedAuthority> authorities = new ArrayList<>();
             authorities.add(account.getType());
             if (account.isVerified()) {
-                authorities.add(new SimpleGrantedAuthority("VERIFIED"));
+                authorities.add(Verified.INSTANCE);
             }
             return new User(account.getEmail(), account.getPassword(), authorities);
         }

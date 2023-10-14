@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.icegreen.greenmail.spring.GreenMailBean;
 import com.icegreen.greenmail.store.FolderException;
+import homerep.springy.authorities.AccountType;
 import homerep.springy.config.TestMailConfig;
 import homerep.springy.entity.Account;
 import homerep.springy.entity.Customer;
@@ -70,21 +71,21 @@ class RegistrationTests {
 
     private static final RegisterModel VALID_CUSTOMER1 = new RegisterModel(
             new AccountModel(TEST_EMAIL, TEST_PASSWORD),
-            Account.AccountType.SERVICE_REQUESTER,
+            AccountType.SERVICE_REQUESTER,
             new CustomerInfoModel("Zoey", "", "Proasheck",
                     "201 Mullica Hill Rd, Glassboro, NJ 08028", "8562564000")
     );
 
     private static final RegisterModel VALID_CUSTOMER2 = new RegisterModel(
             new AccountModel(TEST2_EMAIL, TEST2_PASSWORD),
-            Account.AccountType.SERVICE_REQUESTER,
+            AccountType.SERVICE_REQUESTER,
             new CustomerInfoModel("Marina", "", "Hale",
                     "201 Mullica Hill Rd, Glassboro, NJ 08028", "5105553456")
     );
 
     private static final RegisterModel VALID_SERVICE_PROVIDER = new RegisterModel(
             new AccountModel(TEST_EMAIL, TEST2_PASSWORD),
-            Account.AccountType.SERVICE_PROVIDER,
+            AccountType.SERVICE_PROVIDER,
             new ServiceProviderInfoModel("Sakura HVAC and Plumbing", "We fix your HVAC for you!",
                     List.of("HVAC"), "3095550000", "201 Mullica Hill Rd, Glassboro, NJ 08028",
                     "contact@example.com")
@@ -248,7 +249,7 @@ class RegistrationTests {
     void registerValidation() throws Exception {
         this.mvc.perform(postJson("/api/register", new RegisterModel(
                         new AccountModel("notavalidemail", "short"),
-                        Account.AccountType.SERVICE_REQUESTER,
+                        AccountType.SERVICE_REQUESTER,
                         new ServiceProviderInfoModel(null, null, List.of(), null, null, null)
                 )))
                 .andExpect(status().isBadRequest())

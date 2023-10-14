@@ -1,7 +1,10 @@
 package homerep.springy.entity;
 
-import jakarta.persistence.*;
-import org.springframework.security.core.GrantedAuthority;
+import homerep.springy.authorities.AccountType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
 
 import java.util.Objects;
 
@@ -78,14 +81,5 @@ public class Account {
     @Override
     public String toString() {
         return "Account{" + "id=" + id + ", email='" + email + '\'' + ", password='" + password + '\'' + ", verified=" + verified + ", verificationToken='" + verificationToken + '\'' + ", type=" + type + '}';
-    }
-
-    public enum AccountType implements GrantedAuthority {
-        SERVICE_REQUESTER, SERVICE_PROVIDER;
-
-        @Override
-        public String getAuthority() {
-            return toString();
-        }
     }
 }
