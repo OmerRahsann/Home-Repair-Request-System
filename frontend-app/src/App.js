@@ -5,6 +5,7 @@ import CustomerSignIn from "./pages/Authentication/CustomerSignIn";
 import CustomerSignUp from "./pages/Authentication/CustomerSignUp";
 import ProviderSignUp from "./pages/Authentication/ProviderSignUp";
 import ProviderSignIn from "./pages/Authentication/ProviderSignIn";
+import ServiceProviderHome from "./pages/ServiceProviderHome";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
             <Route path="/customer/signup" element={<CustomerSignUp/>} />
             <Route path="/provider/signup" element={<ProviderSignUp/>} />
             <Route path="/provider/login" element={<ProviderSignIn/>} />
+            <Route path="/provider/home" element={<ServiceProviderHome/>} />
           </Routes>
         </Router>
       </AuthProvider>

@@ -10,7 +10,7 @@ function ProviderSignIn() {
         email: "",
         password: ""
     });
-    const { accessAcount } = useAuth();
+    const { accessServiceProviderAccount } = useAuth();
     const navigate = useNavigate();
     async function login(event) {
         event.preventDefault();
@@ -21,8 +21,8 @@ function ProviderSignIn() {
                 password: password,
             }).then((res) => {
                 console.log(res.data);
-                navigate('/');
-                accessAcount()
+                accessServiceProviderAccount('SERVICE_PROVIDER')
+                navigate('/provider/home');
             }, fail => {
                 alert('Unrecognized email or password')
                 console.error(fail); // Error!

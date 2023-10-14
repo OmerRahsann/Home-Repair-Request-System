@@ -8,7 +8,7 @@ import Select from 'react-select'
 
 function ProviderSignUp() {
     const navigate = useNavigate()
-    const { accessAcount } = useAuth();
+    const { accessServiceProviderAccount } = useAuth();
     const services = [
         { value: "plumbing", label: "Plumbing" },
         { value: "yardwork", label: "Yardwork" },
@@ -90,8 +90,8 @@ function ProviderSignUp() {
                 }
             }).then((res) => {
                 console.log(res.data);
-                navigate('/');
-                accessAcount()
+                accessServiceProviderAccount(type)
+                navigate('/provider/home');
             }, fail => {
                 alert('An account with that email already exists.')
                 console.error(fail); // Error!
