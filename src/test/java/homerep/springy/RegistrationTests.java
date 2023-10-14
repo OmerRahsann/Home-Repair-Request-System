@@ -71,14 +71,14 @@ class RegistrationTests {
 
     private static final RegisterModel VALID_CUSTOMER1 = new RegisterModel(
             new AccountModel(TEST_EMAIL, TEST_PASSWORD),
-            AccountType.SERVICE_REQUESTER,
+            AccountType.CUSTOMER,
             new CustomerInfoModel("Zoey", "", "Proasheck",
                     "201 Mullica Hill Rd, Glassboro, NJ 08028", "8562564000")
     );
 
     private static final RegisterModel VALID_CUSTOMER2 = new RegisterModel(
             new AccountModel(TEST2_EMAIL, TEST2_PASSWORD),
-            AccountType.SERVICE_REQUESTER,
+            AccountType.CUSTOMER,
             new CustomerInfoModel("Marina", "", "Hale",
                     "201 Mullica Hill Rd, Glassboro, NJ 08028", "5105553456")
     );
@@ -249,7 +249,7 @@ class RegistrationTests {
     void registerValidation() throws Exception {
         this.mvc.perform(postJson("/api/register", new RegisterModel(
                         new AccountModel("notavalidemail", "short"),
-                        AccountType.SERVICE_REQUESTER,
+                        AccountType.CUSTOMER,
                         new ServiceProviderInfoModel(null, null, List.of(), null, null, null)
                 )))
                 .andExpect(status().isBadRequest())

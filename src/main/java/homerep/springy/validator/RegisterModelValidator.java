@@ -15,7 +15,7 @@ public class RegisterModelValidator implements ConstraintValidator<ValidRegister
             return false;
         }
         return switch (value.type()) {
-            case SERVICE_REQUESTER -> value.accountInfo() instanceof CustomerInfoModel;
+            case CUSTOMER -> value.accountInfo() instanceof CustomerInfoModel;
             case SERVICE_PROVIDER -> value.accountInfo() instanceof ServiceProviderInfoModel;
         };
     }

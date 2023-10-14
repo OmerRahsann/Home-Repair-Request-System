@@ -60,7 +60,7 @@ public class LoginTests {
         Account account = new Account();
         account.setEmail(TEST_EMAIL);
         account.setPassword(passwordEncoder.encode(TEST_PASSWORD));
-        account.setType(AccountType.SERVICE_REQUESTER);
+        account.setType(AccountType.CUSTOMER);
         account.setVerified(true);
         accountRepository.save(account);
 
@@ -79,7 +79,7 @@ public class LoginTests {
                 .andExpect(status().isOk())
                 .andExpect(authenticated()
                         .withUsername(TEST_EMAIL)
-                        .withAuthorities(List.of(AccountType.SERVICE_REQUESTER, Verified.INSTANCE)))
+                        .withAuthorities(List.of(AccountType.CUSTOMER, Verified.INSTANCE)))
                 .andExpect(cookie().exists("SESSION"))
                 .andExpect(cookie().httpOnly("SESSION", true))
                 .andExpect(cookie().attribute("SESSION", "SameSite", "Lax"));
@@ -103,7 +103,7 @@ public class LoginTests {
                 .andExpect(status().isOk())
                 .andExpect(authenticated()
                         .withUsername(TEST_EMAIL)
-                        .withAuthorities(List.of(AccountType.SERVICE_REQUESTER, Verified.INSTANCE)));
+                        .withAuthorities(List.of(AccountType.CUSTOMER, Verified.INSTANCE)));
     }
 
     @Test
