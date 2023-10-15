@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface ServiceRequestRepository extends JpaRepository<ServiceRequest, Integer> {
     List<ServiceRequest> findAllByCustomerAccountEmail(String email);
+
+    ServiceRequest findByIdAndCustomerAccountEmail(int id, String email);
 }

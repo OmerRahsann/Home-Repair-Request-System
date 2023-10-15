@@ -8,7 +8,7 @@ public record ServiceRequestModel(
     @Nullable Integer id,
     @NotBlank String title,
     @NotBlank String description,
-    @Positive int dollars,
+    @Positive int dollars, // TODO minimum quote?
     @NotBlank String address
     ) {
 
