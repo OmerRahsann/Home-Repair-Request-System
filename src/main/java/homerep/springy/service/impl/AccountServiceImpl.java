@@ -15,8 +15,8 @@ import homerep.springy.service.AccountService;
 import homerep.springy.service.EmailService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -51,6 +51,9 @@ public class AccountServiceImpl implements AccountService, UserDetailsService {
     @Autowired
     private UriBuilderFactory uriBuilderFactory;
 
+    @Value("${homerep.require-verification:#{true}}")
+    private boolean requireVerification;
+
     @Override
     public boolean isRegistered(String email) {
         return accountRepository.findByEmail(email) != null;
@@ -64,6 +67,7 @@ public class AccountServiceImpl implements AccountService, UserDetailsService {
         account.setEmail(accountModel.email());
         account.setPassword(passwordEncoder.encode(accountModel.password()));
         account.setType(registerModel.type());
+        account.setVerified(!requireVerification);
         account = accountRepository.save(account);
 
         // registerModel should be valid, just check the instance type
