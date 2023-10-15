@@ -22,7 +22,7 @@ public class ServiceRequest {
 
     private Date date;
 
-    private String location;
+    private String address;
 
     protected ServiceRequest() {}
 
@@ -74,12 +74,12 @@ public class ServiceRequest {
         this.date = date;
     }
 
-    public String getLocation() {
-        return location;
+    public String getAddress() {
+        return address;
     }
 
-    public void setLocation(String location) {
-        this.location = location;
+    public void setAddress(String address) {
+        this.address = address;
     }
 }
 

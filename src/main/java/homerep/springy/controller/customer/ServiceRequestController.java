@@ -32,6 +32,7 @@ public class ServiceRequestController {
         serviceRequest.setTitle(serviceRequestModel.title());
         serviceRequest.setDescription(serviceRequestModel.description());
         serviceRequest.setDollars(serviceRequestModel.dollars());
+        serviceRequest.setAddress(serviceRequestModel.address());
         serviceRequest.setDate(new Date());
         serviceRequestRepository.save(serviceRequest);
     }
@@ -41,7 +42,7 @@ public class ServiceRequestController {
         List<ServiceRequest> serviceRequests = serviceRequestRepository.findAllByCustomerAccountEmail(user.getUsername());
         List<ServiceRequestModel> models = new ArrayList<>(serviceRequests.size());
         for (ServiceRequest serviceRequest : serviceRequests) {
-            models.add(new ServiceRequestModel(serviceRequest.getTitle(), serviceRequest.getDescription(), serviceRequest.getDollars()));
+            models.add(new ServiceRequestModel(serviceRequest.getId(), serviceRequest.getTitle(), serviceRequest.getDescription(), serviceRequest.getDollars(), serviceRequest.getAddress()));
         }
         return models;
     }

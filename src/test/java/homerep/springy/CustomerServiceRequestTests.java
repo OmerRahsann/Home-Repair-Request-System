@@ -25,6 +25,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import java.util.Date;
 import java.util.List;
 
+import static org.hamcrest.core.IsNot.not;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -56,7 +57,14 @@ public class CustomerServiceRequestTests {
     private static final String TEST_EMAIL = "example@example.com";
 
     private static final ServiceRequestModel VALID_SERVICE_REQUEST = new ServiceRequestModel(
-            "Test", "Description", 32
+            "Test", "Description", 32, "201 Mullica Hill Rd, Glassboro, NJ 08028"
+    );
+    private static final ServiceRequestModel VALID_SERVICE_REQUEST_WITH_ID = new ServiceRequestModel(
+            Integer.MAX_VALUE, "Test", "Description", 32, "201 Mullica Hill Rd, Glassboro, NJ 08028"
+    );
+
+    private static final ServiceRequestModel INVALID_SERVICE_REQUEST = new ServiceRequestModel(
+            "", "", -1, ""
     );
 
     @BeforeEach
@@ -96,29 +104,37 @@ public class CustomerServiceRequestTests {
         assertEquals(VALID_SERVICE_REQUEST.dollars(), serviceRequest.getDollars());
         assertNotNull(serviceRequest.getDate());
         assertTrue(serviceRequest.getDate().after(now));
-        // TODO service request location
+        assertEquals(VALID_SERVICE_REQUEST.address(), serviceRequest.getAddress());
         // Created request is listed
         this.mvc.perform(get("/api/customer/service_request"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isNotEmpty())
                 .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0].id").isNumber())
                 .andExpect(jsonPath("$[0].title").value(VALID_SERVICE_REQUEST.title()))
                 .andExpect(jsonPath("$[0].description").value(VALID_SERVICE_REQUEST.description()))
-                .andExpect(jsonPath("$[0].dollars").value(VALID_SERVICE_REQUEST.dollars()));
-        // Customer can create a second service request
-        this.mvc.perform(createServiceRequest(VALID_SERVICE_REQUEST))
+                .andExpect(jsonPath("$[0].dollars").value(VALID_SERVICE_REQUEST.dollars()))
+                .andExpect(jsonPath("$[0].address").value(VALID_SERVICE_REQUEST.address()));
+        // Customer can create a second service request and id is ignored
+        this.mvc.perform(createServiceRequest(VALID_SERVICE_REQUEST_WITH_ID))
                 .andExpect(status().isOk());
         // Both requests are listed
         this.mvc.perform(get("/api/customer/service_request"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isNotEmpty())
                 .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0].id").isNumber())
+                .andExpect(jsonPath("$[0].id").value(not(VALID_SERVICE_REQUEST_WITH_ID.id())))
                 .andExpect(jsonPath("$[0].title").value(VALID_SERVICE_REQUEST.title()))
                 .andExpect(jsonPath("$[0].description").value(VALID_SERVICE_REQUEST.description()))
                 .andExpect(jsonPath("$[0].dollars").value(VALID_SERVICE_REQUEST.dollars()))
-                .andExpect(jsonPath("$[1].title").value(VALID_SERVICE_REQUEST.title()))
-                .andExpect(jsonPath("$[1].description").value(VALID_SERVICE_REQUEST.description()))
-                .andExpect(jsonPath("$[1].dollars").value(VALID_SERVICE_REQUEST.dollars()));
+                .andExpect(jsonPath("$[0].address").value(VALID_SERVICE_REQUEST.address()))
+                .andExpect(jsonPath("$[1].id").isNumber())
+                .andExpect(jsonPath("$[1].id").value(not(VALID_SERVICE_REQUEST_WITH_ID.id())))
+                .andExpect(jsonPath("$[1].title").value(VALID_SERVICE_REQUEST_WITH_ID.title()))
+                .andExpect(jsonPath("$[1].description").value(VALID_SERVICE_REQUEST_WITH_ID.description()))
+                .andExpect(jsonPath("$[1].dollars").value(VALID_SERVICE_REQUEST_WITH_ID.dollars()))
+                .andExpect(jsonPath("$[0].address").value(VALID_SERVICE_REQUEST_WITH_ID.address()));
     }
 
     @Test
@@ -142,6 +158,19 @@ public class CustomerServiceRequestTests {
         // Not logged in Customers can't create requests
         this.mvc.perform(createServiceRequest(VALID_SERVICE_REQUEST))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
+    void postValidation() throws Exception {
+        this.mvc.perform(createServiceRequest(INVALID_SERVICE_REQUEST))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("timestamp").isNumber())
+                .andExpect(jsonPath("type").value("validation_error"))
+                .andExpect(jsonPath("fieldErrors").isArray())
+                .andExpect(jsonPath("fieldErrors").isNotEmpty())
+                .andExpect(jsonPath("objectErrors").isArray())
+                .andExpect(jsonPath("objectErrors").isEmpty());
     }
 
     private MockHttpServletRequestBuilder createServiceRequest(ServiceRequestModel serviceRequestModel) throws JsonProcessingException {
