@@ -10,7 +10,7 @@ function CustomerSignUp() {
     const [formData, setFormData] = useState({
         email: "",
         password: "",
-        type: "SERVICE_REQUESTER",
+        type: "CUSTOMER",
         accountInfo: {
             firstName: "",
             middleName: "",
