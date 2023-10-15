@@ -77,6 +77,7 @@ public class SecurityConfig {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.addAllowedOriginPattern(Objects.requireNonNullElse(allowedOriginPatterns, "http://localhost:[*]"));
         corsConfiguration.addAllowedMethod(CorsConfiguration.ALL);
+        corsConfiguration.setAllowCredentials(true);
         // Allow all headers and default max age
         corsConfiguration.applyPermitDefaultValues();
 
