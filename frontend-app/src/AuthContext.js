@@ -1,5 +1,6 @@
 // AuthContext.js
 import React, { createContext, useContext, useState } from 'react';
+import axios from 'axios';
 
 const AuthContext = createContext();
 
@@ -17,9 +18,11 @@ export function AuthProvider({ children }) {
   };
 
   const accessServiceProviderAccount = (type) => {
-    setIsLoggedIn(true);
-    localStorage.setItem('isLoggedIn' , 'true');
-    localStorage.setItem('type', type)
+    axios.get("http://localhost:8080/api/account/type", {withCredentials: true})
+            .then((res) => {
+            const userType = res.data
+            return userType === "SERVICE_PROVIDER"
+            })
   }
 
   const logout = () => {
@@ -47,11 +50,30 @@ export function checkIsLoggedIn() {
   }
 
 
-export function checkIsServiceProviderLoggedIn() {
-  const isLoggedIn = localStorage.getItem('isLoggedIn');
-  const isServiceProvider = localStorage.getItem('type');
-  return isLoggedIn === 'true' && isServiceProvider === 'SERVICE_PROVIDER';
-}
+  export async function checkIsServiceProviderLoggedIn() {
+    try {
+      const response = await axios.get("http://localhost:8080/api/account/type", { withCredentials: true });
+      const type = response.data;
+      console.log(type );
+      if(type === "SERVICE_PROVIDER") return true
+      else return false
+    } catch (error) {
+      console.error(error);
+      return null; // or some other appropriate error handling
+    }
+  }
+
+  export async function checkIsCustomerLoggedIn() {
+    try {
+      const response = await axios.get("http://localhost:8080/api/account/type", { withCredentials: true });
+      const type = response.data;
+      console.log(type );
+      if(type === "CUSTOMER") return true
+    } catch (error) {
+      console.error(error);
+      return false; // or some other appropriate error handling
+    }
+  }
 
 export function logout() {
     localStorage.removeItem('isLoggedIn');

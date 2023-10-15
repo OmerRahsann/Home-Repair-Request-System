@@ -89,9 +89,8 @@ function ProviderSignUp() {
                     contactEmailAddress: email
                 }
             }).then((res) => {
-                console.log(res.data);
-                accessServiceProviderAccount(type)
-                navigate('/provider/home');
+                alert("Provider Registation Successful. Please Login to your New Account!");
+                navigate('/provider/login');
             }, fail => {
                 alert('An account with that email already exists.')
                 console.error(fail); // Error!

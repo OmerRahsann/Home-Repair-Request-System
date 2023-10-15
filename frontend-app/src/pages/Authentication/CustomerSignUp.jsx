@@ -71,9 +71,8 @@ function CustomerSignUp() {
                 }
             }).then((res) => {
                 console.log(res.data);
-                alert("User Registation Successful");
-                navigate('/');
-                accessAcount()
+                alert("Customer Registation Successful. Please Login to your New Account!");
+                navigate('/customer/login');
             }, fail => {
                 alert("An account with that email already exists.")
                 console.error(fail); // Error!

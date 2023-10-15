@@ -5,6 +5,7 @@ import { UserCircleIcon } from '@heroicons/react/24/outline';
 import { Link, useNavigate } from 'react-router-dom'
 import logo from '../../Logos/mainLogo.png'
 import { useAuth, checkIsLoggedIn, logout } from '../../AuthContext'
+import axios from 'axios';
 
 const navigation = [
     { name: 'Link 1', href: '#', current: true },
@@ -18,13 +19,13 @@ function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
 }
 
-export default function NavBar() {
+export default function NavBar({isLoggedIn}) {
     
     const navigate = useNavigate()
     const handleSignIn = () => {
         navigate("/customer/signup");
     }
-    const isLoggedIn = checkIsLoggedIn();
+    
     return (
         <Disclosure as="nav">
             {({ open }) => (

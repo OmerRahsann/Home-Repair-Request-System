@@ -19,7 +19,7 @@ function CustomerSignIn() {
             await axios.post("http://localhost:8080/api/login", {
                 email: email,
                 password: password,
-            }).then((res) => {
+            }, {withCredentials: true}).then((res) => {
                 console.log(res.data);
                 navigate('/');
                 accessAcount()
