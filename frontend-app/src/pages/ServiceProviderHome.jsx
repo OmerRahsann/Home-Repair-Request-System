@@ -17,6 +17,11 @@ const ServiceProviderHome = ({ component: Component, ...rest }) => {
       try {
         const isLoggedIn = await checkIsServiceProviderLoggedIn();
         setLoggedIn(isLoggedIn); // Set the loggedIn state based on the result of the Promise
+        console.log(isLoggedIn)
+        if (!isLoggedIn) {
+          alert("You do not have access to this page. Please create a Service Provider Account to access this page.");
+          navigate('/provider/login'); // Redirect to the login page
+        }
       } catch (error) {
         console.error('Error checking if customer is logged in:', error);
       }
@@ -27,11 +32,13 @@ const ServiceProviderHome = ({ component: Component, ...rest }) => {
     // Define the checkIsCustomerLoggedIn function here or import it from where it's defined
   }, []);
 
-
   if (!loggedIn) {
-    navigate('/provider/login'); // Redirect to the login page or an error page
-    return null; // Return null to prevent rendering anything on invalid access
+    // Do not render anything if not logged in and redirected
+    return null;
   }
+
+  
+
 
   return (
     <div>
@@ -42,6 +49,7 @@ const ServiceProviderHome = ({ component: Component, ...rest }) => {
       </div>
     </div>
   );
-};
+}
+;
 
 export default ServiceProviderHome;

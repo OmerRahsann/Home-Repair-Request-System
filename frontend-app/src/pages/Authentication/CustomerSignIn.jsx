@@ -8,7 +8,8 @@ import logo from "../../Logos/mainLogo.png"
 function CustomerSignIn() {
     const [state, setState] = React.useState({
         email: "",
-        password: ""
+        password: "",
+        type: "CUSTOMER"
     });
     const { accessAcount } = useAuth();
     const navigate = useNavigate();
@@ -22,7 +23,6 @@ function CustomerSignIn() {
             }, {withCredentials: true}).then((res) => {
                 console.log(res.data);
                 navigate('/');
-                accessAcount()
             }, fail => {
                 alert('Unrecognized email or password')
                 console.error(fail); // Error!

@@ -17,6 +17,7 @@ function ServiceRequestForm() {
         title: '',
         description: '',
         dollars: null,
+        address: 'hello',
     });
 
     async function createServiceRequest(event) {
@@ -34,7 +35,9 @@ function ServiceRequestForm() {
             setServiceRequestModel({
                 title: '',
                 description: '',
-                dollars: 0,
+                dollars: null,
+                message: '',
+                address: ''
             });
             // Fetch the updated list of service requests
             // getServiceRequests();

@@ -11,11 +11,6 @@ export function useAuth() {
 export function AuthProvider({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const accessAcount = () => {
-    // Implement your login logic here
-    setIsLoggedIn(true);
-    localStorage.setItem('isLoggedIn', 'true');
-  };
 
   const accessServiceProviderAccount = (type) => {
     axios.get("http://localhost:8080/api/account/type", {withCredentials: true})
@@ -25,6 +20,7 @@ export function AuthProvider({ children }) {
             })
   }
 
+
   const logout = () => {
     // Implement your logout logic here
     setIsLoggedIn(false);
@@ -32,7 +28,6 @@ export function AuthProvider({ children }) {
 
   const value = {
     isLoggedIn,
-    accessAcount,
     logout,
     accessServiceProviderAccount
   };
@@ -76,6 +71,7 @@ export function checkIsLoggedIn() {
   }
 
 export function logout() {
-    localStorage.removeItem('isLoggedIn');
+  axios.get("http://localhost:8080/api/logout", {withCredentials: true})
+  alert("You have now been Logged Out. ")
     // Clear any other user-related data as well
   }
