@@ -3,18 +3,33 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../AuthContext";
 import logo from "../../Logos/mainLogo.png"
+import Select from 'react-select'
 
 function ServiceRequestForm() {
+
+    const category = [
+        { value: "plumbing", label: "Plumbing" },
+        { value: "yardwork", label: "Yardwork" },
+        { value: "roofing", label: "Roofing" },
+    ]
+    const [selectedCategory, setSelectedCategory] = useState()
     const [serviceRequestModel, setServiceRequestModel] = useState({
         title: '',
         description: '',
         dollars: null,
-        withCredentials: true
     });
 
-    const createServiceRequest = async () => {
+    async function createServiceRequest(event) {
+        event.preventDefault();
         try {
-            await axios.post('http://localhost:8080/api/customer/service_request/create', serviceRequestModel, {withCredentials: true});
+            await axios.post('http://localhost:8080/api/customer/service_request/create', serviceRequestModel, { withCredentials: true }).
+                then((res) => {
+                    console.log(res.data);
+
+                }, fail => {
+                    
+                    console.error(fail); // Error!
+                });;
             // After creating the request, you can clear the form or take any other action.
             setServiceRequestModel({
                 title: '',
@@ -39,10 +54,14 @@ function ServiceRequestForm() {
     const handleDescriptionChange = (event) => {
         const text = event.target.value;
         setServiceRequestModel({
-          ...serviceRequestModel,
-          description: text,
+            ...serviceRequestModel,
+            description: text,
         });
-      };
+    };
+
+    function handleCategoryChage(data) {
+        setSelectedCategory(data)
+    }
 
     return (
 
@@ -60,24 +79,40 @@ function ServiceRequestForm() {
                         onChange={handleChange}
                         placeholder="ex: Gutter Cleanup"
                         required
-                        className="bg-gray-50 border border-gray-100 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 " />
+                        className="border border-gray-100 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:border-gray-600 dark:placeholder-gray-400 " />
                     <div className="p-2"></div>
 
                 </div>
 
                 <div className>
-                <label className="font-bold ">Project Description</label>
+                    <label className="font-bold ">Project Description</label>
                     <textarea
-                        
+
                         value={serviceRequestModel.description}
                         onChange={handleDescriptionChange}
                         placeholder="ex: Hello, I'm in need of a professional gutter cleanup for my home. Over time, leaves, debris, and dirt have accumulated in the gutters, causing water to overflow and potentially leading to damage. I'm looking for an experienced service provider to clean and clear out the gutters, ensuring they function properly and prevent any water-related issues"
-                        className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
+                        className=" border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5  dark:border-gray-600 dark:placeholder-gray-400 "
                         maxLength={500}
                         rows={8}
                         spellCheck
                         style={{ resize: 'none' }}
                         required
+                    />
+                </div>
+                <div>
+                    <label className="font-bold">Project Location</label>
+                    Something here
+                </div>
+                <div className="">
+                    <label className="font-bold">Project Category</label>
+                    <Select
+                        options={category}
+                        placeholder="Choose the Category this Project Falls Under"
+                        value={selectedCategory}
+                        onChange={handleCategoryChage}
+                        isSearchable={true}
+                        styles={{backgroundColor: "red"}}
+
                     />
                 </div>
 
@@ -87,12 +122,12 @@ function ServiceRequestForm() {
                         Maximum Quote
                     </label>
 
-                    <input 
+                    <input
                         name='dollars'
                         value={serviceRequestModel.dollars}
                         placeholder="ex: 250"
                         onChange={handleChange}
-                        className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 " required />
+                        className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5  dark:border-gray-600 dark:placeholder-gray-400 " required />
                 </div>
 
                 <button type="submit" onSubmit={createServiceRequest}

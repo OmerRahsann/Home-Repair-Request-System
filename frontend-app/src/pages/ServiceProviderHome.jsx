@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar/NavBar';
+import NavBarProvider from '../components/Navbar/NavBarProvider';
 import { checkIsServiceProviderLoggedIn } from '../AuthContext';
 import SearchBar from '../components/ServiceProviderHome/SearchBar';
 import ServiceRequestList from '../components/ServiceProviderHome/ServiceRequestList';
@@ -35,7 +35,7 @@ const ServiceProviderHome = ({ component: Component, ...rest }) => {
 
   return (
     <div>
-      <Navbar isLoggedIn={loggedIn}/>
+      <NavBarProvider isLoggedIn={loggedIn}/>
       <div>
         <SearchBar onSearch={setSearchKeyword}/>
         <ServiceRequestList keyword={searchKeyword} />
