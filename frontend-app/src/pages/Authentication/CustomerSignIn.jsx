@@ -9,7 +9,6 @@ function CustomerSignIn() {
     const [state, setState] = React.useState({
         email: "",
         password: "",
-        type: "CUSTOMER"
     });
     const { accessAcount } = useAuth();
     const navigate = useNavigate();

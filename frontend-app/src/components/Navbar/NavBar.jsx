@@ -2,16 +2,16 @@ import { Fragment, useState } from 'react'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { UserCircleIcon } from '@heroicons/react/24/outline';
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import logo from '../../Logos/mainLogo.png'
 import { useAuth, checkIsLoggedIn, logout } from '../../AuthContext'
 import axios from 'axios';
 
 const navigation = [
-    { name: 'Link 1', href: '#', current: true },
+    { name: 'Home', href: '/', current: true },
     { name: 'Link 2', href: '#', current: false },
     { name: 'Link 3', href: '#', current: false },
-    { name: 'Link 4', href: '#', current: false },
+    { name: 'My Requests', href: '/customer/myrequests', current: false },
 ]
 
 
@@ -20,6 +20,13 @@ function classNames(...classes) {
 }
 
 export default function NavBar({isLoggedIn}) {
+
+    const location = useLocation();
+
+  // Update the current property in the navigation array based on the current location.
+  navigation.forEach((item) => {
+    item.current = item.href === location.pathname;
+  });
     
     const navigate = useNavigate()
     const handleSignIn = () => {

@@ -1,9 +1,9 @@
 import React, {useState, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
-import NavBarProvider from '../components/Navbar/NavBarProvider';
-import { checkIsServiceProviderLoggedIn } from '../AuthContext';
-import SearchBar from '../components/ServiceProviderHome/SearchBar';
-import ServiceRequestList from '../components/ServiceProviderHome/ServiceRequestList';
+import NavBarProvider from '../../components/Navbar/NavBarProvider';
+import { checkIsServiceProviderLoggedIn } from '../../AuthContext';
+import SearchBar from '../../components/ServiceProviderHome/SearchBar';
+import ServiceRequestList from '../../components/ServiceProviderHome/ServiceRequestList';
 import axios from 'axios';
 
 const ServiceProviderHome = ({ component: Component, ...rest }) => {
@@ -36,9 +36,6 @@ const ServiceProviderHome = ({ component: Component, ...rest }) => {
     // Do not render anything if not logged in and redirected
     return null;
   }
-
-  
-
 
   return (
     <div>
