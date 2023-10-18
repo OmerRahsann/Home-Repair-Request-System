@@ -37,7 +37,7 @@ export default function NavBar({isLoggedIn}) {
         <Disclosure as="nav">
             {({ open }) => (
                 <>
-                    <div className="pt-2 bg-white p-4">
+                    <div className="pt-2 bg-gray-100 p-4">
                         <div className="relative flex h-24 items-center justify-between p-2">
                             <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
                                 {/* Mobile menu button*/}
@@ -67,7 +67,7 @@ export default function NavBar({isLoggedIn}) {
                                                 href={item.href}
                                                 className={classNames(
                                                     item.current ? 'bg-custom-black text-white' : 'text-black hover:bg-custom-grain hover:text-white',
-                                                    'rounded-md px-3 py-2 text-sm font-medium'
+                                                    'rounded-md px-3 py-2 text-lg font-bold'
                                                 )}
                                                 aria-current={item.current ? 'page' : undefined}
                                             >
@@ -80,11 +80,17 @@ export default function NavBar({isLoggedIn}) {
 
                             <div className="absolute inset-y-0 right-4 flex items-center space-x-2 pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-2">
                                 {!isLoggedIn ? (
+                                    <>
+                                    <a
+                                    href={'/provider/login'}
+                                    className=' text-custom-black hover:bg-custom-grain hover:text-white rounded-md px-3 py-2 text-lg font-bold'>
+                                    Become a Servcie Provider!
+                                </a>
                                     <a
                                         href={'/customer/login'}
-                                        className='bg-custom-black text-white text-black hover:bg-custom-grain hover:text-white rounded-md px-3 py-2 text-sm font-medium'>
+                                        className='bg-custom-black text-white hover:bg-custom-grain hover:text-white rounded-md px-3 py-2 text-lg font-bold'>
                                         Sign In
-                                    </a>) : null}
+                                    </a> </>) : null}
 
                                 {/* <button
                   type="button"

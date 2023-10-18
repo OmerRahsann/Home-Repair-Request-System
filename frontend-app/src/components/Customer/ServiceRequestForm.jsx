@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../AuthContext";
-import logo from "../../Logos/mainLogo.png"
 import Select from 'react-select'
+import {Autocomplete} from "@react-google-maps/api"
 
 function ServiceRequestForm() {
     const [formSubmitted, setFormSubmitted] = useState(false);
