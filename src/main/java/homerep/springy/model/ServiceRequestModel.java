@@ -4,15 +4,18 @@ import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 
+import java.util.List;
+
 public record ServiceRequestModel(
     @Nullable Integer id,
     @NotBlank String title,
     @NotBlank String description,
     @Positive int dollars, // TODO minimum quote?
-    @NotBlank String address
+    @NotBlank String address,
+    @Nullable List<String> pictures
     ) {
 
     public ServiceRequestModel(String title, String description, int dollars, String address) {
-        this(null, title, description, dollars, address);
+        this(null, title, description, dollars, address, null);
     }
 }

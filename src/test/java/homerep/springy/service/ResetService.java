@@ -22,13 +22,21 @@ public class ResetService {
     @Autowired
     private ServiceRequestRepository serviceRequestRepository;
 
-    @Transactional
+    @Autowired
+    private ImageStorageService imageStorageService;
+
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
     public void resetAll() {
         serviceRequestRepository.deleteAll();
+        serviceRequestRepository.flush(); // Resolves weird data integrity violation for transactional tests
+        imageStorageService.deleteAll();
 
         customerRepository.deleteAll();
+        customerRepository.flush();
         serviceProviderRepository.deleteAll();
+        serviceProviderRepository.flush();
 
         accountRepository.deleteAll();
+        accountRepository.flush();
     }
 }

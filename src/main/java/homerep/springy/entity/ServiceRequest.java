@@ -2,7 +2,10 @@ package homerep.springy.entity;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
 @Entity
 public class ServiceRequest {
@@ -23,6 +26,10 @@ public class ServiceRequest {
     private Date date;
 
     private String address;
+
+    @OneToMany
+    @OrderColumn
+    private List<ImageInfo> pictures = new ArrayList<>();
 
     protected ServiceRequest() {}
 
@@ -80,6 +87,21 @@ public class ServiceRequest {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public void setPictures(List<ImageInfo> pictures) {
+        this.pictures = pictures;
+    }
+
+    public List<ImageInfo> getPictures() {
+        return pictures;
+    }
+
+    public List<String> getImagesUUIDs() {
+        return pictures.stream()
+                .map(ImageInfo::getUuid)
+                .map(UUID::toString)
+                .toList();
     }
 }
 
