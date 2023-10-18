@@ -4,10 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import homerep.springy.authorities.AccountType;
 import homerep.springy.authorities.Verified;
+import homerep.springy.config.TestDatabaseConfig;
 import homerep.springy.entity.Account;
 import homerep.springy.model.AccountModel;
 import homerep.springy.repository.AccountRepository;
-import homerep.springy.service.ResetService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
+@TestDatabaseConfig
 public class LoginTests {
 
     @Autowired
@@ -42,9 +43,6 @@ public class LoginTests {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private ResetService resetService;
-
     private static final String TEST_EMAIL = "example@example.com";
     private static final String TEST_PASSWORD = "ProAsHeckZoey";
 
@@ -58,8 +56,6 @@ public class LoginTests {
 
     @BeforeEach
     void reset() {
-        resetService.resetAll();
-
         Account account = new Account();
         account.setEmail(TEST_EMAIL);
         account.setPassword(passwordEncoder.encode(TEST_PASSWORD));

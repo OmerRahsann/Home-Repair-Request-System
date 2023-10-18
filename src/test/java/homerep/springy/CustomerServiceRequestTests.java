@@ -3,6 +3,7 @@ package homerep.springy;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import homerep.springy.authorities.AccountType;
+import homerep.springy.config.TestDatabaseConfig;
 import homerep.springy.entity.Account;
 import homerep.springy.entity.Customer;
 import homerep.springy.entity.ImageInfo;
@@ -13,7 +14,6 @@ import homerep.springy.repository.CustomerRepository;
 import homerep.springy.repository.ImageInfoRepository;
 import homerep.springy.repository.ServiceRequestRepository;
 import homerep.springy.service.ImageStorageService;
-import homerep.springy.service.ResetService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,6 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
+@TestDatabaseConfig
 public class CustomerServiceRequestTests {
 
     @Autowired
@@ -68,9 +69,6 @@ public class CustomerServiceRequestTests {
     @Autowired
     private ImageStorageService imageStorageService;
 
-    @Autowired
-    private ResetService resetService;
-
     private static final String TEST_EMAIL = "example@example.com";
 
     private static final ServiceRequestModel VALID_SERVICE_REQUEST = new ServiceRequestModel(
@@ -89,8 +87,6 @@ public class CustomerServiceRequestTests {
 
     @BeforeEach
     void reset() {
-        resetService.resetAll();
-
         Account account = new Account();
         account.setEmail(TEST_EMAIL);
         account.setPassword(null); // Not testing auth

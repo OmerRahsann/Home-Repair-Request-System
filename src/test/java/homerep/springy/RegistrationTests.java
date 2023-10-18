@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.icegreen.greenmail.spring.GreenMailBean;
 import com.icegreen.greenmail.store.FolderException;
 import homerep.springy.authorities.AccountType;
+import homerep.springy.config.TestDatabaseConfig;
 import homerep.springy.config.TestMailConfig;
 import homerep.springy.entity.Account;
 import homerep.springy.entity.Customer;
@@ -16,7 +17,6 @@ import homerep.springy.model.accountinfo.ServiceProviderInfoModel;
 import homerep.springy.repository.AccountRepository;
 import homerep.springy.repository.CustomerRepository;
 import homerep.springy.repository.ServiceProviderRepository;
-import homerep.springy.service.ResetService;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,11 +36,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @Import(TestMailConfig.class)
+@TestDatabaseConfig
 class RegistrationTests {
 
     @Autowired
@@ -63,9 +65,6 @@ class RegistrationTests {
 
     @Autowired
     private GreenMailBean greenMailBean;
-
-    @Autowired
-    private ResetService resetService;
 
     private static final String TEST_EMAIL = "example@example.com";
     private static final String TEST_PASSWORD = "ProAsHeckZoey";
@@ -96,11 +95,8 @@ class RegistrationTests {
     );
 
     @BeforeEach
-    @Transactional
     void reset() throws FolderException {
-        // Clean slate for each test
         greenMailBean.getGreenMail().purgeEmailFromAllMailboxes();
-        resetService.resetAll();
     }
 
     @Test

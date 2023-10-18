@@ -39,10 +39,4 @@ public class ImageStorageServiceImpl implements ImageStorageService {
     public void deleteImage(UUID uuid) {
         imageInfoRepository.deleteById(uuid);
     }
-
-    @Override
-    public void deleteAll() {
-        imageInfoRepository.deleteAll();
-        imageInfoRepository.flush();
-    }
 }

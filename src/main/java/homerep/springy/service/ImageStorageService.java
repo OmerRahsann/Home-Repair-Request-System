@@ -10,6 +10,4 @@ public interface ImageStorageService {
     ImageInfo storeImage(InputStream inputStream, Account uploader);
 
     void deleteImage(UUID uuid);
-
-    void deleteAll();
 }

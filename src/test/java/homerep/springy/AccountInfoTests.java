@@ -1,10 +1,10 @@
 package homerep.springy;
 
 import homerep.springy.authorities.AccountType;
+import homerep.springy.config.TestDatabaseConfig;
 import homerep.springy.config.TestMailConfig;
 import homerep.springy.entity.Account;
 import homerep.springy.repository.AccountRepository;
-import homerep.springy.service.ResetService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @Import(TestMailConfig.class)
+@TestDatabaseConfig
 public class AccountInfoTests {
     @Autowired
     private MockMvc mvc;
@@ -27,17 +28,12 @@ public class AccountInfoTests {
     @Autowired
     private AccountRepository accountRepository;
 
-    @Autowired
-    private ResetService resetService;
-
     private static final String CUSTOMER_EMAIL = "example@example.com";
     private static final String SERVICE_PROVIDER_EMAIL = "test@localhost";
     private static final String UNVERIFIED_EMAIL = "unverified@localhost";
 
     @BeforeEach
     void reset() {
-        resetService.resetAll();
-
         Account account = new Account();
         account.setEmail(CUSTOMER_EMAIL);
         account.setPassword(null); // Not testing auth
