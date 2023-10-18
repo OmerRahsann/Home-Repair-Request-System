@@ -4,6 +4,7 @@ import GoogleMapReact from "google-map-react"
 
 
 
+
 const Map = ({ places, setCoords, setBounds, setChildClicked, weatherData }) => {
   //const matches = useMediaQuery('(min-width:600px)');
   //const classes = useStyles();
@@ -12,7 +13,7 @@ const Map = ({ places, setCoords, setBounds, setChildClicked, weatherData }) => 
   return (
     <div className='h-[85vh] w-100%'>
       <GoogleMapReact
-        bootstrapURLKeys={{ key:  process.env.GOOGLE_API_KEY}}
+        bootstrapURLKeys={{ key: 'AIzaSyB-Hir-BFLaHrDngWHU5dXi3wA4VfIshs4' }}
         defaultCenter={coords}
         center={coords}
         defaultZoom={14}

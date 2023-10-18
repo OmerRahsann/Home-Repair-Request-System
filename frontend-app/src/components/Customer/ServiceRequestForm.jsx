@@ -111,7 +111,7 @@ function ServiceRequestForm() {
                 </div>
                 <div>
                     <label className="font-bold">Project Location</label>
-                    Something here
+                    
                 </div>
                 <div className="">
                     <label className="font-bold">Project Category</label>
