@@ -1,5 +1,8 @@
 # Repair Radar Backend
 
+### External dependences
+[ImageMagick](https://imagemagick.org/script/download.php): Needs to be installed. This is used for resizing and striping metadata from images.
+
 ### Running
 Linux: `./gradlew bootRun`\
 Windows: `gradlew.bat bootRun`

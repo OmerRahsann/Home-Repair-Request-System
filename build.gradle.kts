@@ -26,6 +26,8 @@ dependencies {
 	implementation("org.springframework.session:spring-session-jdbc")
 	implementation("org.bouncycastle:bcpkix-jdk15on:1.70") // For Argon2
 
+	implementation("org.im4java:im4java:1.4.0") // For interfacing with ImageMagick
+
 	runtimeOnly("com.mysql:mysql-connector-j")
 
 	developmentOnly("org.springframework.boot:spring-boot-devtools")

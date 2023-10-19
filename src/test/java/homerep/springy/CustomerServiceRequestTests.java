@@ -392,6 +392,23 @@ public class CustomerServiceRequestTests {
         assertNotNull(model.pictures());
         assertEquals(1, model.pictures().size());
         assertEquals(1, imageInfoRepository.findAll().size());
+
+        // Last picture can be removed
+        newOrder = List.of();
+        editedModel = new ServiceRequestModel(null, model.title(), model.description(),
+                model.dollars(), model.address(), newOrder);
+        this.mvc.perform(editServiceRequest(id, editedModel))
+                .andExpect(status().isOk());
+
+        result = this.mvc.perform(get("/api/customer/service_request"))
+                .andExpect(status().isOk())
+                .andReturn();
+        models = mapper.readValue(result.getResponse().getContentAsString(), ServiceRequestModel[].class);
+        assertEquals(1, models.length);
+        model = models[0];
+        assertNotNull(model.pictures());
+        assertTrue(model.pictures().isEmpty());
+        assertTrue(imageInfoRepository.findAll().isEmpty());
     }
 
     @Test
@@ -427,7 +444,7 @@ public class CustomerServiceRequestTests {
 
         // Can't attach other photos without going through the {id}/attach endpoint
         Account account = accountRepository.findByEmail(TEST_EMAIL);
-        ImageInfo imageInfo = imageStorageService.storeImage(createImage(2, 2, "PNG"), account);
+        ImageInfo imageInfo = imageStorageService.storeImage(createImage(2, 2, "PNG"), 2, 2, account);
         ServiceRequestModel editedModel = new ServiceRequestModel(null, VALID_SERVICE_REQUEST.title(), VALID_SERVICE_REQUEST.description(),
                 VALID_SERVICE_REQUEST.dollars(), VALID_SERVICE_REQUEST.address(), List.of(imageInfo.getUuid().toString()));
         this.mvc.perform(editServiceRequest(id, editedModel))

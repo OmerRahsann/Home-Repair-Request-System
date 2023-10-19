@@ -59,6 +59,7 @@ public class ServiceRequestController {
     }
 
     @PostMapping("/{id}/edit")
+    @Transactional
     public void editPost(@PathVariable("id") int id, @RequestBody @Validated ServiceRequestModel serviceRequestModel,
                          @AuthenticationPrincipal User user) {
         ServiceRequest serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountEmail(id, user.getUsername());
@@ -81,7 +82,7 @@ public class ServiceRequestController {
                 throw new ApiException("non_existent_post", "Post not found.");
             }
             Account account = serviceRequest.getCustomer().getAccount();
-            ImageInfo imageInfo = imageStorage.storeImage(file.getInputStream(), account);
+            ImageInfo imageInfo = imageStorage.storeImage(file.getInputStream(), 1920, 1920, account); // TODO make maxWidth/Height configurable
             serviceRequest.getPictures().add(imageInfo);
             serviceRequestRepository.save(serviceRequest);
         } catch (IOException e) {
@@ -111,7 +112,7 @@ public class ServiceRequestController {
         serviceRequest.setDescription(serviceRequestModel.description());
         serviceRequest.setDollars(serviceRequestModel.dollars());
         serviceRequest.setAddress(serviceRequestModel.address());
-        if (serviceRequestModel.pictures() != null && !serviceRequestModel.pictures().isEmpty()) {
+        if (serviceRequestModel.pictures() != null) {
             Map<String, ImageInfo> alreadyAttached = serviceRequest.getPictures().stream()
                     .collect(Collectors.toMap(imageInfo -> imageInfo.getUuid().toString(), Function.identity()));
             List<ImageInfo> newOrder = new ArrayList<>(serviceRequestModel.pictures().size());
