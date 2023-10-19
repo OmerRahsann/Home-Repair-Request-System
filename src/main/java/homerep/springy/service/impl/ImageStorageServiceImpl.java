@@ -85,6 +85,15 @@ public class ImageStorageServiceImpl implements ImageStorageService {
         imageInfoRepository.delete(imageInfo.get());
     }
 
+    @Override
+    public Path findImage(UUID uuid) {
+        Path path = constructPath(uuid, "jpg");
+        if (Files.exists(path)) {
+            return path;
+        }
+        return null;
+    }
+
     private Path constructPath(UUID uuid, String extension) {
         String uuidStr = uuid.toString();
         String firstByte = uuidStr.substring(0, 2);

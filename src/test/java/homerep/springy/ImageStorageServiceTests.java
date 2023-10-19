@@ -2,7 +2,6 @@ package homerep.springy;
 
 import homerep.springy.authorities.AccountType;
 import homerep.springy.config.TestDatabaseConfig;
-import homerep.springy.config.TestMailConfig;
 import homerep.springy.config.TestStorageConfig;
 import homerep.springy.entity.Account;
 import homerep.springy.entity.ImageInfo;
@@ -36,7 +35,7 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-@Import({TestMailConfig.class, TestStorageConfig.class})
+@Import(TestStorageConfig.class)
 @TestDatabaseConfig
 public class ImageStorageServiceTests {
     @Autowired

@@ -37,3 +37,5 @@ out/
 .vscode/
 
 prod/
+storage-root/
+test-storage-root/
