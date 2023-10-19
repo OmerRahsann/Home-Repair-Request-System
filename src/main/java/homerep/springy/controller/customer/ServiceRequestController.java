@@ -5,6 +5,7 @@ import homerep.springy.entity.Customer;
 import homerep.springy.entity.ImageInfo;
 import homerep.springy.entity.ServiceRequest;
 import homerep.springy.exception.ApiException;
+import homerep.springy.exception.ImageStoreException;
 import homerep.springy.model.ServiceRequestModel;
 import homerep.springy.repository.CustomerRepository;
 import homerep.springy.repository.ServiceRequestRepository;
@@ -85,7 +86,7 @@ public class ServiceRequestController {
             ImageInfo imageInfo = imageStorage.storeImage(file.getInputStream(), 1920, 1920, account); // TODO make maxWidth/Height configurable
             serviceRequest.getPictures().add(imageInfo);
             serviceRequestRepository.save(serviceRequest);
-        } catch (IOException e) {
+        } catch (IOException | ImageStoreException e) {
             throw new ApiException("upload_failure", "Failed to upload file.");
         }
     }

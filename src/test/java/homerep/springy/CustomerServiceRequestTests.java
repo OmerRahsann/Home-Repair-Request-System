@@ -430,12 +430,20 @@ public class CustomerServiceRequestTests {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("timestamp").isNumber())
                 .andExpect(jsonPath("type").value("empty_file"));
+        assertTrue(imageInfoRepository.findAll().isEmpty());
         this.mvc.perform(attachPhoto(id, "file", MediaType.IMAGE_PNG_VALUE, new ByteArrayInputStream(new byte[0])))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("timestamp").isNumber())
                 .andExpect(jsonPath("type").value("empty_file"));
+        assertTrue(imageInfoRepository.findAll().isEmpty());
         this.mvc.perform(attachPhoto(id, "random_name", MediaType.IMAGE_PNG_VALUE, createImage(2, 2, "PNG")))
                 .andExpect(status().isBadRequest());
+        assertTrue(imageInfoRepository.findAll().isEmpty());
+        // Invalid images are rejected
+        this.mvc.perform(attachPhoto(id, "file", MediaType.IMAGE_PNG_VALUE, new ByteArrayInputStream(new byte[]{0x41, 0x6d})))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("timestamp").isNumber())
+                .andExpect(jsonPath("type").value("upload_failure"));
         assertTrue(imageInfoRepository.findAll().isEmpty());
 
         // Can't attach photos to nonexistent service requests

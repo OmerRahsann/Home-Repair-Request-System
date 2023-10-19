@@ -3,6 +3,7 @@ package homerep.springy.service.impl;
 import homerep.springy.config.ImageStorageConfiguration;
 import homerep.springy.entity.Account;
 import homerep.springy.entity.ImageInfo;
+import homerep.springy.exception.ImageStoreException;
 import homerep.springy.repository.ImageInfoRepository;
 import homerep.springy.service.ImageStorageService;
 import org.im4java.core.ConvertCmd;
@@ -44,7 +45,7 @@ public class ImageStorageServiceImpl implements ImageStorageService {
 
     @Override
     @Transactional
-    public ImageInfo storeImage(InputStream inputStream, int maxWidth, int maxHeight, Account uploader) {
+    public ImageInfo storeImage(InputStream inputStream, int maxWidth, int maxHeight, Account uploader) throws ImageStoreException {
         UUID uuid = UUID.randomUUID();
         Path finalFilePath = constructPath(uuid, "jpg");
         Path tempFilePath = constructPath(uuid, "jpg.tmp");
@@ -59,7 +60,6 @@ public class ImageStorageServiceImpl implements ImageStorageService {
                 return imageInfoRepository.save(imageInfo);
             }
         } catch (Exception e) {
-            // TODO Log/handle other exceptions
             // Make sure files are deleted no matter what happens
             try {
                 Files.deleteIfExists(tempFilePath);
@@ -69,24 +69,20 @@ public class ImageStorageServiceImpl implements ImageStorageService {
                 Files.deleteIfExists(finalFilePath);
             } catch (Exception ignored) {
             }
-            throw new RuntimeException(e);
+            throw new ImageStoreException(e);
         }
     }
 
     @Override
     @Transactional
     public void deleteImage(UUID uuid) {
-        try {
-            Optional<ImageInfo> imageInfo = imageInfoRepository.findById(uuid);
-            if (imageInfo.isEmpty()) {
-                return;
-            }
-            Path filePath = constructPath(uuid, "jpg");
-            applicationEventPublisher.publishEvent(new DeleteImageEvent(filePath));
-            imageInfoRepository.delete(imageInfo.get());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        Optional<ImageInfo> imageInfo = imageInfoRepository.findById(uuid);
+        if (imageInfo.isEmpty()) {
+            return;
         }
+        Path filePath = constructPath(uuid, "jpg");
+        applicationEventPublisher.publishEvent(new DeleteImageEvent(filePath));
+        imageInfoRepository.delete(imageInfo.get());
     }
 
     private Path constructPath(UUID uuid, String extension) {

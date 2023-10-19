@@ -6,6 +6,7 @@ import homerep.springy.config.TestMailConfig;
 import homerep.springy.config.TestStorageConfig;
 import homerep.springy.entity.Account;
 import homerep.springy.entity.ImageInfo;
+import homerep.springy.exception.ImageStoreException;
 import homerep.springy.repository.AccountRepository;
 import homerep.springy.repository.ImageInfoRepository;
 import homerep.springy.service.ImageStorageService;
@@ -22,6 +23,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -68,7 +70,7 @@ public class ImageStorageServiceTests {
     }
 
     @Test
-    void storeImage() throws IOException {
+    void storeImage() throws IOException, ImageStoreException {
         Instant start = Instant.now();
 
         Account uploader = accountRepository.findByEmail(TEST_EMAIL);
@@ -139,6 +141,8 @@ public class ImageStorageServiceTests {
         } catch (RuntimeException ex) {
             assertEquals("On purpose exception", ex.getMessage());
         }
+        // Image is not stored in the repository
+        assertTrue(imageInfoRepository.findAll().isEmpty());
         // Image is not stored on the filesystem
         try (Stream<Path> pathStream = Files.walk(TestStorageConfig.TEST_STORAGE_ROOT)) {
             List<Path> paths = pathStream
@@ -149,7 +153,7 @@ public class ImageStorageServiceTests {
     }
 
     @Test
-    void testDeleteRollback() throws IOException {
+    void testDeleteRollback() throws IOException, ImageStoreException {
         Account uploader = accountRepository.findByEmail(TEST_EMAIL);
         Resource testImage = resourceLoader.getResource(TEST_PNG_LOCATION);
         // Store an image
@@ -178,8 +182,25 @@ public class ImageStorageServiceTests {
         }
     }
 
+    @Test
+    void testInvalidImage() throws IOException {
+        Account uploader = accountRepository.findByEmail(TEST_EMAIL);
+        // Try to store an obviously invalid image
+        InputStream inputStream = new ByteArrayInputStream(new byte[]{0x41, 0x6d, 0x62, 0x65, 0x72});
+        assertThrows(ImageStoreException.class, () -> imageStorageService.storeImage(inputStream, 320, 320, uploader));
+        // Image is not stored in the repository
+        assertTrue(imageInfoRepository.findAll().isEmpty());
+        // Image is not stored in the file system
+        try (Stream<Path> pathStream = Files.walk(TestStorageConfig.TEST_STORAGE_ROOT)) {
+            List<Path> paths = pathStream
+                    .filter(Files::isRegularFile)
+                    .toList();
+            assertEquals(List.of(), paths);
+        }
+    }
+
     public void storeRollback(InputStream inputStream, Account uploader) {
-        imageStorageService.storeImage(inputStream, 320, 320, uploader);
+        assertDoesNotThrow(() -> imageStorageService.storeImage(inputStream, 320, 320, uploader));
         throw new RuntimeException("On purpose exception");
     }
 
