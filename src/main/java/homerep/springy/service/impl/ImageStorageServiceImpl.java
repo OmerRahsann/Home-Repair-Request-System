@@ -9,8 +9,14 @@ import org.im4java.core.ConvertCmd;
 import org.im4java.core.IM4JavaException;
 import org.im4java.core.IMOperation;
 import org.im4java.process.Pipe;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,13 +31,19 @@ import java.util.UUID;
 
 @Service
 public class ImageStorageServiceImpl implements ImageStorageService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ImageStorageServiceImpl.class);
+
     @Autowired
     private ImageInfoRepository imageInfoRepository;
 
     @Autowired
     private ImageStorageConfiguration.ImageStorageConfig config;
 
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
+
     @Override
+    @Transactional
     public ImageInfo storeImage(InputStream inputStream, int maxWidth, int maxHeight, Account uploader) {
         UUID uuid = UUID.randomUUID();
         Path finalFilePath = constructPath(uuid, "jpg");
@@ -42,7 +54,7 @@ public class ImageStorageServiceImpl implements ImageStorageService {
             try (OutputStream os = Files.newOutputStream(tempFilePath, StandardOpenOption.CREATE)) {
                 processImage(inputStream, os, maxWidth, maxHeight);
                 os.close();
-                Files.move(tempFilePath, finalFilePath, StandardCopyOption.ATOMIC_MOVE); // TODO only do this if the transacton is successful
+                applicationEventPublisher.publishEvent(new UploadImageEvent(tempFilePath, finalFilePath));
                 ImageInfo imageInfo = new ImageInfo(uuid, uploader, Instant.now());
                 return imageInfoRepository.save(imageInfo);
             }
@@ -62,6 +74,7 @@ public class ImageStorageServiceImpl implements ImageStorageService {
     }
 
     @Override
+    @Transactional
     public void deleteImage(UUID uuid) {
         try {
             Optional<ImageInfo> imageInfo = imageInfoRepository.findById(uuid);
@@ -69,7 +82,7 @@ public class ImageStorageServiceImpl implements ImageStorageService {
                 return;
             }
             Path filePath = constructPath(uuid, "jpg");
-            Files.deleteIfExists(filePath);
+            applicationEventPublisher.publishEvent(new DeleteImageEvent(filePath));
             imageInfoRepository.delete(imageInfo.get());
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -104,5 +117,39 @@ public class ImageStorageServiceImpl implements ImageStorageService {
         convert.setInputProvider(new Pipe(inputStream, null));
         convert.setOutputConsumer(new Pipe(null, outputStream));
         convert.run(op); // TODO should this be async??
+    }
+
+    protected record UploadImageEvent(Path tmpFilePath, Path finalFilePath) {
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_ROLLBACK)
+    protected void handleUploadRollback(UploadImageEvent event) {
+        try {
+            Files.deleteIfExists(event.tmpFilePath());
+        } catch (IOException e) {
+            LOGGER.warn("Failed to delete temporary image file for rolled back image upload. Path: " +
+                    event.tmpFilePath(), e);
+        }
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    protected void handleUploadCommit(UploadImageEvent event) {
+        try {
+            Files.move(event.tmpFilePath(), event.finalFilePath(), StandardCopyOption.ATOMIC_MOVE);
+        } catch (IOException e) {
+            LOGGER.warn("Failed to move temporary image file to final image file. Src: " +
+                    event.tmpFilePath() + " Dst: " + event.finalFilePath(), e);
+        }
+    }
+
+    protected record DeleteImageEvent(Path filePath) {}
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    protected void handleDeleteCommit(DeleteImageEvent event) {
+        try {
+            Files.deleteIfExists(event.filePath());
+        } catch (IOException e) {
+            LOGGER.warn("Failed to delete image file. Path: " + event.filePath(), e);
+        }
     }
 }

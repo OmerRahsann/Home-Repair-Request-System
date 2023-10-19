@@ -16,14 +16,20 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -39,6 +45,9 @@ public class ImageStorageServiceTests {
 
     @Autowired
     private ImageInfoRepository imageInfoRepository;
+
+    @Autowired
+    private PlatformTransactionManager transactionManager;
 
     @Autowired
     private ResourceLoader resourceLoader;
@@ -89,7 +98,9 @@ public class ImageStorageServiceTests {
         assertTrue(Files.isRegularFile(storedImagePath));
         // Temp file is deleted
         assertFalse(Files.exists(storedTmpImagePath));
-        assertEquals(1, Files.list(storedImageDirPath).count());
+        try (Stream<Path> pathStream = Files.list(storedImageDirPath)) {
+            assertEquals(1, pathStream.count());
+        }
 
         // Saved image is readable
         BufferedImage image = ImageIO.read(storedImagePath.toFile());
@@ -99,7 +110,7 @@ public class ImageStorageServiceTests {
 
         // Trying to delete a random UUID does nothing
         imageStorageService.deleteImage(UUID.randomUUID());
-        // repository is not afffect
+        // repository is not affected
         assertEquals(1, imageInfoRepository.findAll().size());
         // image is still there
         assertTrue(Files.exists(storedImagePath));
@@ -111,6 +122,70 @@ public class ImageStorageServiceTests {
         assertTrue(imageInfoRepository.findAll().isEmpty());
         // file is deleted
         assertFalse(Files.exists(storedImagePath));
+    }
+
+    @Test
+    void testStoreRollback() throws IOException {
+        Account uploader = accountRepository.findByEmail(TEST_EMAIL);
+        InputStream testImageStream = resourceLoader.getResource(TEST_PNG_LOCATION).getInputStream();
+        // Try to store an image but roll it back
+        TransactionTemplate txTemplate = new TransactionTemplate(transactionManager);
+        txTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        try {
+            txTemplate.execute(status -> {
+                storeRollback(testImageStream, uploader);
+                return null;
+            });
+        } catch (RuntimeException ex) {
+            assertEquals("On purpose exception", ex.getMessage());
+        }
+        // Image is not stored on the filesystem
+        try (Stream<Path> pathStream = Files.walk(TestStorageConfig.TEST_STORAGE_ROOT)) {
+            List<Path> paths = pathStream
+                    .filter(Files::isRegularFile)
+                    .toList();
+            assertEquals(List.of(), paths);
+        }
+    }
+
+    @Test
+    void testDeleteRollback() throws IOException {
+        Account uploader = accountRepository.findByEmail(TEST_EMAIL);
+        Resource testImage = resourceLoader.getResource(TEST_PNG_LOCATION);
+        // Store an image
+        ImageInfo imageInfo = imageStorageService.storeImage(testImage.getInputStream(), 320, 320, uploader);
+
+        // Try to delete the image but roll it back
+        TransactionTemplate txTemplate = new TransactionTemplate(transactionManager);
+        txTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        try {
+            txTemplate.execute(status -> {
+                deleteRollback(imageInfo.getUuid());
+                return null;
+            });
+        } catch (RuntimeException ex) {
+            assertEquals("On purpose exception", ex.getMessage());
+        }
+
+        // Image is still in repository
+        assertEquals(1, imageInfoRepository.findAll().size());
+        // Image is still in the file system
+        try (Stream<Path> pathStream = Files.walk(TestStorageConfig.TEST_STORAGE_ROOT)) {
+            List<Path> paths = pathStream
+                    .filter(Files::isRegularFile)
+                    .toList();
+            assertEquals(1, paths.size());
+        }
+    }
+
+    public void storeRollback(InputStream inputStream, Account uploader) {
+        imageStorageService.storeImage(inputStream, 320, 320, uploader);
+        throw new RuntimeException("On purpose exception");
+    }
+
+    public void deleteRollback(UUID uuid) {
+        imageStorageService.deleteImage(uuid);
+        throw new RuntimeException("On purpose exception");
     }
 
 }
