@@ -21,9 +21,9 @@ function ServiceRequestModal({isVisible, onClose, children}) {
     return (
       
         <div className="fixed inset-0 bg-black bg-opacity-25 backdrop-blur-sm items-center flex justify-center" id="wrapper" onClick={handleClose}>
-            <div className='w-[600px] flex flex-col'>
+            <div className='w-[70vh]'>
                 <button className='text-white text-xl place-self-end' onClick={() => onClose()}>X</button>
-                <div className='bg-white p-2'>
+                <div className='bg-white p-2 overflow-auto max-h-[70vh]'>
                     {children}
                 </div>
 

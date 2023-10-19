@@ -9,8 +9,6 @@ import axios from 'axios';
 
 const navigation = [
     { name: 'Home', href: '/', current: true },
-    { name: 'Link 2', href: '#', current: false },
-    { name: 'Link 3', href: '#', current: false },
     { name: 'My Requests', href: '/customer/myrequests', current: false },
 ]
 
@@ -67,7 +65,7 @@ export default function NavBar({isLoggedIn}) {
                                                 href={item.href}
                                                 className={classNames(
                                                     item.current ? 'bg-custom-black text-white' : 'text-black hover:bg-custom-grain hover:text-white',
-                                                    'rounded-md px-3 py-2 text-lg font-bold'
+                                                    'rounded-md px-3 py-2 text-[2vh] font-bold'
                                                 )}
                                                 aria-current={item.current ? 'page' : undefined}
                                             >
@@ -83,12 +81,12 @@ export default function NavBar({isLoggedIn}) {
                                     <>
                                     <a
                                     href={'/provider/login'}
-                                    className=' text-custom-black hover:bg-custom-grain hover:text-white rounded-md px-3 py-2 text-lg font-bold'>
+                                    className=' text-custom-black hover:bg-custom-grain hover:text-white rounded-md px-3 py-2 text-[1vh] font-bold'>
                                     Become a Servcie Provider!
                                 </a>
                                     <a
                                         href={'/customer/login'}
-                                        className='bg-custom-black text-white hover:bg-custom-grain hover:text-white rounded-md px-3 py-2 text-lg font-bold'>
+                                        className='bg-custom-black text-white hover:bg-custom-grain hover:text-white rounded-md px-3 py-2 text-[2vh] font-bold'>
                                         Sign In
                                     </a> </>) : null}
 

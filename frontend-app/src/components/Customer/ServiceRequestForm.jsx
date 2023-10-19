@@ -12,13 +12,31 @@ function ServiceRequestForm() {
         { value: "yardwork", label: "Yardwork" },
         { value: "roofing", label: "Roofing" },
     ]
+    const [autoComplete, setAutoComplete] = useState(null);
     const [selectedCategory, setSelectedCategory] = useState()
     const [serviceRequestModel, setServiceRequestModel] = useState({
         title: '',
         description: '',
         dollars: null,
-        address: 'hello',
+        address: ''
     });
+
+
+    const onPlaceChanged = () => {
+        if (autoComplete) {
+            const place = autoComplete.getPlace();
+            const address = place.formatted_address;
+            const lat = place.geometry.location.lat();
+            const lng = place.geometry.location.lng();
+
+            setServiceRequestModel(prevModel => ({
+                ...prevModel,
+                address: address
+            }));
+        }
+    }
+
+    const onLoad = (autoC) => setAutoComplete(autoC);
 
     async function createServiceRequest(event) {
         event.preventDefault();
@@ -39,7 +57,6 @@ function ServiceRequestForm() {
                 title: '',
                 description: '',
                 dollars: null,
-                message: '',
                 address: ''
             });
             // Fetch the updated list of service requests
@@ -109,10 +126,13 @@ function ServiceRequestForm() {
                         required
                     />
                 </div>
+                <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
                 <div>
                     <label className="font-bold">Project Location</label>
+                    <input className="border border-gray-100 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:border-gray-600 dark:placeholder-gray-400"/>
                     
                 </div>
+                </Autocomplete>
                 <div className="">
                     <label className="font-bold">Project Category</label>
                     <Select
@@ -137,7 +157,7 @@ function ServiceRequestForm() {
                         value={serviceRequestModel.dollars}
                         placeholder="ex: 250"
                         onChange={handleChange}
-                        className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5  dark:border-gray-600 dark:placeholder-gray-400 " required />
+                        className="bg-white border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5  dark:border-gray-600 dark:placeholder-gray-400 " required />
                 </div>
 
                 <button type="submit" onSubmit={createServiceRequest}
