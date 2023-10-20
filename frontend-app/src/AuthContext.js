@@ -64,8 +64,10 @@ export function checkIsLoggedIn() {
       const type = response.data;
       console.log(type );
       if(type === "CUSTOMER") return true
+      return false
     } catch (error) {
       console.error(error);
+      console.log(false)
       return false; // or some other appropriate error handling
     }
   }

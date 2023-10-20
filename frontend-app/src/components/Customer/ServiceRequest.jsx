@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef, Fragment } from 'react';
 import axios from 'axios';
 import image from "../../Pictures/banner.jpeg"
 import ServiceRequestModal from './ServiceRequestModal';
-import CustomerSignIn from '../../pages/Authentication/CustomerSignIn';
 import ServiceRequestForm from './ServiceRequestForm';
+import { checkIsCustomerLoggedIn } from '../../AuthContext';
 
 function ServiceRequestBanner() {
     const [imageLoaded, setImageLoaded] = useState(false);
@@ -11,6 +11,17 @@ function ServiceRequestBanner() {
 
     const [position, setPosition] = useState({ top: 0, left: 0 });
     const imageRef = useRef(null);
+
+    const handleCreateRequestClick = async () => {
+        const isCustomerLoggedIn = await checkIsCustomerLoggedIn();
+
+        if (isCustomerLoggedIn) {
+            setShowModal(true);
+        } else {
+            // Display a message to prompt the user to log in or create an account
+            alert('Please log in or create an account to get started.');
+        }
+    };
 
     useEffect(() => {
         const centerContent = () => {
@@ -22,6 +33,7 @@ function ServiceRequestBanner() {
                 setPosition({ top, left });
             }
         };
+
 
         const handleResize = () => {
             if (imageRef.current) {
@@ -76,7 +88,7 @@ function ServiceRequestBanner() {
 
                 <div className='pl-10 pt-5'>
                     <button
-                        onClick={() => setShowModal(true)}
+                        onClick={handleCreateRequestClick}
                         type="submit"
                         className="font-bold text-white bg-custom-tan hover:bg-custom-maroon focus:ring-4 focus:outline-none focus:ring-primary-300 text-[1.5vw] px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
                     >
