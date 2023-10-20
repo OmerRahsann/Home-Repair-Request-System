@@ -3,7 +3,7 @@ import ServiceRequest from "../../components/Customer/ServiceRequest";
 import Navbar from "../../components/Navbar/NavBar";
 import axios from "axios";
 import { checkIsCustomerLoggedIn } from "../../AuthContext";
-import RequestDetails from "../../components/ServiceProviderHome/RequestDetails";
+import RequestDetails from "../../components/RequestDetails";
 
 function MyRequests() {
 
@@ -16,6 +16,7 @@ function MyRequests() {
     try {
         const response = await axios.get(('http://localhost:8080/api/customer/service_request'), {withCredentials: true});
         setServiceRequests(response.data);
+        console.log(response.data)
     } catch (error) {
         console.error('Error fetching service requests:', error);
     }

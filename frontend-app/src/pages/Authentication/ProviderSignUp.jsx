@@ -3,7 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../AuthContext";
 import logo from "../../Logos/mainLogo.png"
-import ProviderDescription from "../../components/ProviderDescription";
+import ProviderDescription from "../../components/ServiceProviderHome/ProviderDescription";
 import Select from 'react-select'
 
 function ProviderSignUp() {

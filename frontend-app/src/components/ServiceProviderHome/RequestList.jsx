@@ -1,6 +1,6 @@
 import React, { useState, useEffect, createRef } from 'react';
 import Select from 'react-select';
-import RequestDetails from './RequestDetails'
+import RequestDetails from '../RequestDetails'
 
 function RequestList({ onSearch }) {
 
