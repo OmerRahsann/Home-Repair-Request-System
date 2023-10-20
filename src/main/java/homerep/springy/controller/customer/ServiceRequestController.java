@@ -11,6 +11,8 @@ import homerep.springy.repository.CustomerRepository;
 import homerep.springy.repository.ServiceRequestRepository;
 import homerep.springy.service.ImageStorageService;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
@@ -26,6 +28,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/customer/service_request")
 public class ServiceRequestController {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServiceRequestController.class);
 
     @Autowired
     private CustomerRepository customerRepository;
@@ -87,6 +90,7 @@ public class ServiceRequestController {
             serviceRequest.getPictures().add(imageInfo);
             serviceRequestRepository.save(serviceRequest);
         } catch (IOException | ImageStoreException e) {
+            LOGGER.warn("Image attachment failed due to:", e);
             throw new ApiException("upload_failure", "Failed to upload file.");
         }
     }
