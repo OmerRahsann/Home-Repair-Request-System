@@ -6,6 +6,7 @@ import homerep.springy.entity.ImageInfo;
 import homerep.springy.entity.ServiceRequest;
 import homerep.springy.exception.ApiException;
 import homerep.springy.exception.ImageStoreException;
+import homerep.springy.exception.NonExistentPostException;
 import homerep.springy.model.ServiceRequestModel;
 import homerep.springy.repository.CustomerRepository;
 import homerep.springy.repository.ServiceRequestRepository;
@@ -55,7 +56,7 @@ public class ServiceRequestController {
     public void deletePost(@PathVariable("id") int id, @AuthenticationPrincipal User user) {
         ServiceRequest serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountEmail(id, user.getUsername());
         if (serviceRequest == null) {
-            throw new ApiException("non_existent_post", "Post not found.");
+            throw new NonExistentPostException();
         }
         for (ImageInfo image : serviceRequest.getPictures()) {
             imageStorage.deleteImage(image.getUuid());
@@ -69,7 +70,7 @@ public class ServiceRequestController {
                          @AuthenticationPrincipal User user) {
         ServiceRequest serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountEmail(id, user.getUsername());
         if (serviceRequest == null) {
-            throw new ApiException("non_existent_post", "Post not found.");
+            throw new NonExistentPostException();
         }
         updatePost(serviceRequestModel, serviceRequest);
         serviceRequestRepository.save(serviceRequest);
@@ -84,7 +85,7 @@ public class ServiceRequestController {
             }
             ServiceRequest serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountEmail(id, user.getUsername());
             if (serviceRequest == null) {
-                throw new ApiException("non_existent_post", "Post not found.");
+                throw new NonExistentPostException();
             }
             Account account = serviceRequest.getCustomer().getAccount();
             ImageInfo imageInfo = imageStorage.storeImage(file.getInputStream(), 1920, 1920, account); // TODO make maxWidth/Height configurable
@@ -110,7 +111,7 @@ public class ServiceRequestController {
     public ServiceRequestModel getPost(@PathVariable("id") int id, @AuthenticationPrincipal User user) {
         ServiceRequest serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountEmail(id, user.getUsername());
         if (serviceRequest == null) {
-            throw new ApiException("non_existent_post", "Post not found.");
+            throw new NonExistentPostException();
         }
         return toModel(serviceRequest);
     }
