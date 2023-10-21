@@ -9,10 +9,10 @@ import homerep.springy.service.ImageStorageService;
 import org.im4java.core.ConvertCmd;
 import org.im4java.core.IM4JavaException;
 import org.im4java.core.IMOperation;
+import org.im4java.process.ArrayListOutputConsumer;
 import org.im4java.process.Pipe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,21 +27,30 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.time.Instant;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 @Service
 public class ImageStorageServiceImpl implements ImageStorageService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ImageStorageServiceImpl.class);
 
-    @Autowired
-    private ImageInfoRepository imageInfoRepository;
+    private final ImageInfoRepository imageInfoRepository;
 
-    @Autowired
-    private ImageStorageConfiguration.ImageStorageConfig config;
+    private final ImageStorageConfiguration.ImageStorageConfig config;
 
-    @Autowired
-    private ApplicationEventPublisher applicationEventPublisher;
+    private final ApplicationEventPublisher applicationEventPublisher;
+
+    public ImageStorageServiceImpl(ImageInfoRepository imageInfoRepository,
+                                   ImageStorageConfiguration.ImageStorageConfig config,
+                                   ApplicationEventPublisher applicationEventPublisher) {
+        this.imageInfoRepository = imageInfoRepository;
+        this.config = config;
+        this.applicationEventPublisher = applicationEventPublisher;
+
+        checkIMPolicy();
+    }
 
     @Override
     @Transactional
@@ -122,6 +131,62 @@ public class ImageStorageServiceImpl implements ImageStorageService {
         convert.setInputProvider(new Pipe(inputStream, null));
         convert.setOutputConsumer(new Pipe(null, outputStream));
         convert.run(op); // TODO should this be async??
+    }
+
+    private void checkIMPolicy() {
+        try {
+            // List the policies
+            IMOperation op = new IMOperation();
+            op.list("policy");
+
+            ArrayListOutputConsumer consumer = new ArrayListOutputConsumer();
+            ConvertCmd cmd = new ConvertCmd();
+            cmd.setOutputConsumer(consumer);
+            cmd.run(op);
+            // Scan through the list for
+            // Policy: Module
+            //   rights: None
+            //   pattern: *
+            boolean hasDenyAll = false;
+
+            Iterator<String> it = consumer.getOutput().iterator();
+            Supplier<String> lineSupplier = () -> {
+                if (it.hasNext()) {
+                    return it.next().stripLeading();
+                } else {
+                    return "";
+                }
+            };
+            while (it.hasNext()) {
+                String line = lineSupplier.get();
+                if (!line.startsWith("Policy: Module")) {
+                    continue;
+                }
+                String rights = "";
+                String pattern = "";
+                for (int i = 0; i < 2; i++) {
+                    line = lineSupplier.get();
+                    String value = line.substring(line.indexOf(": ") + 2).stripTrailing();
+                    if (line.startsWith("rights: ")) {
+                        rights = value;
+                    } else if (line.startsWith("pattern: ")) {
+                        pattern = value;
+                    }
+                }
+                if (rights.equals("None") && pattern.equals("*")) {
+                    hasDenyAll = true;
+                    break;
+                }
+            }
+
+            if (!hasDenyAll) {
+                LOGGER.error("Insecure ImageMagick policy detected! Please install other/policy.xml to the correct location.");
+            } else {
+                LOGGER.info("Secure ImageMagick policy detected.");
+            }
+        } catch (Exception ex) {
+            LOGGER.warn("Failed to check ImageMagick policy.", ex);
+        }
     }
 
     protected record UploadImageEvent(Path tmpFilePath, Path finalFilePath) {

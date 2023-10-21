@@ -1,0 +1,135 @@
+<!--
+    An ImageMagick policy to limit the resources used and allowed input image formats.
+    Allowed formats: BMP, JPG, PNG, HEIC, HEIF
+-->
+<policymap>
+
+    <!-- Set maximum parallel threads. -->
+    <policy domain="resource" name="thread" value="2"/>
+    <!--
+     Set maximum time to live in seconds or neumonics, e.g. "2 minutes". When
+           this limit is exceeded, an exception is thrown and processing stops.
+    -->
+    <!-- Reduced from 60 seconds since that's a really long time to be processing
+           a single image upload -->
+    <policy domain="resource" name="time" value="15"/>
+    <!--
+     Set maximum number of open pixel cache files. When this limit is
+           exceeded, any subsequent pixels cached to disk are closed and reopened
+           on demand.
+    -->
+    <policy domain="resource" name="file" value="768"/>
+    <!--
+     Set maximum amount of memory in bytes to allocate for the pixel cache
+           from the heap. When this limit is exceeded, the image pixels are cached
+           to memory-mapped disk.
+    -->
+    <policy domain="resource" name="memory" value="256MiB"/>
+    <!--
+     Set maximum amount of memory map in bytes to allocate for the pixel
+           cache. When this limit is exceeded, the image pixels are cached to
+           disk.
+    -->
+    <!-- Increased from 512MiB as otherwise processing 7K x 7K images is
+           super slow -->
+    <policy domain="resource" name="map" value="1GiB"/>
+    <!--
+     Set the maximum width * height of an image that can reside in the pixel
+           cache memory. Images that exceed the area limit are cached to disk.
+    -->
+    <policy domain="resource" name="area" value="64KP"/>
+    <!--
+     Set maximum amount of disk space in bytes permitted for use by the pixel
+           cache. When this limit is exceeded, the pixel cache is not be created
+           and an exception is thrown.
+    -->
+    <policy domain="resource" name="disk" value="1GiB"/>
+    <!--
+     Set the maximum length of an image sequence.  When this limit is
+           exceeded, an exception is thrown.
+    -->
+    <policy domain="resource" name="list-length" value="16"/>
+    <!--
+     Set the maximum width of an image.  When this limit is exceeded, an
+           exception is thrown.
+    -->
+    <!-- Increased from 4KP some phones can produce images at this limit -->
+    <policy domain="resource" name="width" value="8KP"/>
+    <!--
+     Set the maximum height of an image.  When this limit is exceeded, an
+           exception is thrown.
+    -->
+    <!-- Increased from 4KP some phones can produce images at this limit -->
+    <policy domain="resource" name="height" value="8KP"/>
+    <!--
+     Periodically yield the CPU for at least the time specified in
+           milliseconds.
+    -->
+    <!-- <policy domain="resource" name="throttle" value="1"/> -->
+    <!--
+     Do not create temporary files in the default shared directories, instead
+           specify a private area to store only ImageMagick temporary files.
+    -->
+    <!--
+     <policy domain="resource" name="temporary-path" value="/magick/tmp/"/>
+    -->
+    <!--
+     Force memory initialization by memory mapping select memory
+           allocations.
+    -->
+    <policy domain="cache" name="memory-map" value="anonymous"/>
+    <!--
+     Ensure all image data is fully flushed and synchronized to disk.
+    -->
+    <policy domain="cache" name="synchronize" value="true"/>
+    <!--
+     Replace passphrase for secure distributed processing
+    -->
+    <!--
+     <policy domain="cache" name="shared-secret" value="secret-passphrase" stealth="true"/>
+    -->
+
+    <!-- Do not permit any delegates to execute. -->
+    <policy domain="delegate" rights="none" pattern="*"/>
+    <!-- Do not permit any image filters to load. -->
+    <policy domain="filter" rights="none" pattern="*"/>
+    <!-- don't read sensitive paths. -->
+    <policy domain="path" rights="none" pattern="/etc/*"/>
+    <!-- Indirect reads are not permitted. -->
+    <policy domain="path" rights="none" pattern="@*"/>
+    <!-- Allow reading and writing from/to stdin/stdout. -->
+    <policy domain="path" rights="read | write" pattern="-"/>
+    <!--
+     Deny all image modules and specifically exempt reading or writing
+           web-safe image formats + some formats used by Apple devices.
+    -->
+    <policy domain="module" rights="none" pattern="*"/>
+    <policy domain="module" rights="read | write" pattern="{BMP,JPEG,PNG}"/>
+    <policy domain="module" rights="read | write" pattern="{HEIC,HEIF}"/>
+    <!-- ImageMagick specific for internal use -->
+    <policy domain="module" rights="read | write" pattern="{MPC}" stealth="true"/>
+
+
+    <policy domain="coder" rights="none" pattern="*"/>
+    <policy domain="coder" rights="read | write" pattern="{BMP,JPEG,PNG}"/>
+    <policy domain="coder" rights="read | write" pattern="{HEIC}"/>
+    <!-- ImageMagick specific for internal use -->
+    <policy domain="coder" rights="read | write" pattern="{MPC}"/>
+
+    <!--
+     This policy sets the number of times to replace content of certain
+           memory buffers and temporary files before they are freed or deleted.
+    -->
+    <policy domain="system" name="shred" value="1"/>
+    <!--
+     Enable the initialization of buffers with zeros, resulting in a minor
+           performance penalty but with improved security.
+    -->
+    <policy domain="system" name="memory-map" value="anonymous"/>
+    <!--
+     Set the maximum amount of memory in bytes that are permitted for
+           allocation requests.
+    -->
+    <policy domain="system" name="max-memory-request" value="256MiB"/>
+</policymap>
+
