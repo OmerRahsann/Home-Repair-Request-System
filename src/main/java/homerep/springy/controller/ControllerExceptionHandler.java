@@ -5,6 +5,7 @@ import homerep.springy.model.error.ApiErrorModel;
 import homerep.springy.model.error.ValidationErrorModel;
 import homerep.springy.model.error.FieldErrorModel;
 import homerep.springy.model.error.ObjectErrorModel;
+import org.apache.tomcat.util.http.fileupload.impl.FileSizeLimitExceededException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +41,12 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler
     public ResponseEntity<ApiErrorModel> handleApiException(ApiException ex) {
         ApiErrorModel errorModel = new ApiErrorModel(ex.getType(), ex.getMessage());
+        return ResponseEntity.badRequest().body(errorModel);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ApiErrorModel> handleFileSizeLimitExceededException(FileSizeLimitExceededException ex) {
+        ApiErrorModel errorModel = new ApiErrorModel("file_size_limit_exceeded", ex.getMessage());
         return ResponseEntity.badRequest().body(errorModel);
     }
 }

@@ -31,6 +31,10 @@ spring:
     jdbc:
       # Remove after initialization
       initialize-schema: always
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
 homerep:
   email-templates:
     email-verification: file:/abs/path/to/actual-templates/email-verification.eml
