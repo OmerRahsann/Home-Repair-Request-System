@@ -21,9 +21,13 @@ public class ServiceRequest {
 
     private String description;
 
+    private String service; //TODO use services table
+
+    private Status status;
+
     private int dollars;
 
-    private Date date;
+    private Date creationDate;
 
     private String address;
 
@@ -65,6 +69,22 @@ public class ServiceRequest {
         this.description = description;
     }
 
+    public String getService() {
+        return service;
+    }
+
+    public void setService(String service) {
+        this.service = service;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+
     public int getDollars() {
         return dollars;
     }
@@ -73,12 +93,12 @@ public class ServiceRequest {
         this.dollars = dollars;
     }
 
-    public Date getDate() {
-        return date;
+    public Date getCreationDate() {
+        return creationDate;
     }
 
-    public void setDate(Date date) {
-        this.date = date;
+    public void setCreationDate(Date date) {
+        this.creationDate = date;
     }
 
     public String getAddress() {
@@ -102,6 +122,13 @@ public class ServiceRequest {
                 .map(ImageInfo::getUuid)
                 .map(UUID::toString)
                 .toList();
+    }
+
+    public enum Status {
+        PENDING,
+        CONFIRMED,
+        IN_PROGRESS,
+        COMPLETED
     }
 }
 

@@ -44,7 +44,8 @@ public class ServiceRequestController {
         Customer customer = customerRepository.findByAccountEmail(user.getUsername());
         ServiceRequest serviceRequest = new ServiceRequest(customer);
         updatePost(serviceRequestModel, serviceRequest);
-        serviceRequest.setDate(new Date());
+        serviceRequest.setCreationDate(new Date());
+        serviceRequest.setStatus(ServiceRequest.Status.PENDING);
         serviceRequest = serviceRequestRepository.save(serviceRequest);
         return serviceRequest.getId();
     }
@@ -100,21 +101,24 @@ public class ServiceRequestController {
         List<ServiceRequest> serviceRequests = serviceRequestRepository.findAllByCustomerAccountEmail(user.getUsername());
         List<ServiceRequestModel> models = new ArrayList<>(serviceRequests.size());
         for (ServiceRequest serviceRequest : serviceRequests) {
-            models.add(new ServiceRequestModel(
-                    serviceRequest.getId(),
-                    serviceRequest.getTitle(),
-                    serviceRequest.getDescription(),
-                    serviceRequest.getDollars(),
-                    serviceRequest.getAddress(),
-                    serviceRequest.getImagesUUIDs()
-            ));
+            models.add(toModel(serviceRequest));
         }
         return models;
+    }
+
+    @GetMapping("/{id}")
+    public ServiceRequestModel getPost(@PathVariable("id") int id, @AuthenticationPrincipal User user) {
+        ServiceRequest serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountEmail(id, user.getUsername());
+        if (serviceRequest == null) {
+            throw new ApiException("non_existent_post", "Post not found.");
+        }
+        return toModel(serviceRequest);
     }
 
     private void updatePost(ServiceRequestModel serviceRequestModel, ServiceRequest serviceRequest) {
         serviceRequest.setTitle(serviceRequestModel.title());
         serviceRequest.setDescription(serviceRequestModel.description());
+        serviceRequest.setService(serviceRequestModel.service());
         serviceRequest.setDollars(serviceRequestModel.dollars());
         serviceRequest.setAddress(serviceRequestModel.address());
         if (serviceRequestModel.pictures() != null) {
@@ -133,7 +137,7 @@ public class ServiceRequestController {
             if (serviceRequestModel.pictures().stream().distinct().count() != newOrder.size()) {
                 throw new ApiException("duplicate_photos", "Can't have duplicate photos in a single post.");
             }
-            // Must occur after all validation is complete as images may be deleted from the file system
+            // Mark unused photos for deletion
             for (String photo : alreadyAttached.keySet()) {
                 if (!serviceRequestModel.pictures().contains(photo)) {
                     imageStorage.deleteImage(UUID.fromString(photo));
@@ -142,5 +146,19 @@ public class ServiceRequestController {
             // Apply the new order
             serviceRequest.setPictures(newOrder);
         }
+    }
+
+    private ServiceRequestModel toModel(ServiceRequest serviceRequest) {
+        return new ServiceRequestModel(
+                serviceRequest.getId(),
+                serviceRequest.getTitle(),
+                serviceRequest.getDescription(),
+                serviceRequest.getService(),
+                serviceRequest.getStatus(),
+                serviceRequest.getDollars(),
+                serviceRequest.getAddress(),
+                serviceRequest.getImagesUUIDs(),
+                serviceRequest.getCreationDate()
+        );
     }
 }
