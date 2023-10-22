@@ -49,17 +49,6 @@ const getServiceRequests = async () => {
         <h1>hello</h1>
       </div>
       <div>
-      <h1>Service Requests</h1>
-      <ul>
-  {serviceRequests.map((request) => (
-    <li key={request.id}>
-      <h2>{request.title}</h2>
-      <p>{request.description}</p>
-      <p>Budget: {request.dollars}</p>
-    </li>
-  ))}
-</ul>
-      
     </div>
       </div>
       

@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import ServiceRequest from "../../components/Customer/ServiceRequest";
 import Navbar from "../../components/Navbar/NavBar";
 import axios from "axios";
 import { checkIsCustomerLoggedIn } from "../../AuthContext";
@@ -9,6 +8,8 @@ function MyRequests() {
 
   const [serviceRequests, setServiceRequests] = useState([])
   const [loggedIn, setLoggedIn] = useState(false); // Initialize loggedIn with a default value
+  const [showModal, setShowModal] = useState(false);
+
 
 
   const getServiceRequests = async () => {
@@ -41,6 +42,8 @@ function MyRequests() {
 
     // Define the checkIsCustomerLoggedIn function here or import it from where it's defined
   }, []);
+
+  
     return (
       <div >
         <div>
@@ -51,7 +54,7 @@ function MyRequests() {
          
           <div className="grid grid-cols-2 gap-8 p-2 sm:p-4 md:p-6 lg:p-8 xl:p-10">
             {serviceRequests.map((request) => (
-              <div key={request.id}>
+              <div key={request.id} >
                 {/* Use the RequestDetails component to display request details */}
                 <RequestDetails request={request} />
               </div>
@@ -65,5 +68,6 @@ function MyRequests() {
       )}
       </div>
     );
-  }
+      }
+  
   export default MyRequests;

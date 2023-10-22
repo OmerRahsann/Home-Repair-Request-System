@@ -4,6 +4,7 @@ import image from "../../Pictures/banner.jpeg"
 import ServiceRequestModal from './ServiceRequestModal';
 import ServiceRequestForm from './ServiceRequestForm';
 import { checkIsCustomerLoggedIn } from '../../AuthContext';
+import { GoogleMap } from '@react-google-maps/api';
 
 function ServiceRequestBanner() {
     const [imageLoaded, setImageLoaded] = useState(false);
@@ -102,6 +103,7 @@ function ServiceRequestBanner() {
         <ServiceRequestModal isVisible={showModal} onClose={()=> setShowModal(false)}> 
                 <ServiceRequestForm/>
         </ServiceRequestModal>
+        
         </Fragment>
 
 

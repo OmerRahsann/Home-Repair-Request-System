@@ -3,7 +3,7 @@ import axios from "axios";
 import Select from 'react-select'
 import { Autocomplete } from "@react-google-maps/api"
 
-function ServiceRequestForm() {
+function RequestEdit({request}) {
     const [formSubmitted, setFormSubmitted] = useState(false);
     const [notification, setNotification] = useState("");
 
@@ -15,10 +15,10 @@ function ServiceRequestForm() {
     const [autoComplete, setAutoComplete] = useState(null);
     const [selectedCategory, setSelectedCategory] = useState()
     const [serviceRequestModel, setServiceRequestModel] = useState({
-        title: '',
-        description: '',
-        dollars: null,
-        address: '',
+        title: request.title,
+        description: request.description,
+        dollars: request.dollars,
+        address: request.address,
     });
 
     const [images, setImages] = useState([]);
@@ -33,7 +33,7 @@ function ServiceRequestForm() {
 
             setServiceRequestModel(prevModel => ({
                 ...prevModel,
-                address: address,
+                address: address
             }));
         }
     }
@@ -43,10 +43,7 @@ function ServiceRequestForm() {
     async function createServiceRequest(event) {
         event.preventDefault();
         try {
-            const response = await axios.post('http://localhost:8080/api/customer/service_request/create', serviceRequestModel, { withCredentials: true });
-    
-            // Extract the new service request ID from the response
-            const newServiceRequestId = response.data;
+            const response = await axios.post(`http://localhost:8080/api/customer/service_request/${request.id}/edit`, serviceRequestModel, { withCredentials: true });
     
             for (const imageDataUrl of images) {
                 // Convert the data URL to a Blob
@@ -57,7 +54,7 @@ function ServiceRequestForm() {
                 imageFormData.append("file", imageBlob);
     
                 // Make a POST request to attach the image to the service request
-                await axios.post(`http://localhost:8080/api/customer/service_request/${newServiceRequestId}/attach`, imageFormData, { withCredentials: true })
+                await axios.post(`http://localhost:8080/api/customer/service_request/${request.id}/attach`, imageFormData, { withCredentials: true })
                     .then((res) => {
                         console.log(res.data);
                     })
@@ -67,7 +64,7 @@ function ServiceRequestForm() {
                     });
             }
     
-            setNotification("Request created successfully.");
+            setNotification("Request edited successfully.");
             setFormSubmitted(true);
     
             // After creating the request, you can clear the form or take any other action.
@@ -77,11 +74,11 @@ function ServiceRequestForm() {
                 dollars: null,
                 address: ''
             });
-            setImages([]);
-            // Fetch the updated list of service requests
-            // getServiceRequests();
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
         } catch (error) {
-            console.error('Error creating service request:', error);
+            console.error('Error Editing service request:', error);
         }
     }
 
@@ -117,22 +114,23 @@ function ServiceRequestForm() {
 
     const handleImageUpload = (event) => {
         const files = event.target.files;
-        const uploadedImages = [];
-    
+        const uploadedImages = request.pictures;
+        const tempImages = [];
+      
         for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            const reader = new FileReader();
-    
-            reader.onload = (e) => {
-                uploadedImages.push(e.target.result);
-                if (uploadedImages.length === files.length) {
-                    setImages(uploadedImages); // Update the images state
-                }
-            };
-    
-            reader.readAsDataURL(file);
+          const file = files[i];
+          const reader = new FileReader();
+      
+          reader.onload = (e) => {
+            tempImages.push(e.target.result);
+            if (tempImages.length === files.length) {
+              setImages(tempImages); // Update the images state
+            }
+          };
+      
+          reader.readAsDataURL(file);
         }
-    };
+      };
     
     return (
 
@@ -142,7 +140,7 @@ function ServiceRequestForm() {
             ) : (
                 <>
                     <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl text-center">
-                        Create a Service Request
+                        Edit Your Service Request
                     </h1>
                     <form className="space-y-4 " action="#" onSubmit={createServiceRequest}>
                         <div className="">
@@ -177,9 +175,9 @@ function ServiceRequestForm() {
                         
                         <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
                             <div>
-                                <label className="font-bold">Project Location</label>
-                                <input className="border border-gray-100 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:border-gray-600 dark:placeholder-gray-400" />
-
+                                <label className="font-bold" value={serviceRequestModel.address}>Project Location</label>
+                                <input className="border border-gray-100 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:border-gray-600 dark:placeholder-gray-400"
+                                value={serviceRequestModel.address} />
                             </div>
                         </Autocomplete>
                         <div className="">
@@ -195,7 +193,7 @@ function ServiceRequestForm() {
                             />
                         </div>
                         <div>
-                            <label className="font-bold">Upload Project Pictures</label>
+                            <label className="font-bold">Upload Additional Project Pictures</label>
                             <input
                                 type="file"
                                 name="pictures"
@@ -220,7 +218,7 @@ function ServiceRequestForm() {
                         </div>
 
                         <button type="submit" onSubmit={createServiceRequest}
-                            className='text-white w-full bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' >SUBMIT REQUEST</button>
+                            className='text-white w-full bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' >SAVE CHANGES</button>
 
                     </form></>)}
         </div>
@@ -228,4 +226,4 @@ function ServiceRequestForm() {
     );
 }
 
-export default ServiceRequestForm;
+export default RequestEdit;
