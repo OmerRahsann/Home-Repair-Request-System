@@ -10,6 +10,7 @@ import homerep.springy.exception.NonExistentPostException;
 import homerep.springy.model.ServiceRequestModel;
 import homerep.springy.repository.CustomerRepository;
 import homerep.springy.repository.ServiceRequestRepository;
+import homerep.springy.repository.ServiceTypeRepository;
 import homerep.springy.service.ImageStorageService;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
@@ -36,6 +37,9 @@ public class ServiceRequestController {
 
     @Autowired
     private ServiceRequestRepository serviceRequestRepository;
+
+    @Autowired
+    private ServiceTypeRepository serviceTypeRepository;
 
     @Autowired
     private ImageStorageService imageStorage;
@@ -114,6 +118,11 @@ public class ServiceRequestController {
             throw new NonExistentPostException();
         }
         return toModel(serviceRequest);
+    }
+
+    @GetMapping("/services")
+    public List<String> getServices() {
+        return serviceTypeRepository.findAllServices();
     }
 
     private void updatePost(ServiceRequestModel serviceRequestModel, ServiceRequest serviceRequest) {
