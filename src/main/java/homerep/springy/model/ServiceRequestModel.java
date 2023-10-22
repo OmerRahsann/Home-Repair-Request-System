@@ -21,6 +21,6 @@ public record ServiceRequestModel(
 ) {
 
     public ServiceRequestModel(String title, String description, String service, int dollars, String address) {
-        this(null, title, description, service, ServiceRequest.Status.PENDING, dollars, address, null, null);
+        this(null, title, description, service, null, dollars, address, null, null);
     }
 }

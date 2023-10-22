@@ -21,7 +21,7 @@ public class ServiceRequest {
 
     private String description;
 
-    private String service; //TODO use services table
+    private String service;
 
     private Status status;
 

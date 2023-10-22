@@ -54,6 +54,8 @@ public abstract class AbstractServiceRequestTests {
 
     protected static final String TEST_EMAIL = "example@example.com";
 
+    protected static final String CUSTOMER_ADDRESS = "201 Mullica Hill Rd, Glassboro, NJ 08028";
+
     protected static final ServiceRequestModel VALID_SERVICE_REQUEST = new ServiceRequestModel(
             "Test", "Description", "plumbing", 32, "201 Mullica Hill Rd, Glassboro, NJ 08028"
     );
@@ -81,7 +83,7 @@ public abstract class AbstractServiceRequestTests {
         customer.setFirstName("Zoey");
         customer.setMiddleName(""); // TODO remove
         customer.setLastName("Proasheck");
-        customer.setAddress("201 Mullica Hill Rd, Glassboro, NJ 08028");
+        customer.setAddress(CUSTOMER_ADDRESS);
         customerRepository.save(customer);
     }
 

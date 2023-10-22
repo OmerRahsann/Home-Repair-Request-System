@@ -1,15 +1,13 @@
 package homerep.springy.controller.customer;
 
-import homerep.springy.entity.Account;
-import homerep.springy.entity.Customer;
-import homerep.springy.entity.ImageInfo;
-import homerep.springy.entity.ServiceRequest;
+import homerep.springy.entity.*;
 import homerep.springy.exception.ApiException;
 import homerep.springy.exception.ImageStoreException;
 import homerep.springy.exception.NonExistentPostException;
 import homerep.springy.model.ServiceRequestModel;
 import homerep.springy.repository.CustomerRepository;
 import homerep.springy.repository.ServiceRequestRepository;
+import homerep.springy.repository.ServiceRequestTemplateRepository;
 import homerep.springy.repository.ServiceTypeRepository;
 import homerep.springy.service.ImageStorageService;
 import jakarta.transaction.Transactional;
@@ -37,6 +35,9 @@ public class ServiceRequestController {
 
     @Autowired
     private ServiceRequestRepository serviceRequestRepository;
+
+    @Autowired
+    private ServiceRequestTemplateRepository serviceRequestTemplateRepository;
 
     @Autowired
     private ServiceTypeRepository serviceTypeRepository;
@@ -124,6 +125,24 @@ public class ServiceRequestController {
     @GetMapping("/services")
     public List<String> getServices() {
         return serviceTypeRepository.findAllServices();
+    }
+
+    @GetMapping("/templates")
+    public List<ServiceRequestModel> getTemplates(@AuthenticationPrincipal User user) {
+        Customer customer = customerRepository.findByAccountEmail(user.getUsername());
+
+        List<ServiceRequestTemplate> templates = serviceRequestTemplateRepository.findAllTemplates();
+        List<ServiceRequestModel> models = new ArrayList<>(templates.size());
+        for (ServiceRequestTemplate template : templates) {
+            models.add(new ServiceRequestModel(
+                    template.getTitle(),
+                    null,
+                    template.getService(),
+                    template.getDollars(),
+                    customer.getAddress()
+            ));
+        }
+        return models;
     }
 
     private void updatePost(ServiceRequestModel serviceRequestModel, ServiceRequest serviceRequest) {
