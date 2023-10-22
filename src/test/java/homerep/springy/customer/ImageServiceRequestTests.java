@@ -52,26 +52,34 @@ public class ImageServiceRequestTests extends AbstractServiceRequestTests {
     @Transactional
     void attachPictures() throws Exception {
         // Can attach PNG pictures
-        this.mvc.perform(attachPhoto(postId, "file", MediaType.IMAGE_PNG_VALUE, createImage(2, 2, "PNG")))
-                .andExpect(status().isOk());
+        MvcResult result = this.mvc.perform(attachPhoto(postId, "file", MediaType.IMAGE_PNG_VALUE, createImage(2, 2, "PNG")))
+                .andExpect(status().isOk())
+                .andReturn();
+        // and response contains the key to the image
+        String picture1Key = mapper.readValue(result.getResponse().getContentAsString(), String.class);
+        assertFalse(picture1Key.isBlank());
         // Can attach JPEG pictures
-        this.mvc.perform(attachPhoto(postId, "file", MediaType.IMAGE_JPEG_VALUE, createImage(2, 2, "JPEG")))
-                .andExpect(status().isOk());
+        result = this.mvc.perform(attachPhoto(postId, "file", MediaType.IMAGE_JPEG_VALUE, createImage(2, 2, "JPEG")))
+                .andExpect(status().isOk())
+                .andReturn();
+        // and response contains the key to the image
+        String picture2Key = mapper.readValue(result.getResponse().getContentAsString(), String.class);
+        assertFalse(picture2Key.isBlank());
+        assertNotEquals(picture1Key, picture2Key); // Keys should be different for each picture
         // Pictures are stored with the service request in the repository
         ServiceRequest serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountEmail(postId, TEST_EMAIL);
         assertNotNull(serviceRequest);
         assertEquals(2, serviceRequest.getPictures().size());
-        assertEquals(2, serviceRequest.getImagesUUIDs().size());
+        assertEquals(List.of(picture1Key, picture2Key), serviceRequest.getImagesUUIDs()); // Pictures are attached in the order sent
         assertEquals(2, imageInfoRepository.findAll().size());
 
         // Pictures are included with the service request when requested from the API
-        MvcResult result = this.mvc.perform(getServiceRequest(postId))
+        result = this.mvc.perform(getServiceRequest(postId))
                 .andExpect(status().isOk())
                 .andReturn();
         ServiceRequestModel model = mapper.readValue(result.getResponse().getContentAsString(), ServiceRequestModel.class);
         assertNotNull(model.pictures());
-        assertEquals(2, model.pictures().size());
-        assertNotEquals(model.pictures().get(0), model.pictures().get(1)); // Pictures should be given different UUIDs
+        assertEquals(List.of(picture1Key, picture2Key), model.pictures()); // Pictures are attached in the order sent
         // Pictures are saved to the repository
         for (String picture : model.pictures()) {
             assertTrue(imageInfoRepository.findById(UUID.fromString(picture)).isPresent());

@@ -82,7 +82,7 @@ public class ServiceRequestController {
 
     @PostMapping("/{id}/attach")
     @Transactional
-    public void attachPicture(@RequestParam("file") MultipartFile file, @PathVariable("id") int id, @AuthenticationPrincipal User user) {
+    public UUID attachPicture(@RequestParam("file") MultipartFile file, @PathVariable("id") int id, @AuthenticationPrincipal User user) {
         try {
             if (file.isEmpty() || file.getContentType() == null) {
                 throw new ApiException("empty_file", "No image file was sent.");
@@ -95,6 +95,7 @@ public class ServiceRequestController {
             ImageInfo imageInfo = imageStorage.storeImage(file.getInputStream(), 1920, 1920, account); // TODO make maxWidth/Height configurable
             serviceRequest.getPictures().add(imageInfo);
             serviceRequestRepository.save(serviceRequest);
+            return imageInfo.getUuid();
         } catch (IOException | ImageStoreException e) {
             LOGGER.warn("Image attachment failed due to:", e);
             throw new ApiException("upload_failure", "Failed to upload file.");
