@@ -120,6 +120,9 @@ public class ServiceRequestController {
         serviceRequest.setTitle(serviceRequestModel.title());
         serviceRequest.setDescription(serviceRequestModel.description());
         serviceRequest.setService(serviceRequestModel.service());
+        if (serviceRequestModel.status() != null) {
+            serviceRequest.setStatus(serviceRequestModel.status());
+        }
         serviceRequest.setDollars(serviceRequestModel.dollars());
         serviceRequest.setAddress(serviceRequestModel.address());
         if (serviceRequestModel.pictures() != null) {

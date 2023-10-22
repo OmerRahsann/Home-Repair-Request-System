@@ -11,8 +11,8 @@ import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * Tests that involve service requests without attached images
@@ -29,7 +29,7 @@ public class PlainServiceRequestTests extends AbstractServiceRequestTests {
                 .andExpect(status().isOk())
                 .andReturn();
         int id = Integer.parseInt(result.getResponse().getContentAsString());
-        // It saved to the repository and is associated with the Customer
+        // It is saved to the repository and is associated with the Customer
         List<ServiceRequest> serviceRequests = serviceRequestRepository.findAllByCustomerAccountEmail(TEST_EMAIL);
         assertEquals(1, serviceRequests.size());
         // with all the data
@@ -150,7 +150,7 @@ public class PlainServiceRequestTests extends AbstractServiceRequestTests {
         assertEquals(MODIFIED_VALID_SERVICE_REQUEST_WITH_ADDITIONAl.title(), model.title());
         assertEquals(MODIFIED_VALID_SERVICE_REQUEST_WITH_ADDITIONAl.description(), model.description());
         assertEquals(MODIFIED_VALID_SERVICE_REQUEST_WITH_ADDITIONAl.service(), model.service());
-        assertEquals(ServiceRequest.Status.PENDING, model.status()); // Can't edit posts to other statuses
+        assertEquals(MODIFIED_VALID_SERVICE_REQUEST_WITH_ADDITIONAl.status(), model.status());
         assertEquals(MODIFIED_VALID_SERVICE_REQUEST_WITH_ADDITIONAl.dollars(), model.dollars());
         assertEquals(MODIFIED_VALID_SERVICE_REQUEST_WITH_ADDITIONAl.address(), model.address());
         assertTrue(model.pictures() == null || model.pictures().isEmpty()); // Edited post still has no pictures
@@ -165,11 +165,65 @@ public class PlainServiceRequestTests extends AbstractServiceRequestTests {
         assertEquals(MODIFIED_VALID_SERVICE_REQUEST_WITH_ADDITIONAl.title(), serviceRequest.getTitle());
         assertEquals(MODIFIED_VALID_SERVICE_REQUEST_WITH_ADDITIONAl.description(), serviceRequest.getDescription());
         assertEquals(MODIFIED_VALID_SERVICE_REQUEST_WITH_ADDITIONAl.service(), serviceRequest.getService());
-        assertEquals(ServiceRequest.Status.PENDING, serviceRequest.getStatus()); // Created post starts out as PENDING
+        assertEquals(MODIFIED_VALID_SERVICE_REQUEST_WITH_ADDITIONAl.status(), serviceRequest.getStatus());
         assertEquals(MODIFIED_VALID_SERVICE_REQUEST_WITH_ADDITIONAl.dollars(), serviceRequest.getDollars());
         assertEquals(MODIFIED_VALID_SERVICE_REQUEST_WITH_ADDITIONAl.address(), serviceRequest.getAddress());
         assertTrue(serviceRequest.getPictures().isEmpty());
         assertEquals(initialModel.creationDate(), serviceRequest.getCreationDate());
+    }
+
+    @Test
+    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
+    @Transactional
+    void customerCreateEditStatus() throws Exception {
+        // Customer can create a service request
+        MvcResult result = this.mvc.perform(createServiceRequest(VALID_SERVICE_REQUEST))
+                .andExpect(status().isOk())
+                .andReturn();
+        int id = Integer.parseInt(result.getResponse().getContentAsString());
+        // Get the initial state of the service request
+        result = this.mvc.perform(getServiceRequest(id))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isMap()) // isObject
+                .andReturn();
+        ServiceRequestModel initialModel = mapper.readValue(result.getResponse().getContentAsString(), ServiceRequestModel.class);
+        // Edit the service request with a null status
+        ServiceRequestModel editedModel = new ServiceRequestModel(initialModel.id(), initialModel.title(),
+                initialModel.description(), initialModel.service(), null, initialModel.dollars(),
+                initialModel.address(), initialModel.pictures(), initialModel.creationDate());
+        this.mvc.perform(editServiceRequest(id, editedModel))
+                .andExpect(status().isOk());
+        // Get the new state
+        result = this.mvc.perform(getServiceRequest(id))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isMap()) // isObject
+                .andReturn();
+        ServiceRequestModel model = mapper.readValue(result.getResponse().getContentAsString(), ServiceRequestModel.class);
+        // Nothing changes
+        assertEquals(initialModel, model);
+        assertEquals(ServiceRequest.Status.PENDING, model.status()); // Status should still be PENDING
+
+        // Edit the service request with a new status
+        editedModel = new ServiceRequestModel(model.id(), model.title(), model.description(), model.service(),
+                ServiceRequest.Status.COMPLETED, model.dollars(), model.address(), model.pictures(),
+                model.creationDate());
+        this.mvc.perform(editServiceRequest(id, editedModel))
+                .andExpect(status().isOk());
+        // Get the new state
+        result = this.mvc.perform(getServiceRequest(id))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isMap()) // isObject
+                .andReturn();
+        model = mapper.readValue(result.getResponse().getContentAsString(), ServiceRequestModel.class);
+        // Only status changes
+        assertEquals(initialModel.title(), model.title());
+        assertEquals(initialModel.description(), model.description());
+        assertEquals(initialModel.service(), model.service());
+        assertEquals(editedModel.status(), model.status());
+        assertEquals(initialModel.dollars(), model.dollars());
+        assertEquals(initialModel.address(), model.address());
+        assertEquals(initialModel.pictures(), model.pictures());
+        assertEquals(initialModel.creationDate(), model.creationDate());
     }
 
     @Test
