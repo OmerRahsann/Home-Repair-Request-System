@@ -1,5 +1,6 @@
 package homerep.springy.customer;
 
+import homerep.springy.config.ServiceRequestConfiguration;
 import homerep.springy.entity.Account;
 import homerep.springy.entity.ImageInfo;
 import homerep.springy.entity.ServiceRequest;
@@ -14,14 +15,16 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MvcResult;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * Tests that involve service requests with attached images
@@ -32,6 +35,9 @@ public class ImageServiceRequestTests extends AbstractServiceRequestTests {
 
     @Autowired
     private ImageStorageService imageStorageService;
+
+    @Autowired
+    private ServiceRequestConfiguration.PictureConfig pictureConfig;
 
     private int postId;
 
@@ -262,5 +268,53 @@ public class ImageServiceRequestTests extends AbstractServiceRequestTests {
                 .andExpect(jsonPath("type").value("duplicate_photos"));
     }
     
-    
+    @Test
+    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
+    void resizeAttachedPicture() throws Exception {
+        // Decrease max pixels for testing
+        pictureConfig.setMaxSizePixels(8);
+        // Pictures above the max size are resized to fit while keeping the aspect ratio
+        int size = pictureConfig.getMaxSizePixels() * 2;
+        float ratio = 2.0f;
+        InputStream imageIS = createImage((int) (ratio * size), size, "PNG");
+        MvcResult result = this.mvc.perform(attachPhoto(postId, "file", MediaType.IMAGE_PNG_VALUE, imageIS))
+                .andExpect(status().isOk())
+                .andReturn();
+        UUID uuid = mapper.readValue(result.getResponse().getContentAsString(), UUID.class);
+
+        result = this.mvc.perform(get("/image/{uuid}", uuid))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.IMAGE_JPEG_VALUE))
+                .andReturn();
+
+        byte[] responseContent = result.getResponse().getContentAsByteArray();
+        assertNotEquals(0, responseContent.length);
+
+        BufferedImage image = ImageIO.read(new ByteArrayInputStream(responseContent));
+        assertNotNull(image);
+        // Max size of image matches max size in config
+        assertEquals(pictureConfig.getMaxSizePixels(), Math.max(image.getWidth(), image.getHeight()));
+        // The aspect ratio of the image is kept
+        float newRatio = (float) image.getWidth() / image.getHeight();
+        assertEquals(ratio, newRatio, 0.01f);
+    }
+
+    @Test
+    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
+    void maxAttachedPictures() throws Exception {
+        // Attaching pictures up to the max configured limit is fine
+        for (int i = 0; i < pictureConfig.getMaxNumPictures(); i++) {
+            InputStream imageIS = createImage(2, 2, "PNG");
+            this.mvc.perform(attachPhoto(postId, "file", MediaType.IMAGE_PNG_VALUE, imageIS))
+                    .andExpect(status().isOk());
+        }
+        // Attaching any more results in an error
+        InputStream imageIS = createImage(2, 2, "PNG");
+        this.mvc.perform(attachPhoto(postId, "file", MediaType.IMAGE_PNG_VALUE, imageIS))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("timestamp").isNumber())
+                .andExpect(jsonPath("type").value("max_pictures"));
+        // and is not saved into the ImageInfoRepository
+        assertEquals(pictureConfig.getMaxNumPictures(), imageInfoRepository.findAll().size());
+    }
 }

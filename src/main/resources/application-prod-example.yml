@@ -38,3 +38,7 @@ spring:
 homerep:
   email-templates:
     email-verification: file:/abs/path/to/actual-templates/email-verification.eml
+  service-request:
+    images:
+      max-num-pictures: 10
+      max-size-pixels: 1920

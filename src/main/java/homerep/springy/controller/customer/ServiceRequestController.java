@@ -1,5 +1,6 @@
 package homerep.springy.controller.customer;
 
+import homerep.springy.config.ServiceRequestConfiguration;
 import homerep.springy.entity.*;
 import homerep.springy.exception.ApiException;
 import homerep.springy.exception.ImageStoreException;
@@ -44,6 +45,9 @@ public class ServiceRequestController {
 
     @Autowired
     private ImageStorageService imageStorage;
+
+    @Autowired
+    private ServiceRequestConfiguration.PictureConfig pictureConfig;
 
     @PostMapping("/create")
     public int createPost(@RequestBody @Validated ServiceRequestModel serviceRequestModel, @AuthenticationPrincipal User user) {
@@ -92,8 +96,11 @@ public class ServiceRequestController {
             if (serviceRequest == null) {
                 throw new NonExistentPostException();
             }
+            if (serviceRequest.getPictures().size() >= pictureConfig.getMaxNumPictures()) {
+                throw new ApiException("max_pictures", "Can't attach any more pictures. A max of " + pictureConfig.getMaxNumPictures() + " is allowed.");
+            }
             Account account = serviceRequest.getCustomer().getAccount();
-            ImageInfo imageInfo = imageStorage.storeImage(file.getInputStream(), 1920, 1920, account); // TODO make maxWidth/Height configurable
+            ImageInfo imageInfo = imageStorage.storeImage(file.getInputStream(), pictureConfig.getMaxSizePixels(), pictureConfig.getMaxSizePixels(), account);
             serviceRequest.getPictures().add(imageInfo);
             serviceRequestRepository.save(serviceRequest);
             return imageInfo.getUuid();
