@@ -9,4 +9,6 @@ public interface ServiceRequestRepository extends JpaRepository<ServiceRequest, 
     List<ServiceRequest> findAllByCustomerAccountEmail(String email);
 
     ServiceRequest findByIdAndCustomerAccountEmail(int id, String email);
+    
+    List<ServiceRequest> findByStatus(ServiceRequest.Status status);
 }

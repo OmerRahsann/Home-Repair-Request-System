@@ -62,6 +62,10 @@ public class SecurityConfig {
                                 )
                         ) // Argh, this is not nice
                         .anyRequest().authenticated()
+                        .requestMatchers(mvc.pattern("/api/provider/**")).access(
+                            AuthorityAuthorizationManager.hasAuthority(AccountType.PROVIDER.getAuthority())
+                        )
+                        .anyRequest().authenticated()
         );
         http.logout(logout -> logout
                 .logoutUrl("/api/logout")
