@@ -25,7 +25,7 @@ function RequestDetails({ request }) {
         <ServiceRequestModal
           isVisible={showModal}
           onClose={() => setShowModal(false)}
-          size={100}
+          isFinal={true}
         >
           <ServiceRequestFinal request={request} />
         </ServiceRequestModal>

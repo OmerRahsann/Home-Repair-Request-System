@@ -36,6 +36,7 @@ function ImageSlider({ images }) {
   }, [currentIndex, images, isHovered])
 
   return (
+   (images.length > 0) ? (
     <div>
       <Carousel
         showThumbs={false}
@@ -69,7 +70,7 @@ function ImageSlider({ images }) {
         ))}
       </Carousel>
     </div>
-  )
+  ): null)
 }
 
 export default ImageSlider

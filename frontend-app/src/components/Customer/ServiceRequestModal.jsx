@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 import image from '../../Pictures/banner.jpeg'
 
-function ServiceRequestModal({ isVisible, onClose, children, size }) {
+function ServiceRequestModal({ isVisible, onClose, children, isFinal }) {
   const [serviceRequestModel, setServiceRequestModel] = useState({
     title: '',
     description: '',
@@ -24,7 +24,7 @@ function ServiceRequestModal({ isVisible, onClose, children, size }) {
       id="wrapper"
       onClick={handleClose}
     >
-      <div className={`w-[${size || 80}vh]`}>
+      <div className={isFinal ? 'w-[100vh]' : 'w-[80vh]'}>
         <button
           className="text-white text-xl place-self-end"
           onClick={() => onClose()}

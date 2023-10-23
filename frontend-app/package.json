@@ -61,6 +61,7 @@
   "devDependencies": {
     "@babel/preset-env": "^7.22.20",
     "@babel/preset-react": "^7.22.15",
+    "axios-mock-adapter": "^1.22.0",
     "babel-jest": "^29.7.0",
     "esm": "^3.2.25",
     "prettier": "^3.0.3",
