@@ -35,8 +35,7 @@ function ImageSlider({ images }) {
     return () => clearInterval(interval)
   }, [currentIndex, images, isHovered])
 
-  return (
-   (images.length > 0) ? (
+  return images.length > 0 ? (
     <div>
       <Carousel
         showThumbs={false}
@@ -70,7 +69,7 @@ function ImageSlider({ images }) {
         ))}
       </Carousel>
     </div>
-  ): null)
+  ) : null
 }
 
 export default ImageSlider

@@ -19,7 +19,40 @@ function RequestEdit({ request }) {
     description: request.description,
     dollars: request.dollars,
     address: request.address,
+    service: request.service,
   })
+  const [services, setServices] = useState([])
+  // ... other state variables and functions
+
+  useEffect(() => {
+    // Fetch services when the component mounts
+    getServices()
+  }, [])
+
+  async function getServices() {
+    try {
+      const response = await axios.get(
+        'http://localhost:8080/api/customer/service_request/services',
+        {
+          withCredentials: true,
+        },
+      )
+
+      // Extract the services from the response
+      const servicesData = response.data
+
+      // Transform the servicesData into the desired format (label and value are the same)
+      const transformedServices = servicesData.map((service) => ({
+        label: service,
+        value: service,
+      }))
+
+      // Update the state with the transformed services
+      setServices(transformedServices)
+    } catch (error) {
+      console.error('Error:', error)
+    }
+  }
 
   const [images, setImages] = useState([])
 
@@ -83,6 +116,7 @@ function RequestEdit({ request }) {
         description: '',
         dollars: null,
         address: '',
+        service: '',
       })
       setTimeout(() => {
         window.location.reload()
@@ -120,6 +154,11 @@ function RequestEdit({ request }) {
 
   function handleCategoryChage(data) {
     setSelectedCategory(data)
+    const value = data.value
+    console.log(value)
+    setServiceRequestModel((prevModel) => {
+      return { ...prevModel, service: value }
+    })
   }
 
   const handleImageUpload = (event) => {
@@ -204,8 +243,8 @@ function RequestEdit({ request }) {
             <div className="">
               <label className="font-bold">Project Category</label>
               <Select
-                options={category}
-                placeholder="Choose the Category this Project Falls Under"
+                options={services}
+                placeholder={request.service}
                 value={selectedCategory}
                 onChange={handleCategoryChage}
                 isSearchable={true}

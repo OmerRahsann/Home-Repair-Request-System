@@ -79,6 +79,10 @@ function ServiceRequestFinal({ request }) {
                     <BsFillTrash3Fill onClick={handleDeleteClick} />
                   </div>
                 </div>
+                <h2>
+                  <strong className="font-semibold">Project Category: </strong>
+                  {request.service}
+                </h2>
                 <p>
                   <strong className="font-semibold">
                     Project Description:
