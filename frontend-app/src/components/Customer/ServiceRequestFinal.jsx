@@ -84,9 +84,7 @@ function ServiceRequestFinal({ request }) {
                   {request.service}
                 </h2>
                 <p>
-                  <strong className="font-semibold">
-                    Description:
-                  </strong>{' '}
+                  <strong className="font-semibold">Description:</strong>{' '}
                   {request.description}
                 </p>
                 <h2>

@@ -70,13 +70,13 @@ function ImageSlider({ images }) {
         ))}
       </Carousel>
     </div>
-  ) : <div>
-    <Carousel  showThumbs={false}
-        selectedItem={currentIndex}>
-          <img src={noImage} className="object-cover h-[40vh] w-[80vh]"/>
-
-    </Carousel>
-  </div>
+  ) : (
+    <div>
+      <Carousel showThumbs={false} selectedItem={currentIndex}>
+        <img src={noImage} className="object-cover h-[40vh] w-[80vh]" />
+      </Carousel>
+    </div>
+  )
 }
 
 export default ImageSlider

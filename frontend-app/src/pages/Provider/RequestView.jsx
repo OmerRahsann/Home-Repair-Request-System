@@ -14,7 +14,6 @@ function RequestView() {
 
   return (
     <div>
-      
       <div class="flex">
         <div class="w-1/3">
           <RequestList />

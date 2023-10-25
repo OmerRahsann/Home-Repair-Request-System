@@ -15,11 +15,11 @@ function RequestEdit({ request }) {
   const [autoComplete, setAutoComplete] = useState(null)
   const [selectedCategory, setSelectedCategory] = useState()
   const [serviceRequestModel, setServiceRequestModel] = useState({
-    title: request.title,
-    description: request.description,
-    dollars: request.dollars,
-    address: request.address,
-    service: request.service,
+    title: request ? request.title : '', // Check if request is defined
+    description: request ? request.description : '',
+    dollars: request ? request.dollars : 0, // Assuming it's a number
+    address: request ? request.address : '',
+    service: request ? request.service : '',
   })
   const [services, setServices] = useState([])
   // ... other state variables and functions
@@ -197,7 +197,7 @@ function RequestEdit({ request }) {
             action="#"
             onSubmit={createServiceRequest}
           >
-            <div className="">
+            <div>
               <label className="font-bold ">Project Title</label>
               <input
                 type="text"
@@ -211,7 +211,7 @@ function RequestEdit({ request }) {
               <div className="p-2"></div>
             </div>
 
-            <div className>
+            <div>
               <label className="font-bold ">Project Description</label>
               <textarea
                 value={serviceRequestModel.description}
@@ -226,25 +226,22 @@ function RequestEdit({ request }) {
               />
             </div>
 
-            <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
-              <div>
-                <label
-                  className="font-bold"
-                  value={serviceRequestModel.address}
-                >
-                  Project Location
-                </label>
-                <input
-                  className="border border-gray-100 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:border-gray-600 dark:placeholder-gray-400"
-                  value={serviceRequestModel.address}
-                />
-              </div>
-            </Autocomplete>
+            <div>
+              <label className="font-bold">Project Location</label>
+              <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
+                <div>
+                  <input
+                    className="border border-gray-100 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:border-gray-600 dark:placeholder-gray-400"
+                    value={serviceRequestModel.address}
+                  />
+                </div>
+              </Autocomplete>
+            </div>
             <div className="">
               <label className="font-bold">Project Category</label>
               <Select
                 options={services}
-                placeholder={request.service}
+                placeholder={serviceRequestModel.service}
                 value={selectedCategory}
                 onChange={handleCategoryChage}
                 isSearchable={true}

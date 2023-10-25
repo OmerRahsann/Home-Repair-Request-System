@@ -77,46 +77,48 @@ function ServiceRequestForm() {
 
       // Extract the new service request ID from the response
       const newServiceRequestId = response.data
-        for (const imageDataUrl of images) {
-            // Convert the data URL to a Blob
-            const imageBlob = dataURLtoBlob(imageDataUrl)
-    
-            // Create form data for the image
-            const imageFormData = new FormData()
-            imageFormData.append('file', imageBlob)
-    
-            // Make a POST request to attach the image to the service request
-                await axios
-              .post(
-                `http://localhost:8080/api/customer/service_request/${newServiceRequestId}/attach`,
-                imageFormData,
-                { withCredentials: true },
-              )
-              .then((res) => {
-                console.log(res.data)
-                // After creating the request, you can clear the form or take any other action.
-                setServiceRequestModel({
-                  title: '',
-                  description: '',
-                  dollars: null,
-                  address: '',
-                  service: '',
-                })
-                setImages([])
-              })
-              .catch((fail) => {
-                alert(
-                  'There was an error attaching an image to your service request. Please try again.',
-                )
-                console.error(fail) // Error!
-              })
-      }  
+      for (const imageDataUrl of images) {
+        // Convert the data URL to a Blob
+        const imageBlob = dataURLtoBlob(imageDataUrl)
+
+        // Create form data for the image
+        const imageFormData = new FormData()
+        imageFormData.append('file', imageBlob)
+
+        // Make a POST request to attach the image to the service request
+        await axios
+          .post(
+            `http://localhost:8080/api/customer/service_request/${newServiceRequestId}/attach`,
+            imageFormData,
+            { withCredentials: true },
+          )
+          .then((res) => {
+            console.log(res.data)
+            // After creating the request, you can clear the form or take any other action.
+            setServiceRequestModel({
+              title: '',
+              description: '',
+              dollars: null,
+              address: '',
+              service: '',
+            })
+            setImages([])
+          })
+          .catch((fail) => {
+            alert(
+              'There was an error attaching an image to your service request. Please try again.',
+            )
+            console.error(fail) // Error!
+          })
+      }
       setFormSubmitted(true)
       setNotification('Request created successfully.')
       // Fetch the updated list of service requests
       // getServiceRequests();
     } catch (error) {
-        alert("There was an error creating your service request. Please try again.")
+      alert(
+        'There was an error creating your service request. Please try again.',
+      )
       console.error('Error creating service request:', error)
     }
   }
@@ -130,7 +132,6 @@ function ServiceRequestForm() {
     }
     return new Blob([ab], { type: 'image/jpeg' })
   }
-
 
   const handleChange = (evt) => {
     const value = evt.target.value
@@ -158,25 +159,24 @@ function ServiceRequestForm() {
   }
 
   const handleImageUpload = (event) => {
-    const files = event.target.files;
-    const uploadedImages = [];
-  
+    const files = event.target.files
+    const uploadedImages = []
+
     for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const reader = new FileReader();
-  
+      const file = files[i]
+      const reader = new FileReader()
+
       reader.onload = (e) => {
-        uploadedImages.push(e.target.result);
-  
+        uploadedImages.push(e.target.result)
+
         if (uploadedImages.length === files.length) {
-          setImages(uploadedImages); // Update the images state
+          setImages(uploadedImages) // Update the images state
         }
       }
-  
-      reader.readAsDataURL(file);
+
+      reader.readAsDataURL(file)
     }
-  };
-  
+  }
 
   return (
     <div className="p-6 space-y-4 md:space-y-6 sm:p-8">

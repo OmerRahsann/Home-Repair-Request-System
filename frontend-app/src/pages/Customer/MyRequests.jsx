@@ -65,7 +65,7 @@ function MyRequests() {
         </div>
       ) : (
         <h1 className="font-bold text-center text-xl">
-          You do not have any requests. Click here to get started:
+          You do not have any requests.
         </h1>
       )}
     </div>
