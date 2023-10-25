@@ -70,7 +70,7 @@ function ServiceRequestFinal({ request }) {
           <>
             <div className="p-2 ">
               <ImageSlider images={request.pictures} />
-              <div className="p-2 flex flex-col border border-gray-800 border-5 border-t-0">
+              <div className="p-2 flex flex-col ">
                 <div className="flex flex-row justify-between">
                   <h1 className="font-bold text-[3.5vh]">{request.title}</h1>
                   <div className="flex flex-row ">
@@ -80,18 +80,22 @@ function ServiceRequestFinal({ request }) {
                   </div>
                 </div>
                 <h2>
-                  <strong className="font-semibold">Project Category: </strong>
+                  <strong className="font-semibold">Category: </strong>
                   {request.service}
                 </h2>
                 <p>
                   <strong className="font-semibold">
-                    Project Description:
+                    Description:
                   </strong>{' '}
                   {request.description}
                 </p>
                 <h2>
                   <strong className="font-semibold">Price Range: </strong> $
                   {request.dollars}
+                </h2>
+                <h2>
+                  <strong className="font-semibold">Status: </strong>
+                  {request.status}
                 </h2>
                 <h2>
                   <strong className="font-semibold">Location:</strong>{' '}

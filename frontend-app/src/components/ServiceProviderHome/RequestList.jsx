@@ -1,6 +1,7 @@
 import React, { useState, useEffect, createRef } from 'react'
 import Select from 'react-select'
 import RequestDetails from '../RequestDetails'
+import ServiceRequestCard from './ServiceRequestCard'
 
 function RequestList({ onSearch }) {
   const requests = [
@@ -74,7 +75,7 @@ function RequestList({ onSearch }) {
           <div className="flex flex-wrap gap-4">
             {requests?.map((request, i) => (
               <div className="w-full p-2 " key={i}>
-                <RequestDetails request={request} />
+                <ServiceRequestCard request={request} />
               </div>
             ))}
           </div>

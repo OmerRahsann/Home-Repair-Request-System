@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Carousel } from 'react-responsive-carousel'
 import 'react-responsive-carousel/lib/styles/carousel.min.css'
+import noImage from '../Pictures/noImage.jpeg'
 
 function ImageSlider({ images }) {
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -21,19 +22,19 @@ function ImageSlider({ images }) {
     setCurrentIndex(newIndex)
   }
 
-  useEffect(() => {
-    let interval
+  // useEffect(() => {
+  //   let interval
 
-    if (!isHovered) {
-      interval = setInterval(() => {
-        // Change the current index automatically
-        const newIndex = (currentIndex + 1) % images.length
-        setCurrentIndex(newIndex)
-      }, 10000) // Change the image every 5 seconds (adjust this time as needed)
-    }
+  //   if (!isHovered) {
+  //     interval = setInterval(() => {
+  //       // Change the current index automatically
+  //       const newIndex = (currentIndex + 1) % images.length
+  //       setCurrentIndex(newIndex)
+  //     }, 10000) // Change the image every 5 seconds (adjust this time as needed)
+  //   }
 
-    return () => clearInterval(interval)
-  }, [currentIndex, images, isHovered])
+  //   return () => clearInterval(interval)
+  // }, [currentIndex, images, isHovered])
 
   return images.length > 0 ? (
     <div>
@@ -69,7 +70,13 @@ function ImageSlider({ images }) {
         ))}
       </Carousel>
     </div>
-  ) : null
+  ) : <div>
+    <Carousel  showThumbs={false}
+        selectedItem={currentIndex}>
+          <img src={noImage} className="object-cover h-[40vh] w-[80vh]"/>
+
+    </Carousel>
+  </div>
 }
 
 export default ImageSlider
