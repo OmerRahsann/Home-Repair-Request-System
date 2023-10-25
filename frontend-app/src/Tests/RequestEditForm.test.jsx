@@ -23,7 +23,7 @@ describe('ServiceRequestForm', () => {
     expect(
       screen.getByText('Upload Additional Project Pictures'),
     ).toBeInTheDocument()
-    expect(screen.getByText('Maximum Quote')).toBeInTheDocument()
+    expect(screen.getByText('Desired Price')).toBeInTheDocument()
     expect(screen.getByText('SAVE CHANGES')).toBeInTheDocument()
   })
 

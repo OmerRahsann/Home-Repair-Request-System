@@ -88,7 +88,7 @@ function ServiceRequestFinal({ request }) {
                   {request.description}
                 </p>
                 <h2>
-                  <strong className="font-semibold">Price Range: </strong> $
+                  <strong className="font-semibold">Desired Price: </strong> $
                   {request.dollars}
                 </h2>
                 <h2>

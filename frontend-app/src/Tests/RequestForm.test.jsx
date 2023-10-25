@@ -21,7 +21,7 @@ describe('ServiceRequestForm', () => {
     expect(screen.getByText('Project Location')).toBeInTheDocument()
     expect(screen.getByText('Project Category')).toBeInTheDocument()
     expect(screen.getByText('Upload Project Pictures')).toBeInTheDocument()
-    expect(screen.getByText('Maximum Quote')).toBeInTheDocument()
+    expect(screen.getByText('Desired Price')).toBeInTheDocument()
     expect(screen.getByText('SUBMIT REQUEST')).toBeInTheDocument()
   })
 

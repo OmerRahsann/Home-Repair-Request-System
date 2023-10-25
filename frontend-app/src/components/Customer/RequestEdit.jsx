@@ -263,7 +263,7 @@ function RequestEdit({ request }) {
             </div>
 
             <div>
-              <label className="font-bold">Maximum Quote</label>
+              <label className="font-bold">Desired Price</label>
 
               <input
                 name="dollars"
