@@ -1,20 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 
 function ProviderDescription(props) {
-  const [description, setDescription] = useState('');
-  const maxCharacters = 100;
+  const [description, setDescription] = useState('')
+  const maxCharacters = 100
 
   const handleDescriptionChange = (event) => {
-    const text = event.target.value;
+    const text = event.target.value
 
     if (text.length <= maxCharacters) {
-      setDescription(text);
-      props.onDescriptionChange(text);
+      setDescription(text)
+      props.onDescriptionChange(text)
     }
-  };
+  }
 
   return (
-    <div className='bg-custom-gray items-center'>
+    <div className="bg-custom-gray items-center">
       <textarea
         value={description}
         onChange={handleDescriptionChange}
@@ -25,9 +25,11 @@ function ProviderDescription(props) {
         style={{ resize: 'none' }}
         required
       />
-      <p className="text-xs text-gray-400 text-center">Characters remaining: {maxCharacters - description.length}</p>
+      <p className="text-xs text-gray-400 text-center">
+        Characters remaining: {maxCharacters - description.length}
+      </p>
     </div>
-  );
+  )
 }
 
-export default ProviderDescription;
+export default ProviderDescription

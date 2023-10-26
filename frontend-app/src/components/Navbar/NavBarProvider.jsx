@@ -2,28 +2,23 @@ import { Fragment, useState } from 'react'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { UserCircleIcon } from '@heroicons/react/24/outline'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import logo from '../../Logos/mainLogo.png'
 import { useAuth, checkIsLoggedIn, logout } from '../../AuthContext'
 import axios from 'axios'
 
 const navigation = [
-  { name: 'Home', href: '/', current: true },
-  { name: 'My Requests', href: '/customer/myrequests', current: false },
+  { name: 'Home', href: '/provider/home', current: true },
+  { name: 'Service Requests', href: '/provider/viewrequests', current: false },
+  { name: 'Link 3', href: '#', current: false },
+  { name: 'Link 4', href: '#', current: false },
 ]
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
 
-export default function NavBar({ isLoggedIn }) {
-  const location = useLocation()
-
-  // Update the current property in the navigation array based on the current location.
-  navigation.forEach((item) => {
-    item.current = item.href === location.pathname
-  })
-
+export default function NavBarProvider({ isLoggedIn }) {
   const navigate = useNavigate()
   const handleSignIn = () => {
     navigate('/customer/signup')
@@ -33,7 +28,7 @@ export default function NavBar({ isLoggedIn }) {
     <Disclosure as="nav">
       {({ open }) => (
         <>
-          <div className="pt-2 bg-gray-100 p-4">
+          <div className="pt-2 bg-white p-4">
             <div className="relative flex h-24 items-center justify-between p-2">
               <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
                 {/* Mobile menu button*/}
@@ -61,7 +56,7 @@ export default function NavBar({ isLoggedIn }) {
                           item.current
                             ? 'bg-custom-black text-white'
                             : 'text-black hover:bg-custom-grain hover:text-white',
-                          'rounded-md px-3 py-2 text-[2vh] font-bold',
+                          'rounded-md px-3 py-2 text-sm font-medium',
                         )}
                         aria-current={item.current ? 'page' : undefined}
                       >
@@ -74,20 +69,12 @@ export default function NavBar({ isLoggedIn }) {
 
               <div className="absolute inset-y-0 right-4 flex items-center space-x-2 pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-2">
                 {!isLoggedIn ? (
-                  <>
-                    <a
-                      href={'/provider/login'}
-                      className=" text-custom-black hover:bg-custom-grain hover:text-white rounded-md px-3 py-2 text-[1vh] font-bold"
-                    >
-                      Become a Servcie Provider!
-                    </a>
-                    <a
-                      href={'/customer/login'}
-                      className="bg-custom-black text-white hover:bg-custom-grain hover:text-white rounded-md px-3 py-2 text-[2vh] font-bold"
-                    >
-                      Sign In
-                    </a>{' '}
-                  </>
+                  <a
+                    href={'/customer/login'}
+                    className="bg-custom-black text-white text-black hover:bg-custom-grain hover:text-white rounded-md px-3 py-2 text-sm font-medium"
+                  >
+                    Sign In
+                  </a>
                 ) : null}
 
                 {/* <button

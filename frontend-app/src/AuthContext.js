@@ -1,5 +1,6 @@
 // AuthContext.js
 import React, { createContext, useContext, useState } from 'react';
+import axios from 'axios';
 
 const AuthContext = createContext();
 
@@ -10,11 +11,15 @@ export function useAuth() {
 export function AuthProvider({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const accessAcount = () => {
-    // Implement your login logic here
-    setIsLoggedIn(true);
-    localStorage.setItem('isLoggedIn', 'true');
-  };
+
+  const accessServiceProviderAccount = (type) => {
+    axios.get("http://localhost:8080/api/account/type", {withCredentials: true})
+            .then((res) => {
+            const userType = res.data
+            return userType === "SERVICE_PROVIDER"
+            })
+  }
+
 
   const logout = () => {
     // Implement your logout logic here
@@ -23,8 +28,8 @@ export function AuthProvider({ children }) {
 
   const value = {
     isLoggedIn,
-    accessAcount,
     logout,
+    accessServiceProviderAccount
   };
 
   return (
@@ -39,7 +44,36 @@ export function checkIsLoggedIn() {
     return isLoggedIn === 'true';
   }
 
+
+  export async function checkIsServiceProviderLoggedIn() {
+    try {
+      const response = await axios.get("http://localhost:8080/api/account/type", { withCredentials: true });
+      const type = response.data;
+      console.log(type );
+      if(type === "SERVICE_PROVIDER") return true
+      else return false
+    } catch (error) {
+      console.error(error);
+      return null; // or some other appropriate error handling
+    }
+  }
+
+  export async function checkIsCustomerLoggedIn() {
+    try {
+      const response = await axios.get("http://localhost:8080/api/account/type", { withCredentials: true });
+      const type = response.data;
+      console.log(type );
+      if(type === "CUSTOMER") return true
+      return false
+    } catch (error) {
+      console.error(error);
+      console.log(false)
+      return false; // or some other appropriate error handling
+    }
+  }
+
 export function logout() {
-    localStorage.removeItem('isLoggedIn');
+  axios.get("http://localhost:8080/api/logout", {withCredentials: true})
+  alert("You have now been Logged Out. ")
     // Clear any other user-related data as well
   }
