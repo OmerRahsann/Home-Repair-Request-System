@@ -240,6 +240,7 @@ class RegistrationTests {
         assertEquals(serviceInfo.description(), serviceProvider.getDescription());
         assertEquals(serviceInfo.services(), serviceProvider.getServices());
         assertEquals(serviceInfo.phoneNumber(), serviceProvider.getPhoneNumber());
+        assertEquals(serviceInfo.address(), serviceProvider.getAddress());
         assertEquals(serviceInfo.contactEmailAddress(), serviceProvider.getContactEmailAddress());
     }
 
