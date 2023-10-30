@@ -1,4 +1,4 @@
-package homerep.springy.service.impl;
+package homerep.springy.service.impl.geocoding;
 
 import com.google.maps.GeoApiContext;
 import com.google.maps.GeocodingApi;

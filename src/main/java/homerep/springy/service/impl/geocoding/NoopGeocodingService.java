@@ -1,4 +1,4 @@
-package homerep.springy.service.impl;
+package homerep.springy.service.impl.geocoding;
 
 import homerep.springy.service.GeocodingService;
 import homerep.springy.type.LatLong;

@@ -1,11 +1,14 @@
 package homerep.springy.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import homerep.springy.service.GeocodingService;
-import homerep.springy.service.impl.GoogleGeocodingService;
-import homerep.springy.service.impl.NoopGeocodingService;
+import homerep.springy.service.impl.geocoding.GoogleGeocodingService;
+import homerep.springy.service.impl.geocoding.NominatimGeocodingService;
+import homerep.springy.service.impl.geocoding.NoopGeocodingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,10 +21,13 @@ public class GeocodingServiceConfiguration {
     @Value("${homerep.geocoding.google-maps-api-key:#{null}}")
     private String googleMapsAPIKey;
 
+    @Value("${homerep.geocoding.nominatim-url:#{null}}")
+    private String nominatimURL;
+
     @Bean
-    @ConditionalOnProperty(prefix = "homerep.geocoding", name = "google-maps-api-key", havingValue="\0", matchIfMissing = true)
+    @ConditionalOnExpression("'${homerep.geocoding.google-maps-api-key:}' == '' and '${homerep.geocoding.nominatim-url:}' == ''")
     public GeocodingService noopGeocodingService() {
-        LOGGER.warn("Missing Google Maps API key. Noop geocoder will be used.");
+        LOGGER.warn("No geocoding service was configured. Noop geocoder will be used.");
         return new NoopGeocodingService();
     }
 
@@ -30,5 +36,12 @@ public class GeocodingServiceConfiguration {
     public GeocodingService googleGeocodingService() {
         LOGGER.info("Google Maps API key was supplied. Google geocoder will be used.");
         return new GoogleGeocodingService(googleMapsAPIKey);
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "homerep.geocoding", name = "nominatim-url")
+    public GeocodingService nominatimGeocodingService(ObjectMapper mapper) {
+        LOGGER.info("Nomination URL was supplied. Nominatim geocoder will be used.");
+        return new NominatimGeocodingService(nominatimURL, mapper);
     }
 }
