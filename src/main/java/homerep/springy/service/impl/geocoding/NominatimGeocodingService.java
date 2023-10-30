@@ -2,6 +2,8 @@ package homerep.springy.service.impl.geocoding;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import homerep.springy.exception.GeocodingException;
 import homerep.springy.service.GeocodingService;
 import homerep.springy.service.impl.ImageStorageServiceImpl;
@@ -17,6 +19,7 @@ import org.springframework.web.util.UriBuilderFactory;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.Duration;
 
 public class NominatimGeocodingService implements GeocodingService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ImageStorageServiceImpl.class);
@@ -27,6 +30,19 @@ public class NominatimGeocodingService implements GeocodingService {
 
     private final ObjectMapper mapper;
 
+    /**
+     * Cache all geocoding results for 1 week to avoid sending the same request repeatedly
+     */
+    private static final Cache<String, LatLong> GEOCODING_CACHE = Caffeine.newBuilder()
+            .maximumSize(1024 * 1024 / 16) // Roughly 1 MiB of coordinates
+            .expireAfterWrite(Duration.ofDays(7))
+            .build();
+
+    /**
+     * Sentinel value that represents a null result in the GEOCODING_CACHE
+     */
+    private static final LatLong NULL_CACHE_RESULT = new LatLong(Double.MAX_VALUE, Double.MAX_VALUE);
+
     public NominatimGeocodingService(String nominatimURL, ObjectMapper mapper) {
         this.nominatimUriBuilder = new DefaultUriBuilderFactory(nominatimURL);
         this.client = new OkHttpClient(); // TODO app wide http client or service?
@@ -35,6 +51,16 @@ public class NominatimGeocodingService implements GeocodingService {
 
     @Override
     public LatLong geocode(String address) throws GeocodingException {
+        LatLong location = GEOCODING_CACHE.getIfPresent(address);
+        if (location != null) {
+            return NULL_CACHE_RESULT.equals(location) ? null : location;
+        }
+        location = geocode0(address);
+        GEOCODING_CACHE.put(address, location == null ? NULL_CACHE_RESULT : location);
+        return location;
+    }
+
+    private LatLong geocode0(String address) throws GeocodingException {
         try {
             URL url = nominatimUriBuilder.uriString("/search")
                     .queryParam("q", address)

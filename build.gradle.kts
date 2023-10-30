@@ -29,6 +29,8 @@ dependencies {
 	implementation("org.im4java:im4java:1.4.0") // For interfacing with ImageMagick
 	implementation("com.google.maps:google-maps-services:2.2.0") // For geocoding addresses with the Google Maps API
 
+	implementation("com.github.ben-manes.caffeine:caffeine")
+
 	runtimeOnly("com.mysql:mysql-connector-j")
 
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
