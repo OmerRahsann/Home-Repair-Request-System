@@ -4,8 +4,10 @@ import homerep.springy.authorities.Verified;
 import homerep.springy.entity.Account;
 import homerep.springy.entity.Customer;
 import homerep.springy.entity.ServiceProvider;
+import homerep.springy.entity.type.Token;
 import homerep.springy.model.AccountModel;
 import homerep.springy.model.RegisterModel;
+import homerep.springy.model.resetpassword.ResetPasswordModel;
 import homerep.springy.model.accountinfo.CustomerInfoModel;
 import homerep.springy.model.accountinfo.ServiceProviderInfoModel;
 import homerep.springy.repository.AccountRepository;
@@ -26,6 +28,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriBuilderFactory;
 
 import java.net.URI;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +57,13 @@ public class AccountServiceImpl implements AccountService, UserDetailsService {
 
     @Value("${homerep.require-verification:#{true}}")
     private boolean requireVerification;
+
+    // TODO configurable expiration
+    private static final Duration RESET_TOKEN_VALID_DURATION = Duration.ofHours(2);
+
+    // TODO configurable expiration
+    // Time after token creation in which a new token can be created
+    private static final Duration RESET_TOKEN_REFRESH_DURATION = RESET_TOKEN_VALID_DURATION.minus(Duration.ofMinutes(90));
 
     @Override
     public boolean isRegistered(String email) {
@@ -123,6 +134,53 @@ public class AccountServiceImpl implements AccountService, UserDetailsService {
         account.setVerified(true);
         account.setVerificationToken(null);
         accountRepository.save(account);
+        return true;
+    }
+
+    @Override
+    public void sendResetPassword(String email) {
+        Account account = accountRepository.findByEmail(email);
+        if (account == null || !account.isVerified()) {
+            return;
+        }
+        if (account.getResetPasswordToken() != null) {
+            if (!account.getResetPasswordToken().canRefresh()) {
+                return;
+            }
+        }
+
+        Instant now = Instant.now();
+        Instant refreshAt = now.plus(RESET_TOKEN_REFRESH_DURATION);
+        Instant expireAt = now.plus(RESET_TOKEN_VALID_DURATION);
+        account.setResetPasswordToken(new Token(refreshAt, expireAt));
+        account = accountRepository.save(account);
+
+        URI resetPasswordUri = uriBuilderFactory
+                .uriString("/api/reset_password")
+                .queryParam("token", "{token}")
+                .build(account.getResetPasswordToken().getVal());
+
+        emailService.sendEmail(account.getEmail(), "password-reset", Map.of(
+                "token-url", resetPasswordUri.toASCIIString()
+        ));
+    }
+
+    @Override
+    public boolean resetPassword(ResetPasswordModel resetPasswordModel) {
+        Account account = accountRepository.findByResetPasswordTokenVal(resetPasswordModel.token());
+        if (account == null) {
+            return false;
+        }
+        if (account.getResetPasswordToken().isExpired()) {
+            account.setResetPasswordToken(null);
+            accountRepository.save(account);
+            return false;
+        }
+        // TODO invalidate sessions
+        account.setResetPasswordToken(null);
+        account.setPassword(passwordEncoder.encode(resetPasswordModel.password()));
+        accountRepository.save(account);
+
         return true;
     }
 

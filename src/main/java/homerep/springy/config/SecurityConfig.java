@@ -55,6 +55,7 @@ public class SecurityConfig {
                         .requestMatchers(mvc.pattern("/api/verify")).permitAll()
                         .requestMatchers(mvc.pattern("/api/login")).permitAll()
                         .requestMatchers(mvc.pattern("/api/logout")).permitAll()
+                        .requestMatchers(mvc.pattern("/api/reset_password/**")).permitAll()
                         .requestMatchers(mvc.pattern("/api/customer/**")).access(
                                 AuthorizationManagers.allOf(
                                         AuthorityAuthorizationManager.hasAuthority(AccountType.CUSTOMER.getAuthority()),

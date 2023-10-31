@@ -1,10 +1,8 @@
 package homerep.springy.entity;
 
 import homerep.springy.authorities.AccountType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import homerep.springy.entity.type.Token;
+import jakarta.persistence.*;
 
 import java.util.Objects;
 
@@ -21,7 +19,11 @@ public class Account {
 
     private boolean verified;
 
+    //TODO verification email token expiration
     private String verificationToken;
+
+    @Embedded // TODO this is kinda ugly, can it be better?
+    private Token resetPasswordToken;
 
     private AccountType type;
 
@@ -57,6 +59,14 @@ public class Account {
         this.verificationToken = verificationToken;
     }
 
+    public Token getResetPasswordToken() {
+        return resetPasswordToken;
+    }
+
+    public void setResetPasswordToken(Token resetPasswordToken) {
+        this.resetPasswordToken = resetPasswordToken;
+    }
+
     public AccountType getType() {
         return type;
     }
@@ -70,16 +80,16 @@ public class Account {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Account account = (Account) o;
-        return verified == account.verified && Objects.equals(id, account.id) && Objects.equals(email, account.email) && Objects.equals(password, account.password) && Objects.equals(verificationToken, account.verificationToken) && type == account.type;
+        return verified == account.verified && Objects.equals(id, account.id) && Objects.equals(email, account.email) && Objects.equals(password, account.password) && Objects.equals(verificationToken, account.verificationToken) && Objects.equals(resetPasswordToken, account.resetPasswordToken) && type == account.type;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, email, password, verified, verificationToken, type);
+        return Objects.hash(id, email, password, verified, verificationToken, resetPasswordToken, type);
     }
 
     @Override
     public String toString() {
-        return "Account{" + "id=" + id + ", email='" + email + '\'' + ", password='" + password + '\'' + ", verified=" + verified + ", verificationToken='" + verificationToken + '\'' + ", type=" + type + '}';
+        return "Account{" + "id=" + id + ", email='" + email + '\'' + ", password='" + password + '\'' + ", verified=" + verified + ", verificationToken='" + verificationToken + '\'' + ", resetPasswordToken=" + resetPasswordToken + ", type=" + type + '}';
     }
 }
