@@ -6,4 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ServiceProviderRepository extends JpaRepository<ServiceProvider, Integer> {
     ServiceProvider findByAccountEmail(String email);
+    ServiceProvider findByAccount(Account account);
 }
