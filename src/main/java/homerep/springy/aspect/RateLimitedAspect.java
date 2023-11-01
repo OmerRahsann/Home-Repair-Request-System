@@ -79,7 +79,6 @@ public class RateLimitedAspect {
                         .refillIntervally(rateLimited.refillAmount(), Duration.ofSeconds(rateLimited.refillDuration()))
                         .build())
                 .build());
-        System.out.println(bucketKey + " " + System.identityHashCode(bucket));
         if (bucket.tryConsume(1)) {
             return pjp.proceed();
         } else {

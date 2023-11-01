@@ -28,7 +28,6 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -114,8 +113,8 @@ public class ResetPasswordTests {
         // with a link to reset the account's password
         assertTrue(message.getContent() instanceof String);
         String content = (String) message.getContent();
-        Pattern pattern = Pattern.compile("http://localhost:0/.+?\\?token=" + token.getVal());
-        assertTrue(pattern.matcher(content).find());
+        String tokenUrl = "http://localhost:3000/reset_password?token=" + account.getResetPasswordToken().getVal();
+        assertTrue(content.contains(tokenUrl));
 
         // Token can be used to reset the password
         ResetPasswordModel model = new ResetPasswordModel(token.getVal(), NEW_PASSWORD);

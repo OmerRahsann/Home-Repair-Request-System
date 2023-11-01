@@ -7,9 +7,9 @@ import homerep.springy.entity.ServiceProvider;
 import homerep.springy.entity.type.Token;
 import homerep.springy.model.AccountModel;
 import homerep.springy.model.RegisterModel;
-import homerep.springy.model.resetpassword.ResetPasswordModel;
 import homerep.springy.model.accountinfo.CustomerInfoModel;
 import homerep.springy.model.accountinfo.ServiceProviderInfoModel;
+import homerep.springy.model.resetpassword.ResetPasswordModel;
 import homerep.springy.repository.AccountRepository;
 import homerep.springy.repository.CustomerRepository;
 import homerep.springy.repository.ServiceProviderRepository;
@@ -25,9 +25,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.util.UriBuilderFactory;
 
-import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -51,9 +51,6 @@ public class AccountServiceImpl implements AccountService, UserDetailsService {
 
     @Autowired
     private EmailService emailService;
-
-    @Autowired
-    private UriBuilderFactory uriBuilderFactory;
 
     @Value("${homerep.require-verification:#{true}}")
     private boolean requireVerification;
@@ -114,14 +111,8 @@ public class AccountServiceImpl implements AccountService, UserDetailsService {
         }
         account.setVerificationToken(UUID.randomUUID().toString());
         account = accountRepository.save(account);
-
-        URI verifyUri = uriBuilderFactory
-                .uriString("/api/verify")
-                .queryParam("token", "{token}")
-                .build(account.getVerificationToken());
-
         emailService.sendEmail(account.getEmail(), "email-verification", Map.of(
-                "token-url", verifyUri.toASCIIString()
+                "token", URLEncoder.encode(account.getVerificationToken(), StandardCharsets.US_ASCII)
         ));
     }
 
@@ -154,14 +145,8 @@ public class AccountServiceImpl implements AccountService, UserDetailsService {
         Instant expireAt = now.plus(RESET_TOKEN_VALID_DURATION);
         account.setResetPasswordToken(new Token(refreshAt, expireAt));
         account = accountRepository.save(account);
-
-        URI resetPasswordUri = uriBuilderFactory
-                .uriString("/api/reset_password")
-                .queryParam("token", "{token}")
-                .build(account.getResetPasswordToken().getVal());
-
-        emailService.sendEmail(account.getEmail(), "password-reset", Map.of(
-                "token-url", resetPasswordUri.toASCIIString()
+        emailService.sendEmail(account.getEmail(), "reset-password", Map.of(
+                "token", URLEncoder.encode(account.getResetPasswordToken().getVal(), StandardCharsets.US_ASCII)
         ));
     }
 

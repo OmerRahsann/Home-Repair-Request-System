@@ -117,7 +117,7 @@ class RegistrationTests {
         // with a link to verify the account
         assertTrue(message.getContent() instanceof String);
         String content = (String) message.getContent();
-        String tokenUrl = "http://localhost:0/api/verify?token=" + account.getVerificationToken();
+        String tokenUrl = "http://localhost:3000/verify?token=" + account.getVerificationToken();
         assertTrue(content.contains(tokenUrl));
 
         // Attempting to register twice fails

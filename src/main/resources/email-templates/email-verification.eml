@@ -13,7 +13,7 @@ Content-Transfer-Encoding: 7bit
   </head>
   <body>
     <p>Please verify your email address by clicking the link below.</p>
-    <a href="{{token-url}}">{{token-url}}</a>
+    <a href="http://localhost:3000/verify?token={{token}}">{{token}}</a>
     <p></p>
   </body>
 </html>
