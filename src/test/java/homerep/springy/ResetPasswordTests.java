@@ -10,6 +10,7 @@ import homerep.springy.config.TestDisableRateLimitConfig;
 import homerep.springy.config.TestMailConfig;
 import homerep.springy.entity.Account;
 import homerep.springy.entity.type.Token;
+import homerep.springy.model.AccountModel;
 import homerep.springy.model.resetpassword.ResetPasswordModel;
 import homerep.springy.model.resetpassword.SendResetPasswordModel;
 import homerep.springy.repository.AccountRepository;
@@ -22,14 +23,18 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -56,6 +61,9 @@ public class ResetPasswordTests {
 
     @Autowired
     private GreenMailBean greenMailBean;
+
+    @Autowired
+    private SessionRegistry sessionRegistry;
 
     private static final String VERIFIED_EMAIL = "test@localhost";
     private static final String UNVERIFIED_EMAIL = "test2@localhost";
@@ -335,6 +343,35 @@ public class ResetPasswordTests {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("timestamp").isNumber())
                 .andExpect(jsonPath("type").value("invalid_token"));
+    }
+
+    @Test
+    void resetPasswordExpireSessions() throws Exception {
+        // Expire all sessions
+        sessionRegistry.getAllSessions(VERIFIED_EMAIL, false)
+                .forEach(SessionInformation::expireNow);
+        // Create a few new session
+        for (int i = 0; i < 4; i++) {
+            this.mvc.perform(postJson("/api/login", new AccountModel(VERIFIED_EMAIL, INITIAL_PASSWORD)))
+                    .andExpect(status().isOk())
+                    .andExpect(authenticated());
+        }
+        List<SessionInformation> sessions = sessionRegistry.getAllSessions(VERIFIED_EMAIL, false);
+        assertEquals(4, sessions.size());
+
+        // Sent the password reset email
+        accountService.sendResetPassword(VERIFIED_EMAIL);
+        Account account = accountRepository.findByEmail(VERIFIED_EMAIL);
+        assertNotNull(account.getResetPasswordToken());
+        // Sessions are still there
+        sessions = sessionRegistry.getAllSessions(VERIFIED_EMAIL, false);
+        assertEquals(4, sessions.size());
+        // Reset the password
+        ResetPasswordModel model = new ResetPasswordModel(account.getResetPasswordToken().getVal(), NEW_PASSWORD);
+        assertTrue(accountService.resetPassword(model));
+        // All sessions are deleted
+        sessions = sessionRegistry.getAllSessions(VERIFIED_EMAIL, true);
+        assertTrue(sessions.isEmpty());
     }
 
     private MockHttpServletRequestBuilder postJson(String url, Object content) throws JsonProcessingException {

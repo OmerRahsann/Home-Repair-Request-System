@@ -24,7 +24,6 @@ public class ResetPasswordController {
     @PostMapping(value = "/send")
     @RateLimited(capacity = 1, refillAmount = 1, refillDuration = 30)
     public void sendResetPassword(@RequestBody @Validated SendResetPasswordModel model) {
-        // TODO rate limiting? proof of work?
         accountService.sendResetPassword(model.email());
     }
 

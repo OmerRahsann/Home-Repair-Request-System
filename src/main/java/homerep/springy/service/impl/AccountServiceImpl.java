@@ -19,11 +19,15 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.session.Session;
+import org.springframework.session.SessionRepository;
 import org.springframework.stereotype.Service;
 
 import java.net.URLEncoder;
@@ -45,6 +49,12 @@ public class AccountServiceImpl implements AccountService, UserDetailsService {
 
     @Autowired
     private ServiceProviderRepository serviceProviderRepository;
+
+    @Autowired
+    private SessionRegistry sessionRegistry;
+
+    @Autowired
+    private SessionRepository<? extends Session> sessionRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -161,11 +171,14 @@ public class AccountServiceImpl implements AccountService, UserDetailsService {
             accountRepository.save(account);
             return false;
         }
-        // TODO invalidate sessions
         account.setResetPasswordToken(null);
         account.setPassword(passwordEncoder.encode(resetPasswordModel.password()));
-        accountRepository.save(account);
-
+        account = accountRepository.save(account);
+        // Logout all sessions for this account
+        for (SessionInformation session : sessionRegistry.getAllSessions(account.getEmail(), false)) {
+            session.expireNow();
+            sessionRepository.deleteById(session.getSessionId());
+        }
         return true;
     }
 
