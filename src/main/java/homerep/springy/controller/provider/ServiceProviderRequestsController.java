@@ -2,50 +2,81 @@ package homerep.springy.controller.provider;
 
 import homerep.springy.entity.ServiceRequest;
 import homerep.springy.repository.ServiceRequestRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import com.google.maps.GeocodingApi;
+import com.google.maps.GeoApiContext;
+import com.google.maps.model.GeocodingResult;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/provider/service_request")
+@RequestMapping("/api/provider/service_requests")
 public class ServiceProviderRequestsController {
-    
-    private static final Logger LOGGER = LoggerFactory.getLogger(ServiceProviderRequestsController.class);
 
     @Autowired
     private ServiceRequestRepository serviceRequestRepository;
+    private static final String GOOGLE_MAPS_API_KEY = "AIzaSyB-Hir-BFLaHrDngWHU5dXi3wA4VfIshs4";
 
-    @GetMapping
-    public List<ServiceRequest> getAllServiceRequests() {
-        return serviceRequestRepository.findAll();
-    }
+    @GetMapping("/nearby")
+    public List<ServiceRequest> getServiceRequestsNearby(
+        @RequestParam double latitudeSW,
+        @RequestParam double longitudeSW,
+        @RequestParam double latitudeNE,
+        @RequestParam double longitudeNE) {
 
-    @GetMapping("/sorted/distance")
-    public List<ServiceRequest> getServiceRequestsSortedByDistance() {
-        // TODO: Implement a mechanism to sort ServiceRequests by distance
-        return serviceRequestRepository.findAll(); // Placeholder
-    }
+        double midpointLat = (latitudeSW + latitudeNE) / 2;
+        double midpointLon = (longitudeSW + longitudeNE) / 2;
 
-    @GetMapping("/sorted/price")
-    public List<ServiceRequest> getServiceRequestsSortedByPriceAndDistance() {
-        // TODO: Filter the ServiceRequests by a distance mechanism no further than 10 miles
-        return serviceRequestRepository.findAll().stream()
-                .sorted((s1, s2) -> Integer.compare(s2.getDollars(), s1.getDollars())) // Sort by price in descending order
+        double radius = haversineDistance(latitudeSW, longitudeSW, latitudeNE, longitudeNE) / 2;
+
+        List<ServiceRequest> allRequests = serviceRequestRepository.findAll();
+
+        return allRequests.stream()
+                .filter(request -> {
+                    double[] coords = convertAddressToCoords(request.getAddress()); // Assuming address field in ServiceRequest
+                    double distance = haversineDistance(midpointLat, midpointLon, coords[0], coords[1]);
+                    return distance <= radius;
+                })
                 .collect(Collectors.toList());
     }
 
-    @GetMapping("/sorted/date")
-    public List<ServiceRequest> getServiceRequestsSortedByDateAndDistance() {
-        // TODO: Filter the ServiceRequests by a distance mechanism no further than 10 miles
-        return serviceRequestRepository.findAll().stream()
-                .sorted((s1, s2) -> s2.getCreationDate().compareTo(s1.getCreationDate())) // Sort by date, newest first
-                .collect(Collectors.toList());
+    public double[] convertAddressToCoords(String address) {
+        GeoApiContext context = new GeoApiContext.Builder()
+                .apiKey(GOOGLE_MAPS_API_KEY)
+                .build();
+
+        try {
+            GeocodingResult[] results = GeocodingApi.geocode(context, address).await();
+            if (results.length > 0) {
+                double lat = results[0].geometry.location.lat;
+                double lng = results[0].geometry.location.lng;
+                return new double[]{lat, lng};
+            } else {
+                throw new RuntimeException("No results found for address: " + address);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error converting address to coordinates: " + e.getMessage(), e);
+        }
+    }
+
+    public double haversineDistance(double lat1, double lon1, double lat2, double lon2) {
+        int R = 3959; // Radius of the Earth in miles
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                   Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                   Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c; // Distance in miles
     }
 }
+
 

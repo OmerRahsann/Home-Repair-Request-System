@@ -59,11 +59,13 @@ public class SecurityConfig {
                                 AuthorizationManagers.allOf(
                                         AuthorityAuthorizationManager.hasAuthority(AccountType.CUSTOMER.getAuthority()),
                                         AuthorityAuthorizationManager.hasAuthority(Verified.INSTANCE.getAuthority())
-                                )
+                                )        
                         ) // Argh, this is not nice
-                        .anyRequest().authenticated()
                         .requestMatchers(mvc.pattern("/api/provider/**")).access(
-                            AuthorityAuthorizationManager.hasAuthority(AccountType.PROVIDER.getAuthority())
+                                AuthorizationManagers.allOf(
+                                        AuthorityAuthorizationManager.hasAuthority(AccountType.SERVICE_PROVIDER.getAuthority()),
+                                        AuthorityAuthorizationManager.hasAuthority(Verified.INSTANCE.getAuthority())
+                                )
                         )
                         .anyRequest().authenticated()
         );

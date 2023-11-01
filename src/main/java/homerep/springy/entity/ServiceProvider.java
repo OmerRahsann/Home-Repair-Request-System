@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 
 import java.util.List;
 
+import javax.tools.JavaFileManager.Location;
+
 @Entity
 public class ServiceProvider {
     @Id
@@ -23,6 +25,10 @@ public class ServiceProvider {
     private String phoneNumber;
 
     private String contactEmailAddress;
+
+    private double longitude;
+
+    private double latitude;
 
     protected ServiceProvider() {}
 
@@ -72,5 +78,21 @@ public class ServiceProvider {
 
     public void setContactEmailAddress(String contactEmailAddress) {
         this.contactEmailAddress = contactEmailAddress;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }    
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
     }
 }
