@@ -1,5 +1,6 @@
 package homerep.springy.controller;
 
+import homerep.springy.aspect.annotation.RateLimited;
 import homerep.springy.exception.ApiException;
 import homerep.springy.model.resetpassword.ResetPasswordModel;
 import homerep.springy.model.resetpassword.SendResetPasswordModel;
@@ -21,6 +22,7 @@ public class ResetPasswordController {
     }
 
     @PostMapping(value = "/send")
+    @RateLimited(capacity = 1, refillAmount = 1, refillDuration = 30)
     public void sendResetPassword(@RequestBody @Validated SendResetPasswordModel model) {
         // TODO rate limiting? proof of work?
         accountService.sendResetPassword(model.email());

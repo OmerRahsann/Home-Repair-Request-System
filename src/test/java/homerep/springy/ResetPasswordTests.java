@@ -6,6 +6,7 @@ import com.icegreen.greenmail.spring.GreenMailBean;
 import com.icegreen.greenmail.store.FolderException;
 import homerep.springy.authorities.AccountType;
 import homerep.springy.config.TestDatabaseConfig;
+import homerep.springy.config.TestDisableRateLimitConfig;
 import homerep.springy.config.TestMailConfig;
 import homerep.springy.entity.Account;
 import homerep.springy.entity.type.Token;
@@ -36,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-@Import(TestMailConfig.class)
+@Import({TestMailConfig.class, TestDisableRateLimitConfig.class})
 @TestDatabaseConfig
 public class ResetPasswordTests {
     @Autowired

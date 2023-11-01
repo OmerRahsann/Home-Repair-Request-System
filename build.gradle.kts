@@ -17,6 +17,7 @@ repositories {
 
 dependencies {
 	implementation("jakarta.mail:jakarta.mail-api:2.1.2") // For Email API
+	implementation("org.springframework.boot:spring-boot-starter-aop")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-mail")
 	implementation("org.springframework.boot:spring-boot-starter-security")
@@ -27,6 +28,8 @@ dependencies {
 	implementation("org.bouncycastle:bcpkix-jdk15on:1.70") // For Argon2
 
 	implementation("org.im4java:im4java:1.4.0") // For interfacing with ImageMagick
+	implementation("com.bucket4j:bucket4j-core:8.5.0") // For rate limiting
+	implementation("com.github.ben-manes.caffeine:caffeine") // For cache data structure
 
 	runtimeOnly("com.mysql:mysql-connector-j")
 
