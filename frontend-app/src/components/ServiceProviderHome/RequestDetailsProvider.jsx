@@ -3,7 +3,7 @@ import ImageSlider from './ImageSlider'
 import ServiceRequestModal from './Customer/ServiceRequestModal'
 import ServiceRequestFinal from './Customer/ServiceRequestFinal'
 
-function RequestDetails({ request }) {
+function RequestDetailsProvider({ request }) {
   const [showModal, setShowModal] = useState(false)
   const handleClick = async () => {
     setShowModal(true)
@@ -34,4 +34,4 @@ function RequestDetails({ request }) {
   )
 }
 
-export default RequestDetails
+export default RequestDetailsProvider

@@ -17,7 +17,7 @@ function App() {
           {/* <LocationFetcher /> */}
           <Routes>
             <Route path="/" element={<Home/>} />
-            <Route path="/customer/login" element={<CustomerSignIn />} />
+            <Route path="/customer/login" element={<CustomerSignIn />} /> //thats prob why we are getting the 404 
             <Route path="/customer/signup" element={<CustomerSignUp/>} />
             <Route path="/customer/myrequests" element={<MyRequests/>}/>
             <Route path="/provider/signup" element={<ProviderSignUp/>} />

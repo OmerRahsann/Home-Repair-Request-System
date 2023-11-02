@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import NavBarProvider from '../../components/Navbar/NavBarProvider'
 import { checkIsServiceProviderLoggedIn } from '../../AuthContext'
 import SearchBar from '../../components/ServiceProviderHome/SearchBar'
-import ServiceRequestList from '../../components/ServiceProviderHome/ServiceRequestList'
 import axios from 'axios'
 
 const ServiceProviderHome = ({ component: Component, ...rest }) => {
@@ -44,7 +43,7 @@ const ServiceProviderHome = ({ component: Component, ...rest }) => {
       <NavBarProvider isLoggedIn={loggedIn} />
       <div>
         <SearchBar onSearch={setSearchKeyword} />
-        <ServiceRequestList keyword={searchKeyword} />
+        
       </div>
     </div>
   )

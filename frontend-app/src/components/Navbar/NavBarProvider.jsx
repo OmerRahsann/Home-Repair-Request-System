@@ -6,6 +6,9 @@ import { Link, useNavigate } from 'react-router-dom'
 import logo from '../../Logos/mainLogo.png'
 import { useAuth, checkIsLoggedIn, logout } from '../../AuthContext'
 import axios from 'axios'
+import { Autocomplete } from '@react-google-maps/api'
+import { InputBase } from '@material-ui/core'
+import { FaSearch } from 'react-icons/fa'
 
 const navigation = [
   { name: 'Home', href: '/provider/home', current: true },
@@ -18,7 +21,11 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
 
-export default function NavBarProvider({ isLoggedIn }) {
+export default function NavBarProvider({
+  isLoggedIn = true,
+  onLoad,
+  onRequestChanged,
+}) {
   const navigate = useNavigate()
   const handleSignIn = () => {
     navigate('/customer/signup')
@@ -87,6 +94,16 @@ export default function NavBarProvider({ isLoggedIn }) {
                 </button> */}
 
                 {/* Profile dropdown */}
+                {isLoggedIn ? (
+                  <div className="flex bg-custom-gray p-1 rounded-md">
+                    <Autocomplete
+                      onLoad={onLoad}
+                      onPlaceChanged={onRequestChanged}
+                    >
+                      <InputBase placeholder="Search..." />
+                    </Autocomplete>
+                  </div>
+                ) : null}
                 {isLoggedIn ? (
                   <Menu as="div" className="relative ml-3">
                     <div>

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import Navbar from '../../components/Navbar/NavBar'
 import axios from 'axios'
 import { checkIsCustomerLoggedIn } from '../../AuthContext'
-import RequestDetails from '../../components/RequestDetails'
+import RequestDetails from '../../components/Customer/RequestDetails'
 
 function MyRequests() {
   const [serviceRequests, setServiceRequests] = useState([])

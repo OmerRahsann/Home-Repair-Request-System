@@ -1,21 +1,15 @@
-// ServiceRequestCard.jsx
 import React from 'react'
+import ImageSlider from '../ImageSlider'
+import { Fragment } from 'react'
+import RequestDetails from '../Customer/RequestDetails'
 
-function ServiceRequestCard({ request }) {
+function ServiceRequestCard({ request, selected, refProp }) {
+  if (selected)
+    refProp?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   return (
-    <div className="service-request-card bg-white shadow-md p-4 mb-4 rounded">
-      <h3 className="text-xl font-bold mb-2">{request.requestDescription}</h3>
-      <p>
-        <strong>Request Date:</strong> {request.requestDate}
-      </p>
-      <p>
-        <strong>Status:</strong> {request.requestStatus}
-      </p>
-      <p>
-        <strong>Location:</strong> {request.geoLocation}
-      </p>
-      {/* Add more details as needed */}
-    </div>
+    <Fragment>
+     <RequestDetails request={request}/>
+    </Fragment>
   )
 }
 

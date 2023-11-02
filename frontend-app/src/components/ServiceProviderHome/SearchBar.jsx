@@ -1,22 +1,21 @@
-import React, { useState } from 'react'
+import React from 'react'
+import { Autocomplete } from '@react-google-maps/api'
+import { AppBar, Toolbar, Typography, InputBase, Box } from '@material-ui/core'
 
-function SearchBar({ onSearch }) {
-  const [inputValue, setInputValue] = useState('')
-
-  const handleSearch = () => {
-    onSearch(inputValue)
-  }
-
+const SearchBar = ({ onRequestChanged, onLoad }) => {
   return (
-    <div>
-      <input
-        type="text"
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
-        placeholder="Search by keyword..."
-      />
-      <button onClick={handleSearch}>Search</button>
-    </div>
+    <AppBar position="static">
+      <Toolbar className>
+        <Box display="flex">
+          <Autocomplete onLoad={onLoad} onPlaceChanged={onRequestChanged}>
+            <div className>
+              <div className></div>
+              <InputBase placeholder="Search…" />
+            </div>
+          </Autocomplete>
+        </Box>
+      </Toolbar>
+    </AppBar>
   )
 }
 
