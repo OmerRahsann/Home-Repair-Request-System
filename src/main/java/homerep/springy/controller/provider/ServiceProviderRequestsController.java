@@ -24,6 +24,12 @@ public class ServiceProviderRequestsController {
     @Autowired
     private ServiceRequestRepository serviceRequestRepository;
     private static final String GOOGLE_MAPS_API_KEY = "AIzaSyB-Hir-BFLaHrDngWHU5dXi3wA4VfIshs4";
+    
+    //return all requests no pagination
+    @GetMapping("/all")
+    public List<ServiceRequest> getAllServiceRequests() {
+        return serviceRequestRepository.findAll();
+    }
 
     @GetMapping("/nearby")
     public List<ServiceRequest> getServiceRequestsNearby(
