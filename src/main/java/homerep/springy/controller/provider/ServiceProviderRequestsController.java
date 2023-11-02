@@ -2,6 +2,8 @@ package homerep.springy.controller.provider;
 
 import homerep.springy.entity.ServiceRequest;
 import homerep.springy.repository.ServiceRequestRepository;
+import main.java.homerep.springy.model.ServiceRequestModelMapper;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -23,12 +25,16 @@ public class ServiceProviderRequestsController {
 
     @Autowired
     private ServiceRequestRepository serviceRequestRepository;
+
+    @Autowired
+    private ServiceRequestModelMapper serviceRequestModelMapper;
+
     private static final String GOOGLE_MAPS_API_KEY = "AIzaSyB-Hir-BFLaHrDngWHU5dXi3wA4VfIshs4";
     
-    //return all requests no pagination
     @GetMapping("/all")
-    public List<ServiceRequest> getAllServiceRequests() {
-        return serviceRequestRepository.findAll();
+    public List<ServiceRequestModel> getAllServiceRequests() {
+        List<ServiceRequest> entities = serviceRequestRepository.findAll();
+        return serviceRequestModelMapper.toModelList(entities);
     }
 
     @GetMapping("/nearby")
