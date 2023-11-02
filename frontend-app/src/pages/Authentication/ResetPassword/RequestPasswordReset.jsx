@@ -1,6 +1,6 @@
 import React from 'react'
 import axios from 'axios'
-import logo from '../../../Logos/mainLogo.png' // TODO why do we need relative paths
+import logo from 'Logos/mainLogo.png'
 
 function RequestPasswordReset() {
   const FormState = {
