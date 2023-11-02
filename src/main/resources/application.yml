@@ -6,6 +6,8 @@ server:
   http2:
     enabled: true
   port: 8080
+homerep:
+  require-verification: false
 logging:
   level:
     org:

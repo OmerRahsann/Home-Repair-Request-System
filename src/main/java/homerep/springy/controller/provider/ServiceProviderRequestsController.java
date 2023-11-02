@@ -2,7 +2,8 @@ package homerep.springy.controller.provider;
 
 import homerep.springy.entity.ServiceRequest;
 import homerep.springy.repository.ServiceRequestRepository;
-import main.java.homerep.springy.model.ServiceRequestModelMapper;
+import homerep.springy.model.ServiceRequestModelMapper;
+import homerep.springy.model.ServiceRequestModel;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -16,6 +17,7 @@ import com.google.maps.GeocodingApi;
 import com.google.maps.GeoApiContext;
 import com.google.maps.model.GeocodingResult;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,8 +35,12 @@ public class ServiceProviderRequestsController {
     
     @GetMapping("/all")
     public List<ServiceRequestModel> getAllServiceRequests() {
-        List<ServiceRequest> entities = serviceRequestRepository.findAll();
-        return serviceRequestModelMapper.toModelList(entities);
+        List<ServiceRequest> serviceRequests = serviceRequestRepository.findAll();
+        List<ServiceRequestModel> models = new ArrayList<>(serviceRequests.size());
+        for (ServiceRequest serviceRequest : serviceRequests) {
+            models.add(toModel(serviceRequest));
+        }
+        return models;
     }
 
     @GetMapping("/nearby")
@@ -88,6 +94,20 @@ public class ServiceProviderRequestsController {
                    Math.sin(dLon / 2) * Math.sin(dLon / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return R * c; // Distance in miles
+    }
+
+    private ServiceRequestModel toModel(ServiceRequest serviceRequest) {
+        return new ServiceRequestModel(
+                serviceRequest.getId(),
+                serviceRequest.getTitle(),
+                serviceRequest.getDescription(),
+                serviceRequest.getService(),
+                serviceRequest.getStatus(),
+                serviceRequest.getDollars(),
+                serviceRequest.getAddress(),
+                serviceRequest.getImagesUUIDs(),
+                serviceRequest.getCreationDate()
+        );
     }
 }
 
