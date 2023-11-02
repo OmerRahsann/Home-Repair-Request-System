@@ -4,6 +4,9 @@ import NavBarProvider from '../../components/Navbar/NavBarProvider'
 import ProviderMap from '../../components/Map/ProviderMap'
 import SearchBar from '../../components/ServiceProviderHome/SearchBar'
 import axios from 'axios'
+import { Autocomplete } from '@react-google-maps/api'
+import { InputBase } from '@material-ui/core'
+import { FaSearch } from 'react-icons/fa'
 
 function RequestView() {
   const fakeRequests = [
@@ -28,6 +31,7 @@ function RequestView() {
   const [bounds, setBounds] = useState({})
   const [selectedCardIndex, setSelectedCardIndex] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
+  const [autocomplete, setAutocomplete] = useState(null);
 
   // Handle card click and store the index
   const handleCardClick = (index) => {
@@ -55,7 +59,7 @@ function RequestView() {
       axios
         .get(url, { withCredentials: true })
         .then((response) => {
-          console.log(response)
+          console.log({response})
           // Handle the response and set the serviceRequests state
           setRequests(response.data)
           setIsLoading(false)
@@ -69,9 +73,38 @@ function RequestView() {
     }
   }, [bounds,coords])
 
+  const onRequestChanged = () => {
+    const lat = autocomplete.getPlace().geometry.location.lat();
+    const lng = autocomplete.getPlace().geometry.location.lng();
+
+    setCoords({ lat, lng });
+  };
+
+  const onLoad = (autoC) => setAutocomplete(autoC);
+
+
   return (
     <div>
       <NavBarProvider />
+      <div className="flex p-1 rounded-md flex-row justify-between bg-custom-grain p-3">
+        
+        <h1 className="font-bold text-lg p-2">
+        Requests Near You!
+      </h1>
+      
+      <Autocomplete
+                      onLoad={onLoad}
+                      onPlaceChanged={onRequestChanged}
+                    >
+                      <div className='flex flex-row bg-custom-gray rounded-md' >
+                      <InputBase placeholder="Search by location..." className='p-1' />
+
+                      </div>
+                      
+                    </Autocomplete>
+                    
+                  </div>
+          
       <div className="flex">
         <div className="w-1/3">
           <RequestList

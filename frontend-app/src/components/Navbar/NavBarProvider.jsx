@@ -94,16 +94,7 @@ export default function NavBarProvider({
                 </button> */}
 
                 {/* Profile dropdown */}
-                {isLoggedIn ? (
-                  <div className="flex bg-custom-gray p-1 rounded-md">
-                    <Autocomplete
-                      onLoad={onLoad}
-                      onPlaceChanged={onRequestChanged}
-                    >
-                      <InputBase placeholder="Search..." />
-                    </Autocomplete>
-                  </div>
-                ) : null}
+             
                 {isLoggedIn ? (
                   <Menu as="div" className="relative ml-3">
                     <div>

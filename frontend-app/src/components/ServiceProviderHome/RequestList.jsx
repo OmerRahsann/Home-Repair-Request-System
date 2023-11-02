@@ -41,9 +41,6 @@ function RequestList({ onSearch, requests, isLoading, selectedCardIndex }) {
 
   return (
     <div className="">
-      <h1 className="font-bold text-lg text-center bg-custom-tan p-5">
-        Requests Near You!
-      </h1>
       {isLoading ? (
         <div className="flex justify-center p-2">
           <CircularProgress size="5rem" color="black" />
