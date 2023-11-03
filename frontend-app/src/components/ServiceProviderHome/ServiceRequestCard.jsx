@@ -8,7 +8,7 @@ function ServiceRequestCard({ request, selected, refProp }) {
     refProp?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   return (
     <Fragment>
-     <RequestDetails request={request}/>
+      <RequestDetails request={request} />
     </Fragment>
   )
 }

@@ -43,7 +43,6 @@ const ServiceProviderHome = ({ component: Component, ...rest }) => {
       <NavBarProvider isLoggedIn={loggedIn} />
       <div>
         <SearchBar onSearch={setSearchKeyword} />
-        
       </div>
     </div>
   )

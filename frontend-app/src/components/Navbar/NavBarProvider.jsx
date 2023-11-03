@@ -94,7 +94,7 @@ export default function NavBarProvider({
                 </button> */}
 
                 {/* Profile dropdown */}
-             
+
                 {isLoggedIn ? (
                   <Menu as="div" className="relative ml-3">
                     <div>

@@ -8,7 +8,7 @@ export default makeStyles(() => ({
     height: '85vh', width: '100%',
   },
   markerContainer: {
-    position: 'absolute', transform: 'translate(-50%, -50%)', zIndex: 1, '&:hover': { zIndex: 2 }, 
+    position: 'absolute', transform: 'translate(-50%, -50%)', zIndex: 1, '&:hover': { zIndex: 2 },
   },
   pointer: {
     cursor: 'pointer',
