@@ -12,6 +12,8 @@ import homerep.springy.repository.ServiceRequestTemplateRepository;
 import homerep.springy.repository.ServiceTypeRepository;
 import homerep.springy.service.ImageStorageService;
 import jakarta.transaction.Transactional;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +23,12 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -161,6 +168,9 @@ public class ServiceRequestController {
         }
         serviceRequest.setDollars(serviceRequestModel.dollars());
         serviceRequest.setAddress(serviceRequestModel.address());
+        double[] coords = getCoordinates(serviceRequestModel.address(), "AIzaSyB-Hir-BFLaHrDngWHU5dXi3wA4VfIshs4");
+        serviceRequest.setLatitude(coords[0]);
+        serviceRequest.setLongitude(coords[1]);
         if (serviceRequestModel.pictures() != null) {
             Map<String, ImageInfo> alreadyAttached = serviceRequest.getPictures().stream()
                     .collect(Collectors.toMap(imageInfo -> imageInfo.getUuid().toString(), Function.identity()));
@@ -188,6 +198,8 @@ public class ServiceRequestController {
         }
     }
 
+
+
     private ServiceRequestModel toModel(ServiceRequest serviceRequest) {
         return new ServiceRequestModel(
                 serviceRequest.getId(),
@@ -198,7 +210,48 @@ public class ServiceRequestController {
                 serviceRequest.getDollars(),
                 serviceRequest.getAddress(),
                 serviceRequest.getImagesUUIDs(),
-                serviceRequest.getCreationDate()
+                serviceRequest.getCreationDate(),
+                serviceRequest.getLatitude(),
+                serviceRequest.getLongitude()
         );
+    }
+
+    public double[] getCoordinates(String address, String apiKey) {
+        try {
+            String encodedAddress = URLEncoder.encode(address, "UTF-8");
+            String apiUrl = "https://maps.googleapis.com/maps/api/geocode/json?address=" + encodedAddress + "&key=" + apiKey;
+
+            URL url = new URL(apiUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            int responsecode = connection.getResponseCode();
+
+            if (responsecode != 200) {
+                throw new IOException("HTTP Response Code: " + responsecode);
+            }
+
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+                StringBuilder response = new StringBuilder();
+                String line;
+
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+
+                JSONObject json = new JSONObject(response.toString());
+
+                if ("OK".equals(json.getString("status"))) {
+                    JSONArray results = json.getJSONArray("results");
+                    JSONObject location = results.getJSONObject(0).getJSONObject("geometry").getJSONObject("location");
+                    double lat = location.getDouble("lat");
+                    double lng = location.getDouble("lng");
+                    return new double[]{lat, lng};
+                } else {
+                    throw new IOException("Geocoding API Error: " + json.getString("status"));
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace(); // Consider logging the error instead of printing to the console
+            return null; // Return null to indicate an error
+        }
     }
 }

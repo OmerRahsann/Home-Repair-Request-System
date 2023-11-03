@@ -66,7 +66,7 @@ public class ServiceProviderRequestsController {
         return serviceRequests.stream()
                 .filter(request -> {
                     try {
-                        return isWithinBounds(request.getAddress(), latitudeSW, longitudeSW, latitudeNE, longitudeNE);
+                        return isWithinBounds(request.getLatitude(), request.getLongitude(), latitudeSW, longitudeSW, latitudeNE, longitudeNE);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -76,57 +76,9 @@ public class ServiceProviderRequestsController {
     }
 
 
-    private boolean isWithinBounds(String address, double latitudeSW, double longitudeSW, double latitudeNE, double longitudeNE) throws IOException {
-        double[] coordinates = getCoordinates(address, GOOGLE_MAPS_API_KEY); // Use the geocoding method with your API key
-        if (coordinates != null) {
-            double lat = coordinates[0];
-            double lng = coordinates[1];
+    private boolean isWithinBounds(double lat, double lng, double latitudeSW, double longitudeSW, double latitudeNE, double longitudeNE) throws IOException {
             return lat >= latitudeSW && lat <= latitudeNE && lng >= longitudeSW && lng <= longitudeNE;
-        }
-        return false;
     }
-
-
-    public double[] getCoordinates(String address, String apiKey) {
-        try {
-            String encodedAddress = URLEncoder.encode(address, "UTF-8");
-            String apiUrl = "https://maps.googleapis.com/maps/api/geocode/json?address=" + encodedAddress + "&key=" + apiKey;
-
-            URL url = new URL(apiUrl);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            int responsecode = connection.getResponseCode();
-
-            if (responsecode != 200) {
-                throw new IOException("HTTP Response Code: " + responsecode);
-            }
-
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-                StringBuilder response = new StringBuilder();
-                String line;
-
-                while ((line = reader.readLine()) != null) {
-                    response.append(line);
-                }
-
-                JSONObject json = new JSONObject(response.toString());
-
-                if ("OK".equals(json.getString("status"))) {
-                    JSONArray results = json.getJSONArray("results");
-                    JSONObject location = results.getJSONObject(0).getJSONObject("geometry").getJSONObject("location");
-                    double lat = location.getDouble("lat");
-                    double lng = location.getDouble("lng");
-                    return new double[]{lat, lng};
-                } else {
-                    throw new IOException("Geocoding API Error: " + json.getString("status"));
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace(); // Consider logging the error instead of printing to the console
-            return null; // Return null to indicate an error
-        }
-    }
-
-
 
 
 
@@ -193,7 +145,9 @@ public class ServiceProviderRequestsController {
                 serviceRequest.getDollars(),
                 serviceRequest.getAddress(),
                 serviceRequest.getImagesUUIDs(),
-                serviceRequest.getCreationDate()
+                serviceRequest.getCreationDate(),
+                serviceRequest.getLatitude(),
+                serviceRequest.getLongitude()
         );
     }
 }

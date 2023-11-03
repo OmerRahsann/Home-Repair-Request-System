@@ -31,6 +31,10 @@ public class ServiceRequest {
 
     private String address;
 
+    private double latitude;
+
+    private double longitude;
+
     @OneToMany
     @OrderColumn
     private List<ImageInfo> pictures = new ArrayList<>();
@@ -122,6 +126,22 @@ public class ServiceRequest {
                 .map(ImageInfo::getUuid)
                 .map(UUID::toString)
                 .toList();
+    }
+
+    public void setLatitude(double latitude){
+        this.latitude = latitude;
+    }
+
+    public double getLatitude(){
+        return this.latitude;
+    }
+
+    public void setLongitude(double longitude){
+        this.longitude = longitude;
+    }
+
+    public double getLongitude(){
+        return this.longitude;
     }
 
     public enum Status {

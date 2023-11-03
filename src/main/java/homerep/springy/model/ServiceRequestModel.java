@@ -14,13 +14,18 @@ public record ServiceRequestModel(
         @NotBlank String description,
         @NotBlank String service,
         @Nullable ServiceRequest.Status status,
+
         @Positive int dollars, // TODO minimum quote?
         @NotBlank String address,
         @Nullable List<String> pictures,
-        @Nullable Date creationDate
-) {
+        @Nullable Date creationDate,
+
+        @Nullable Double latitude,
+
+        @Nullable Double longitude
+        ) {
 
     public ServiceRequestModel(String title, String description, String service, int dollars, String address) {
-        this(null, title, description, service, null, dollars, address, null, null);
+        this(null, title, description, service, null, dollars, address, null, null, null, null);
     }
 }
