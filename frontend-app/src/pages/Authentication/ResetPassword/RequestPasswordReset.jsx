@@ -2,7 +2,7 @@ import React from 'react'
 import axios from 'axios'
 import logo from 'Logos/mainLogo.png'
 
-function RequestPasswordReset() {
+export default function RequestPasswordReset() {
   const FormState = {
     Inital: 0,
     Success: 1,
@@ -24,22 +24,14 @@ function RequestPasswordReset() {
         },
         {withCredentials: true}
       )
-      .then(
-        (res) => setState({
-          ...state,
-          formState: FormState.Success
-        }),
-        (rej) => setState({
-          ...state,
-          formState: FormState.Error
-        })
-      )
-      .catch(
-        (rej) => setState({
-          ...state,
-          formState: FormState.Error
-        })
-      )
+      .then((res) => setState({
+        ...state,
+        formState: FormState.Success
+      }))
+      .catch((rej) => setState({
+        ...state,
+        formState: FormState.Error
+      }))
   }
 
   const resetState = () => {
@@ -147,5 +139,3 @@ function RequestPasswordReset() {
     </div>
   )
 }
-
-export default RequestPasswordReset

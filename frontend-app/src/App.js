@@ -6,6 +6,7 @@ import CustomerSignUp from "./pages/Authentication/CustomerSignUp";
 import ProviderSignUp from "./pages/Authentication/ProviderSignUp";
 import ProviderSignIn from "./pages/Authentication/ProviderSignIn";
 import RequestPasswordReset from "./pages/Authentication/ResetPassword/RequestPasswordReset";
+import ResetPassword from "./pages/Authentication/ResetPassword/ResetPassword";
 import ServiceProviderHome from "./pages/Provider/ServiceProviderHome";
 import RequestView from "./pages/Provider/RequestView"
 import MyRequests from "./pages/Customer/MyRequests";
@@ -26,6 +27,7 @@ function App() {
             <Route path="/provider/home" element={<ServiceProviderHome/>} />
             <Route path="/provider/viewrequests" element={<RequestView/>} />
             <Route path="/reset_password" element={<RequestPasswordReset/>} />
+            <Route path="/reset_password/form" element={<ResetPassword/>} />
             
           </Routes>
         </Router>
