@@ -6,13 +6,15 @@ addPasswordRule("Password must have at least 1 number", (password) => password.s
 
 function checkPasswordRequirements(password) {
   let rows = [];
-  for (const rule of passwordRules) {
+  for (let i = 0; i < passwordRules.length; i++) {
+    const rule = passwordRules[i];
     let satisfied = rule.predicate(password);
     rows.push(
       <p
         className={
           satisfied ? 'text-green-500' : 'text-red-500'
         }
+        key={"req" + i}
       >
         {(satisfied ? '✓ ' : '✗ ') + rule.label}
       </p>
