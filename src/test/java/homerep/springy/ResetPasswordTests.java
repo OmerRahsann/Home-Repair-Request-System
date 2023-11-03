@@ -118,10 +118,11 @@ public class ResetPasswordTests {
         // only to the registered email
         assertEquals(1, message.getAllRecipients().length);
         assertEquals(VERIFIED_EMAIL, message.getAllRecipients()[0].toString());
-        // with a link to reset the account's password
+        // with a link to reset the account's password with the token and expireAt timestamp
         assertTrue(message.getContent() instanceof String);
         String content = (String) message.getContent();
-        String tokenUrl = "http://localhost:3000/reset_password?token=" + account.getResetPasswordToken().getVal();
+        String tokenUrl = "http://localhost:3000/reset_password/form?token=" + account.getResetPasswordToken().getVal() +
+                "&expire_at=" + account.getResetPasswordToken().getExpireAt().getEpochSecond();
         assertTrue(content.contains(tokenUrl));
 
         // Token can be used to reset the password
