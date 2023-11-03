@@ -9,13 +9,10 @@ export default function RequestPasswordReset() {
     Error: 2
   }
 
-  const [state, setState] = React.useState({
-    email: '',
-    formState: FormState.Inital
-  })
+  const [formState, setFormState] = React.useState(FormState.Inital)
+  const [email, setEmail] = React.useState("")
   async function sendResetPassword(event) {
     event.preventDefault()
-    const { email } = state
     await axios
       .post(
         'http://localhost:8080/api/reset_password/send',
@@ -24,33 +21,22 @@ export default function RequestPasswordReset() {
         },
         {withCredentials: true}
       )
-      .then((res) => setState({
-        ...state,
-        formState: FormState.Success
-      }))
-      .catch((rej) => setState({
-        ...state,
-        formState: FormState.Error
-      }))
+      .then((_) => setFormState(FormState.Success))
+      .catch((_) => setFormState(FormState.Error))
   }
 
   const resetState = () => {
-    setState({
-      email: '',
-      formState: FormState.Inital
-    })
+    setEmail("")
+    setFormState(FormState.Inital)
   }
 
-  const handleChange = (evt) => {
+  const handleEmailChange = (evt) => {
     const value = evt.target.value
-    setState({
-      ...state,
-      [evt.target.name]: value,
-    })
+    setEmail(value)
   }
 
   let content;
-  switch (state.formState) {
+  switch (formState) {
     case FormState.Inital:
       content = (
         <form
@@ -66,8 +52,8 @@ export default function RequestPasswordReset() {
               type="email"
               name="email"
               id="email"
-              onChange={handleChange}
-              value={state.email}
+              onChange={handleEmailChange}
+              value={email}
               className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
               placeholder="Email"
               required
@@ -75,7 +61,12 @@ export default function RequestPasswordReset() {
           </div>
           <button
             type="submit"
-            className=" text-white w-full bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+            disabled={email === ''}
+            className={`${
+              email != ''
+                ? 'text-white w-full bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800'
+                : 'cursor-not-allowed w-full bg-gray-200 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 text-white'
+            }`}
           >
             Send password reset email
           </button>

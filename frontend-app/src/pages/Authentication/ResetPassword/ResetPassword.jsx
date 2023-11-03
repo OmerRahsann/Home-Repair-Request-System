@@ -2,6 +2,7 @@ import React from 'react'
 import axios from 'axios'
 import { Navigate, useSearchParams } from 'react-router-dom'
 import logo from 'Logos/mainLogo.png'
+import PasswordStrength from 'components/PasswordStrength'
 
 export default function ResetPassword() {
   const FormState = {
@@ -10,13 +11,14 @@ export default function ResetPassword() {
     Expired: 2
   }
 
+  const [formState, setFormState] = React.useState(FormState.Inital)
   const [state, setState] = React.useState({
     password: '',
-    confirmPassword: '',
-    formState: FormState.Inital
+    confirmPassword: ''
   })
+  const [canSubmit, setCanSubmit] = React.useState(false)
 
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams, _] = useSearchParams();
   const token = searchParams.get("token")
   if (!token || token === "") {
     // No token?? Go to the request password reset form
@@ -24,14 +26,11 @@ export default function ResetPassword() {
   }
   
   const expireAt = parseInt(searchParams.get("expire_at"))
-  if (state.formState == FormState.Inital && expireAt) {
+  if (formState == FormState.Inital && expireAt) {
     const currentTimestamp = Math.ceil(new Date().getTime() / 1000);
     if (currentTimestamp >= expireAt) {
       // The link + token has expired
-      setState({
-        ...state,
-        formState: FormState.Expired
-      })
+      setFormState(FormState.Expired)
     }
   }
 
@@ -42,33 +41,26 @@ export default function ResetPassword() {
       .post(
         'http://localhost:8080/api/reset_password',
         {
-          password: password,
-          token: token
+          password,
+          token
         },
         {withCredentials: true}
       )
-      .then((res) => setState({
-        ...state,
-        formState: FormState.Success
-      }))
+      .then((_) => setFormState(FormState.Success))
       .catch((error) => {
         if (error.response && error.response.status == 400) { // Received bad request
           if (error.response.data.type === "validation_error") {
-            // TODO validation errors
+            // Shouldn't happen? We have input validation with PasswordStrength
             console.log(error.response.data)
+            alert("Unknown error occured!")
             return
           }
         }
         // Expired token or some other error, tell the user to try again
-        setState({
-          ...state,
-          formState: FormState.Expired
-        })
+        setFormState(FormState.Expired)
       })
   }
 
-  const passwordsMatch = () => state.password === state.confirmPassword
-  const canSubmit = () => state.password != '' && state.confirmPassword != '' && passwordsMatch()
   const handleChange = (evt) => {
     const value = evt.target.value
     setState({
@@ -78,7 +70,7 @@ export default function ResetPassword() {
   }
 
   let content;
-  switch (state.formState) {
+  switch (formState) {
     case FormState.Inital:
       content = (
         <form
@@ -93,9 +85,7 @@ export default function ResetPassword() {
               value={state.password}
               onChange={handleChange}
               placeholder="Password"
-              pattern=".{8,}"
               required
-              title="Password must be at least 8 characters long."
               className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
             />
           </div>
@@ -110,22 +100,12 @@ export default function ResetPassword() {
               className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
             />
           </div>
-          {state.confirmPassword != '' && (
-            <span
-              className={
-                passwordsMatch() ? 'text-green-500' : 'text-red-500'
-              }
-            >
-              {passwordsMatch()
-                ? '✓ Passwords match'
-                : '✗ Passwords do not match'}
-            </span>
-          )}
+          <PasswordStrength password={state.password} confirmPassword={state.confirmPassword} updateSatisfied={setCanSubmit}/>
           <button
             type="submit"
-            disabled={!passwordsMatch()}
+            disabled={!canSubmit}
             className={`${
-              canSubmit()
+              canSubmit
                 ? 'text-white w-full bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800'
                 : 'cursor-not-allowed w-full bg-gray-200 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 text-white'
             }`}
