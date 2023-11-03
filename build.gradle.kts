@@ -28,6 +28,7 @@ dependencies {
 	implementation("com.google.maps:google-maps-services:0.16.1")
 
 	implementation("org.im4java:im4java:1.4.0") // For interfacing with ImageMagick
+	implementation("org.json:json:20210307") // JSON parsing library
 
 	runtimeOnly("com.mysql:mysql-connector-j")
 

@@ -1,10 +1,13 @@
 package homerep.springy.controller.provider;
 
+import com.google.gson.JsonObject;
 import homerep.springy.entity.ServiceRequest;
 import homerep.springy.repository.ServiceRequestRepository;
 import homerep.springy.model.ServiceRequestModelMapper;
 import homerep.springy.model.ServiceRequestModel;
 
+import org.apache.tomcat.util.json.JSONParser;
+import org.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -16,9 +19,18 @@ import org.springframework.web.bind.annotation.RestController;
 import com.google.maps.GeocodingApi;
 import com.google.maps.GeoApiContext;
 import com.google.maps.model.GeocodingResult;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import org.json.JSONObject;
 
+import javax.net.ssl.HttpsURLConnection;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.stream.Collectors;
 
 @RestController
@@ -32,7 +44,7 @@ public class ServiceProviderRequestsController {
     private ServiceRequestModelMapper serviceRequestModelMapper;
 
     private static final String GOOGLE_MAPS_API_KEY = "AIzaSyB-Hir-BFLaHrDngWHU5dXi3wA4VfIshs4";
-    
+
     @GetMapping("/all")
     public List<ServiceRequestModel> getAllServiceRequests() {
         List<ServiceRequest> serviceRequests = serviceRequestRepository.findAll();
@@ -44,27 +56,102 @@ public class ServiceProviderRequestsController {
     }
 
     @GetMapping("/nearby")
-    public List<ServiceRequest> getServiceRequestsNearby(
-        @RequestParam double latitudeSW,
-        @RequestParam double longitudeSW,
-        @RequestParam double latitudeNE,
-        @RequestParam double longitudeNE) {
+    public List<ServiceRequestModel> getServiceRequestsNearby(
+            @RequestParam double latitudeSW,
+            @RequestParam double longitudeSW,
+            @RequestParam double latitudeNE,
+            @RequestParam double longitudeNE) {
+        List<ServiceRequest> serviceRequests = serviceRequestRepository.findAll();
 
-        double midpointLat = (latitudeSW + latitudeNE) / 2;
-        double midpointLon = (longitudeSW + longitudeNE) / 2;
-
-        double radius = haversineDistance(latitudeSW, longitudeSW, latitudeNE, longitudeNE) / 2;
-
-        List<ServiceRequest> allRequests = serviceRequestRepository.findAll();
-
-        return allRequests.stream()
+        return serviceRequests.stream()
                 .filter(request -> {
-                    double[] coords = convertAddressToCoords(request.getAddress()); // Assuming address field in ServiceRequest
-                    double distance = haversineDistance(midpointLat, midpointLon, coords[0], coords[1]);
-                    return distance <= radius;
+                    try {
+                        return isWithinBounds(request.getAddress(), latitudeSW, longitudeSW, latitudeNE, longitudeNE);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                 })
+                .map(this::toModel) // Convert ServiceRequest to ServiceRequestModel
                 .collect(Collectors.toList());
     }
+
+
+    private boolean isWithinBounds(String address, double latitudeSW, double longitudeSW, double latitudeNE, double longitudeNE) throws IOException {
+        double[] coordinates = getCoordinates(address, GOOGLE_MAPS_API_KEY); // Use the geocoding method with your API key
+        if (coordinates != null) {
+            double lat = coordinates[0];
+            double lng = coordinates[1];
+            return lat >= latitudeSW && lat <= latitudeNE && lng >= longitudeSW && lng <= longitudeNE;
+        }
+        return false;
+    }
+
+
+    public double[] getCoordinates(String address, String apiKey) {
+        try {
+            String encodedAddress = URLEncoder.encode(address, "UTF-8");
+            String apiUrl = "https://maps.googleapis.com/maps/api/geocode/json?address=" + encodedAddress + "&key=" + apiKey;
+
+            URL url = new URL(apiUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            int responsecode = connection.getResponseCode();
+
+            if (responsecode != 200) {
+                throw new IOException("HTTP Response Code: " + responsecode);
+            }
+
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+                StringBuilder response = new StringBuilder();
+                String line;
+
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+
+                JSONObject json = new JSONObject(response.toString());
+
+                if ("OK".equals(json.getString("status"))) {
+                    JSONArray results = json.getJSONArray("results");
+                    JSONObject location = results.getJSONObject(0).getJSONObject("geometry").getJSONObject("location");
+                    double lat = location.getDouble("lat");
+                    double lng = location.getDouble("lng");
+                    return new double[]{lat, lng};
+                } else {
+                    throw new IOException("Geocoding API Error: " + json.getString("status"));
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace(); // Consider logging the error instead of printing to the console
+            return null; // Return null to indicate an error
+        }
+    }
+
+
+
+
+
+//    @GetMapping("/nearby")
+//    public List<ServiceRequest> getServiceRequestsNearby(
+//        @RequestParam double latitudeSW,
+//        @RequestParam double longitudeSW,
+//        @RequestParam double latitudeNE,
+//        @RequestParam double longitudeNE) {
+//
+//        double midpointLat = (latitudeSW + latitudeNE) / 2;
+//        double midpointLon = (longitudeSW + longitudeNE) / 2;
+//
+//        double radius = haversineDistance(latitudeSW, longitudeSW, latitudeNE, longitudeNE) / 2;
+//
+//        List<ServiceRequest> allRequests = serviceRequestRepository.findAll();
+//
+//        return allRequests.stream()
+//                .filter(request -> {
+//                    double[] coords = convertAddressToCoords(request.getAddress()); // Assuming address field in ServiceRequest
+//                    double distance = haversineDistance(midpointLat, midpointLon, coords[0], coords[1]);
+//                    return distance <= radius;
+//                })
+//                .collect(Collectors.toList());
+//    }
 
     public double[] convertAddressToCoords(String address) {
         GeoApiContext context = new GeoApiContext.Builder()
