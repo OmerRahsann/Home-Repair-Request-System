@@ -18,14 +18,22 @@ export default function ResetPassword() {
 
   const [searchParams, setSearchParams] = useSearchParams();
   const token = searchParams.get("token")
-  console.log(searchParams)
-  console.log(token)
-  if (token == null || token === "") {
+  if (!token || token === "") {
     // No token?? Go to the request password reset form
-    console.log("Navigate")
     return <Navigate to="/reset_password" />
   }
-  // TODO add expiriation timestamp as query param for better UX
+  
+  const expireAt = parseInt(searchParams.get("expire_at"))
+  if (state.formState == FormState.Inital && expireAt) {
+    const currentTimestamp = Math.ceil(new Date().getTime() / 1000);
+    if (currentTimestamp >= expireAt) {
+      // The link + token has expired
+      setState({
+        ...state,
+        formState: FormState.Expired
+      })
+    }
+  }
 
   async function resetPassword(event) {
     event.preventDefault()
@@ -88,7 +96,7 @@ export default function ResetPassword() {
               pattern=".{8,}"
               required
               title="Password must be at least 8 characters long."
-              class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
+              className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
             />
           </div>
           <div>
@@ -99,7 +107,7 @@ export default function ResetPassword() {
               onChange={handleChange}
               placeholder="Confirm Password"
               required
-              class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
+              className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
             />
           </div>
           {state.confirmPassword != '' && (
