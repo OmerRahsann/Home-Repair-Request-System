@@ -64,7 +64,7 @@ function ImageSlider({ images }) {
             <img
               src={`http://localhost:8080/image/${imageUrl}`}
               alt={`Image ${index}`}
-              className="object-cover h-[40vh] w-[80vh]"
+              className="object-cover sm:h-14px sm:w-20px md:h-14px md:w-20px lg:h-[40vh] lg:w-[80vh]"
             />
           </div>
         ))}
@@ -73,7 +73,7 @@ function ImageSlider({ images }) {
   ) : (
     <div>
       <Carousel showThumbs={false} selectedItem={currentIndex}>
-        <img src={noImage} className="object-cover h-[40vh] w-[80vh]" />
+        <img src={noImage} className="object-cover sm:h-14px sm:w-20px md:h-14px md:w-20px lg:h-[40vh] lg:w-[80vh]" />
       </Carousel>
     </div>
   )
