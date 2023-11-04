@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.icegreen.greenmail.spring.GreenMailBean;
 import com.icegreen.greenmail.store.FolderException;
 import homerep.springy.authorities.AccountType;
+import homerep.springy.config.AccountServiceConfig;
 import homerep.springy.config.TestDatabaseConfig;
 import homerep.springy.config.TestMailConfig;
 import homerep.springy.entity.Account;
@@ -55,6 +56,9 @@ class RegistrationTests {
     private AccountRepository accountRepository;
 
     @Autowired
+    private AccountServiceConfig accountServiceConfig;
+
+    @Autowired
     private CustomerRepository customerRepository;
 
     @Autowired
@@ -97,6 +101,7 @@ class RegistrationTests {
     @BeforeEach
     void reset() throws FolderException {
         greenMailBean.getGreenMail().purgeEmailFromAllMailboxes();
+        accountServiceConfig.setRequireVerification(true);
     }
 
     @Test

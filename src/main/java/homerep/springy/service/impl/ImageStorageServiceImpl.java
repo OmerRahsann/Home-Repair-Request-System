@@ -1,6 +1,6 @@
 package homerep.springy.service.impl;
 
-import homerep.springy.config.ImageStorageConfiguration;
+import homerep.springy.config.ImageStorageConfig;
 import homerep.springy.entity.Account;
 import homerep.springy.entity.ImageInfo;
 import homerep.springy.exception.ImageStoreException;
@@ -38,12 +38,12 @@ public class ImageStorageServiceImpl implements ImageStorageService {
 
     private final ImageInfoRepository imageInfoRepository;
 
-    private final ImageStorageConfiguration.ImageStorageConfig config;
+    private final ImageStorageConfig config;
 
     private final ApplicationEventPublisher applicationEventPublisher;
 
     public ImageStorageServiceImpl(ImageInfoRepository imageInfoRepository,
-                                   ImageStorageConfiguration.ImageStorageConfig config,
+                                   ImageStorageConfig config,
                                    ApplicationEventPublisher applicationEventPublisher) {
         this.imageInfoRepository = imageInfoRepository;
         this.config = config;

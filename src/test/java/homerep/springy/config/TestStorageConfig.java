@@ -15,7 +15,7 @@ public class TestStorageConfig {
 
     @Bean
     @Primary
-    public ImageStorageConfiguration.ImageStorageConfig configureTestStorage(ImageStorageConfiguration.ImageStorageConfig config) throws IOException {
+    public ImageStorageConfig configureTestStorage(ImageStorageConfig config) throws IOException {
         FileSystemUtils.deleteRecursively(TEST_STORAGE_ROOT);
         config.setStorageRoot(TEST_STORAGE_ROOT.toString());
         return config;
