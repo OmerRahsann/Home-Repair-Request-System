@@ -121,12 +121,12 @@ public class ResetPasswordTests {
         // with a link to reset the account's password with the token and expireAt timestamp
         assertTrue(message.getContent() instanceof String);
         String content = (String) message.getContent();
-        String tokenUrl = "http://localhost:3000/reset_password/form?token=" + account.getResetPasswordToken().getVal() +
+        String tokenUrl = "http://localhost:3000/reset_password/form?token=" + account.getResetPasswordToken().getValue() +
                 "&expire_at=" + account.getResetPasswordToken().getExpireAt().getEpochSecond();
         assertTrue(content.contains(tokenUrl));
 
         // Token can be used to reset the password
-        ResetPasswordModel model = new ResetPasswordModel(token.getVal(), NEW_PASSWORD);
+        ResetPasswordModel model = new ResetPasswordModel(token.getValue(), NEW_PASSWORD);
         assertTrue(accountService.resetPassword(model));
         account = accountRepository.findByEmail(VERIFIED_EMAIL);
         // password is changed
@@ -151,7 +151,7 @@ public class ResetPasswordTests {
         // A reset password token is created
         account = accountRepository.findByEmail(VERIFIED_EMAIL);
         Token token = account.getResetPasswordToken();
-        String tokenValue = token.getVal();
+        String tokenValue = token.getValue();
         Instant refreshAt = token.getRefreshAt();
         Instant expireAt = token.getExpireAt();
         assertNotNull(token);
@@ -164,7 +164,7 @@ public class ResetPasswordTests {
         accountService.sendResetPassword(VERIFIED_EMAIL);
         assertEquals(1, greenMailBean.getReceivedMessages().length);
         account = accountRepository.findByEmail(VERIFIED_EMAIL);
-        assertEquals(tokenValue, account.getResetPasswordToken().getVal());
+        assertEquals(tokenValue, account.getResetPasswordToken().getValue());
         assertEquals(refreshAt, account.getResetPasswordToken().getRefreshAt());
         assertEquals(expireAt, account.getResetPasswordToken().getExpireAt());
 
@@ -177,7 +177,7 @@ public class ResetPasswordTests {
         assertEquals(2, greenMailBean.getReceivedMessages().length);
         account = accountRepository.findByEmail(VERIFIED_EMAIL);
         // and refreshes the token
-        assertNotEquals(tokenValue, account.getResetPasswordToken().getVal());
+        assertNotEquals(tokenValue, account.getResetPasswordToken().getValue());
         assertNotEquals(refreshAt, account.getResetPasswordToken().getRefreshAt());
         assertNotEquals(expireAt, account.getResetPasswordToken().getExpireAt());
         assertFalse(account.getResetPasswordToken().canRefresh());
@@ -200,7 +200,7 @@ public class ResetPasswordTests {
         assertTrue(account.getResetPasswordToken().isExpired());
         account = accountRepository.save(account);
         // Trying to use this expired token does not work
-        ResetPasswordModel model = new ResetPasswordModel(token.getVal(), NEW_PASSWORD);
+        ResetPasswordModel model = new ResetPasswordModel(token.getValue(), NEW_PASSWORD);
         assertFalse(accountService.resetPassword(model));
         // token is removed
         account = accountRepository.findByEmail(VERIFIED_EMAIL);
@@ -242,7 +242,7 @@ public class ResetPasswordTests {
     void resetPasswordInvalidToken() {
         accountService.sendResetPassword(VERIFIED_EMAIL);
         Account account = accountRepository.findByEmail(VERIFIED_EMAIL);
-        String tokenValue = account.getResetPasswordToken().getVal();
+        String tokenValue = account.getResetPasswordToken().getValue();
         // Trying to password reset with an invalid token does not work
         ResetPasswordModel model = new ResetPasswordModel(INVALID_TOKEN, NEW_PASSWORD);
         assertFalse(accountService.resetPassword(model));
@@ -251,7 +251,7 @@ public class ResetPasswordTests {
         assertTrue(passwordEncoder.matches(INITIAL_PASSWORD, account.getPassword()));
         assertFalse(passwordEncoder.matches(NEW_PASSWORD, account.getPassword()));
         // token is not changed
-        assertEquals(tokenValue, account.getResetPasswordToken().getVal());
+        assertEquals(tokenValue, account.getResetPasswordToken().getValue());
     }
 
     @Test
@@ -273,7 +273,7 @@ public class ResetPasswordTests {
         assertEquals(VERIFIED_EMAIL, message.getAllRecipients()[0].toString());
 
         // The token can be used to reset the password
-        this.mvc.perform(postJson("/api/reset_password", new ResetPasswordModel(token.getVal(), NEW_PASSWORD)))
+        this.mvc.perform(postJson("/api/reset_password", new ResetPasswordModel(token.getValue(), NEW_PASSWORD)))
                 .andExpect(status().isOk());
         // Token is removed
         account = accountRepository.findByEmail(VERIFIED_EMAIL);
@@ -322,7 +322,7 @@ public class ResetPasswordTests {
         assertNotNull(token);
 
         // Trying to use the token to change it to an invalid password does not work
-        this.mvc.perform(postJson("/api/reset_password", new ResetPasswordModel(token.getVal(), "")))
+        this.mvc.perform(postJson("/api/reset_password", new ResetPasswordModel(token.getValue(), "")))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("timestamp").isNumber())
                 .andExpect(jsonPath("type").value("validation_error"))
@@ -331,7 +331,7 @@ public class ResetPasswordTests {
         // Token is not removed
         account = accountRepository.findByEmail(VERIFIED_EMAIL);
         assertNotNull(account.getResetPasswordToken());
-        assertEquals(token.getVal(), account.getResetPasswordToken().getVal());
+        assertEquals(token.getValue(), account.getResetPasswordToken().getValue());
         // Password is not changed
         assertTrue(passwordEncoder.matches(INITIAL_PASSWORD, account.getPassword()));
         assertFalse(passwordEncoder.matches("", account.getPassword()));
@@ -368,7 +368,7 @@ public class ResetPasswordTests {
         sessions = sessionRegistry.getAllSessions(VERIFIED_EMAIL, false);
         assertEquals(4, sessions.size());
         // Reset the password
-        ResetPasswordModel model = new ResetPasswordModel(account.getResetPasswordToken().getVal(), NEW_PASSWORD);
+        ResetPasswordModel model = new ResetPasswordModel(account.getResetPasswordToken().getValue(), NEW_PASSWORD);
         assertTrue(accountService.resetPassword(model));
         // All sessions are deleted
         sessions = sessionRegistry.getAllSessions(VERIFIED_EMAIL, true);

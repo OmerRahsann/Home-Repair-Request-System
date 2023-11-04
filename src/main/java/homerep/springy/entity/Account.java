@@ -22,7 +22,7 @@ public class Account {
     //TODO verification email token expiration
     private String verificationToken;
 
-    @Embedded // TODO this is kinda ugly, can it be better?
+    @Embedded
     private Token resetPasswordToken;
 
     private AccountType type;

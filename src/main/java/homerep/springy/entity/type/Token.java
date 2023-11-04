@@ -8,7 +8,7 @@ import java.util.UUID;
 
 @Embeddable
 public class Token {
-    private String val; // "value" causes issues with SQL
+    private String value;
     private Instant refreshAt;
     private Instant expireAt;
 
@@ -19,17 +19,17 @@ public class Token {
     }
 
     public Token(String value, Instant refreshAt, Instant expireAt) {
-        this.val = value;
+        this.value = value;
         this.refreshAt = refreshAt;
         this.expireAt = expireAt;
     }
 
-    public String getVal() {
-        return val;
+    public String getValue() {
+        return value;
     }
 
-    public void setVal(String tokenValue) {
-        this.val = tokenValue;
+    public void setValue(String tokenValue) {
+        this.value = tokenValue;
     }
 
     public Instant getRefreshAt() {
@@ -61,18 +61,18 @@ public class Token {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Token token = (Token) o;
-        return Objects.equals(val, token.val) && Objects.equals(refreshAt, token.refreshAt) && Objects.equals(expireAt, token.expireAt);
+        return Objects.equals(value, token.value) && Objects.equals(refreshAt, token.refreshAt) && Objects.equals(expireAt, token.expireAt);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(val, refreshAt, expireAt);
+        return Objects.hash(value, refreshAt, expireAt);
     }
 
     @Override
     public String toString() {
         return "Token{" +
-                "value='" + val + '\'' +
+                "value='" + value + '\'' +
                 ", refreshAt=" + refreshAt +
                 ", expireAt=" + expireAt +
                 '}';

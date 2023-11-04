@@ -156,14 +156,14 @@ public class AccountServiceImpl implements AccountService, UserDetailsService {
         account.setResetPasswordToken(new Token(refreshAt, expireAt));
         account = accountRepository.save(account);
         emailService.sendEmail(account.getEmail(), "reset-password", Map.of(
-                "token", URLEncoder.encode(account.getResetPasswordToken().getVal(), StandardCharsets.US_ASCII),
+                "token", URLEncoder.encode(account.getResetPasswordToken().getValue(), StandardCharsets.US_ASCII),
                 "expire_at", String.valueOf(account.getResetPasswordToken().getExpireAt().getEpochSecond())
         ));
     }
 
     @Override
     public boolean resetPassword(ResetPasswordModel resetPasswordModel) {
-        Account account = accountRepository.findByResetPasswordTokenVal(resetPasswordModel.token());
+        Account account = accountRepository.findByResetPasswordTokenValue(resetPasswordModel.token());
         if (account == null) {
             return false;
         }
