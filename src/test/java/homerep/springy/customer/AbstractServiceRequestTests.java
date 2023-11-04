@@ -12,6 +12,7 @@ import homerep.springy.model.ServiceRequestModel;
 import homerep.springy.repository.AccountRepository;
 import homerep.springy.repository.CustomerRepository;
 import homerep.springy.repository.ServiceRequestRepository;
+import homerep.springy.type.LatLong;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -56,14 +57,17 @@ public abstract class AbstractServiceRequestTests {
 
     protected static final String CUSTOMER_ADDRESS = "201 Mullica Hill Rd, Glassboro, NJ 08028";
 
+    protected static final LatLong VALID_REQUEST_LOCATION = new LatLong(39.709824, -75.1206862);
     protected static final ServiceRequestModel VALID_SERVICE_REQUEST = new ServiceRequestModel(
             "Test", "Description", "plumbing", 32, "201 Mullica Hill Rd, Glassboro, NJ 08028"
     );
     protected static final ServiceRequestModel VALID_SERVICE_REQUEST_WITH_ADDITIONAL = new ServiceRequestModel(
-            Integer.MAX_VALUE, "Test", "Description", "plumbing", ServiceRequest.Status.COMPLETED, 32, "201 Mullica Hill Rd, Glassboro, NJ 08028", null, new Date(0)
+            Integer.MAX_VALUE, "Test", "Description", "plumbing", ServiceRequest.Status.COMPLETED, 32, "201 Mullica Hill Rd, Glassboro, NJ 08028", null, new Date(0), null, null
     );
+
+    protected static final LatLong MODIFIED_VALID_REQUEST_LOCATION = new LatLong(39.70534389571724, -75.1132625334005); // Tracking individual atoms :P https://xkcd.com/2170/
     protected static final ServiceRequestModel MODIFIED_VALID_SERVICE_REQUEST_WITH_ADDITIONAl = new ServiceRequestModel(
-            Integer.MAX_VALUE, "Different Title", "Different Description", "yardwork", ServiceRequest.Status.IN_PROGRESS, 42, "201 Rowan Blvd, Glassboro, NJ 08028", null, new Date(0)
+            Integer.MAX_VALUE, "Different Title", "Different Description", "yardwork", ServiceRequest.Status.IN_PROGRESS, 42, "201 Rowan Blvd, Glassboro, NJ 08028", null, new Date(0), 10.0, 9.0
     );
 
     protected static final ServiceRequestModel INVALID_SERVICE_REQUEST = new ServiceRequestModel(

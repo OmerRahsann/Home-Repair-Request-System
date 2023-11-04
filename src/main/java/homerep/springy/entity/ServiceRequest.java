@@ -2,6 +2,7 @@ package homerep.springy.entity;
 
 import jakarta.persistence.*;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -34,6 +35,8 @@ public class ServiceRequest {
     private double latitude;
 
     private double longitude;
+
+    private Instant locationRetrievalTime;
 
     @OneToMany
     @OrderColumn
@@ -142,6 +145,14 @@ public class ServiceRequest {
 
     public double getLongitude(){
         return this.longitude;
+    }
+
+    public Instant getLocationRetrievalTime() {
+        return locationRetrievalTime;
+    }
+
+    public void setLocationRetrievalTime(Instant locationRetrievalTime) {
+        this.locationRetrievalTime = locationRetrievalTime;
     }
 
     public enum Status {

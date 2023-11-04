@@ -4,8 +4,6 @@ import jakarta.persistence.*;
 
 import java.util.List;
 
-import javax.tools.JavaFileManager.Location;
-
 @Entity
 public class ServiceProvider {
     @Id

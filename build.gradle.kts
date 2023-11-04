@@ -2,6 +2,7 @@ plugins {
 	java
 	id("org.springframework.boot") version "3.1.4"
 	id("io.spring.dependency-management") version "1.1.3"
+	id("io.freefair.lombok") version "8.4"
 }
 
 group = "homerep"
@@ -29,7 +30,7 @@ dependencies {
 	implementation("org.im4java:im4java:1.4.0") // For interfacing with ImageMagick
 	implementation("com.google.maps:google-maps-services:2.2.0") // For geocoding addresses with the Google Maps API
 
-	implementation("com.github.ben-manes.caffeine:caffeine")
+	implementation("com.github.ben-manes.caffeine:caffeine") // TODO deduplicate when merging with ForgotPassword branch
 
 	runtimeOnly("com.mysql:mysql-connector-j")
 

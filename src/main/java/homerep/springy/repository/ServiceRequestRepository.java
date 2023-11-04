@@ -11,4 +11,6 @@ public interface ServiceRequestRepository extends JpaRepository<ServiceRequest, 
     ServiceRequest findByIdAndCustomerAccountEmail(int id, String email);
     
     List<ServiceRequest> findByStatus(ServiceRequest.Status status);
+
+    List<ServiceRequest> findAllByLatitudeBetweenAndLongitudeBetween(double minLatitude, double maxLatitude, double minLongitude, double maxLongitude);
 }

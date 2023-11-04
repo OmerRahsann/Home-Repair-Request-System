@@ -4,16 +4,20 @@ import homerep.springy.entity.ServiceRequest;
 import homerep.springy.entity.ServiceType;
 import homerep.springy.model.ServiceRequestModel;
 import homerep.springy.repository.ServiceTypeRepository;
+import homerep.springy.service.GeocodingService;
+import homerep.springy.service.impl.geocoding.NoopGeocodingService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -25,6 +29,9 @@ public class PlainServiceRequestTests extends AbstractServiceRequestTests {
 
     @Autowired
     private ServiceTypeRepository serviceTypeRepository;
+
+    @Autowired
+    private GeocodingService geocodingService;
 
     @Test
     @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
@@ -51,6 +58,27 @@ public class PlainServiceRequestTests extends AbstractServiceRequestTests {
         assertTrue(serviceRequest.getPictures().isEmpty());
         assertNotNull(serviceRequest.getCreationDate());
         assertTrue(serviceRequest.getCreationDate().after(now));
+    }
+
+    @Test
+    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
+    @Transactional
+    void customerCreateLocation() throws Exception {
+        assumeFalse(geocodingService instanceof NoopGeocodingService);
+
+        Instant nowInstant = Instant.now();
+        // Customer can create a service request
+        MvcResult result = this.mvc.perform(createServiceRequest(VALID_SERVICE_REQUEST))
+                .andExpect(status().isOk())
+                .andReturn();
+        int id = Integer.parseInt(result.getResponse().getContentAsString());
+        // It is saved to the repository and is associated with the Customer
+        ServiceRequest serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountEmail(id, TEST_EMAIL);
+        assertNotNull(serviceRequest);
+        // Location is updated with data from the geocoding service
+        assertEquals(VALID_REQUEST_LOCATION.latitude(), serviceRequest.getLatitude(), 0.015); // Can vary depending on which building was returned
+        assertEquals(VALID_REQUEST_LOCATION.longitude(), serviceRequest.getLongitude(), 0.015);
+        assertTrue(serviceRequest.getLocationRetrievalTime().isAfter(nowInstant));
     }
 
     @Test
@@ -182,6 +210,34 @@ public class PlainServiceRequestTests extends AbstractServiceRequestTests {
     @Test
     @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
     @Transactional
+    void customerCreateEditLocation() throws Exception {
+        assumeFalse(geocodingService instanceof NoopGeocodingService);
+        // Customer can create a service request
+        MvcResult result = this.mvc.perform(createServiceRequest(VALID_SERVICE_REQUEST))
+                .andExpect(status().isOk())
+                .andReturn();
+        int id = Integer.parseInt(result.getResponse().getContentAsString());
+        ServiceRequest serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountEmail(id, TEST_EMAIL);
+        Instant initialRetrievalTime = serviceRequest.getLocationRetrievalTime();
+        // Edit the service request with a valid ServiceRequestModel with some additional data that is ignored
+        Instant editInstant = Instant.now();
+        this.mvc.perform(editServiceRequest(id, MODIFIED_VALID_SERVICE_REQUEST_WITH_ADDITIONAl))
+                .andExpect(status().isOk());
+
+        serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountEmail(id, TEST_EMAIL);
+        assertNotNull(serviceRequest);
+        // Location matches results from Geocoding service
+        // Location is updated with data from the geocoding service
+        assertEquals(MODIFIED_VALID_REQUEST_LOCATION.latitude(), serviceRequest.getLatitude(), 1.0 / 360.0);
+        assertEquals(MODIFIED_VALID_REQUEST_LOCATION.longitude(), serviceRequest.getLongitude(), 1.0 / 360.0);
+        // Retrieval time is updated
+        assertTrue(serviceRequest.getLocationRetrievalTime().isAfter(initialRetrievalTime));
+        assertTrue(serviceRequest.getLocationRetrievalTime().isAfter(editInstant));
+    }
+
+    @Test
+    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
+    @Transactional
     void customerCreateEditStatus() throws Exception {
         // Customer can create a service request
         MvcResult result = this.mvc.perform(createServiceRequest(VALID_SERVICE_REQUEST))
@@ -195,9 +251,7 @@ public class PlainServiceRequestTests extends AbstractServiceRequestTests {
                 .andReturn();
         ServiceRequestModel initialModel = mapper.readValue(result.getResponse().getContentAsString(), ServiceRequestModel.class);
         // Edit the service request with a null status
-        ServiceRequestModel editedModel = new ServiceRequestModel(initialModel.id(), initialModel.title(),
-                initialModel.description(), initialModel.service(), null, initialModel.dollars(),
-                initialModel.address(), initialModel.pictures(), initialModel.creationDate());
+        ServiceRequestModel editedModel = initialModel.withStatus(null);
         this.mvc.perform(editServiceRequest(id, editedModel))
                 .andExpect(status().isOk());
         // Get the new state
@@ -211,9 +265,7 @@ public class PlainServiceRequestTests extends AbstractServiceRequestTests {
         assertEquals(ServiceRequest.Status.PENDING, model.status()); // Status should still be PENDING
 
         // Edit the service request with a new status
-        editedModel = new ServiceRequestModel(model.id(), model.title(), model.description(), model.service(),
-                ServiceRequest.Status.COMPLETED, model.dollars(), model.address(), model.pictures(),
-                model.creationDate());
+        editedModel = model.withStatus(ServiceRequest.Status.COMPLETED);
         this.mvc.perform(editServiceRequest(id, editedModel))
                 .andExpect(status().isOk());
         // Get the new state

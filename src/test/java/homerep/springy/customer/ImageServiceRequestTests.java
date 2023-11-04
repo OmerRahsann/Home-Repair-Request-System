@@ -110,8 +110,7 @@ public class ImageServiceRequestTests extends AbstractServiceRequestTests {
         assertEquals(2, model.pictures().size());
         // Pictures can be reordered by editing the post
         List<String> newOrder = List.of(model.pictures().get(1), model.pictures().get(0));
-        ServiceRequestModel editedModel = new ServiceRequestModel(null, model.title(), model.description(),
-                model.service(), model.status(), model.dollars(), model.address(), newOrder, model.creationDate());
+        ServiceRequestModel editedModel = model.withPictures(newOrder);
         this.mvc.perform(editServiceRequest(postId, editedModel))
                 .andExpect(status().isOk());
 
@@ -147,8 +146,7 @@ public class ImageServiceRequestTests extends AbstractServiceRequestTests {
         assertEquals(2, model.pictures().size());
         // Pictures can be deleted by removing them from the list
         List<String> newOrder = List.of(model.pictures().get(0));
-        ServiceRequestModel editedModel = new ServiceRequestModel(null, model.title(), model.description(),
-                model.service(), model.status(), model.dollars(), model.address(), newOrder, model.creationDate());
+        ServiceRequestModel editedModel = model.withPictures(newOrder);
         this.mvc.perform(editServiceRequest(postId, editedModel))
                 .andExpect(status().isOk());
 
@@ -161,8 +159,7 @@ public class ImageServiceRequestTests extends AbstractServiceRequestTests {
         assertEquals(1, imageInfoRepository.findAll().size());
         // Last picture can be removed
         newOrder = List.of();
-        editedModel = new ServiceRequestModel(null, model.title(), model.description(),
-                model.service(), model.status(), model.dollars(), model.address(), newOrder, model.creationDate());
+        editedModel = model.withPictures(newOrder);
         this.mvc.perform(editServiceRequest(postId, editedModel))
                 .andExpect(status().isOk());
 
@@ -243,8 +240,7 @@ public class ImageServiceRequestTests extends AbstractServiceRequestTests {
         // Can't attach other photos without going through the {id}/attach endpoint
         Account account = accountRepository.findByEmail(TEST_EMAIL);
         ImageInfo imageInfo = imageStorageService.storeImage(createImage(2, 2, "PNG"), 2, 2, account);
-        ServiceRequestModel editedModel = new ServiceRequestModel(null, VALID_SERVICE_REQUEST.title(), VALID_SERVICE_REQUEST.description(),
-                VALID_SERVICE_REQUEST.service(), VALID_SERVICE_REQUEST.status(), VALID_SERVICE_REQUEST.dollars(), VALID_SERVICE_REQUEST.address(), List.of(imageInfo.getUuid().toString()), null);
+        ServiceRequestModel editedModel = VALID_SERVICE_REQUEST.withPictures(List.of(imageInfo.getUuid().toString()));
         this.mvc.perform(editServiceRequest(postId, editedModel))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("timestamp").isNumber())
@@ -260,8 +256,7 @@ public class ImageServiceRequestTests extends AbstractServiceRequestTests {
                 .andExpect(status().isOk());
         ServiceRequest serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountEmail(postId, TEST_EMAIL);
         String attachedPhotoUUID = serviceRequest.getPictures().get(0).getUuid().toString();
-        ServiceRequestModel editedModel = new ServiceRequestModel(null, VALID_SERVICE_REQUEST.title(), VALID_SERVICE_REQUEST.description(),
-                VALID_SERVICE_REQUEST.service(), VALID_SERVICE_REQUEST.status(), VALID_SERVICE_REQUEST.dollars(), VALID_SERVICE_REQUEST.address(), List.of(attachedPhotoUUID, attachedPhotoUUID), null);
+        ServiceRequestModel editedModel = VALID_SERVICE_REQUEST.withPictures(List.of(attachedPhotoUUID, attachedPhotoUUID));
         this.mvc.perform(editServiceRequest(postId, editedModel))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("timestamp").isNumber())

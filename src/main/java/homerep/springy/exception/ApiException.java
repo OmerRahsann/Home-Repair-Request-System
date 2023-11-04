@@ -8,6 +8,11 @@ public class ApiException extends RuntimeException {
         this.type = type;
     }
 
+    public ApiException(String type, String message, Throwable cause) {
+        super(message, cause);
+        this.type = type;
+    }
+
     public String getType() {
         return type;
     }

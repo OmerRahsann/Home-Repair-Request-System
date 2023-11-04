@@ -42,3 +42,6 @@ homerep:
     images:
       max-num-pictures: 10
       max-size-pixels: 1920
+  geocoding:
+    google-maps-api-key: API_KEY
+    # nominatim-url: http://your-local-instance:8090

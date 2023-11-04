@@ -3,6 +3,7 @@ package homerep.springy.controller.customer;
 import homerep.springy.config.ServiceRequestConfiguration;
 import homerep.springy.entity.*;
 import homerep.springy.exception.ApiException;
+import homerep.springy.exception.GeocodingException;
 import homerep.springy.exception.ImageStoreException;
 import homerep.springy.exception.NonExistentPostException;
 import homerep.springy.model.ServiceRequestModel;
@@ -10,10 +11,10 @@ import homerep.springy.repository.CustomerRepository;
 import homerep.springy.repository.ServiceRequestRepository;
 import homerep.springy.repository.ServiceRequestTemplateRepository;
 import homerep.springy.repository.ServiceTypeRepository;
+import homerep.springy.service.GeocodingService;
 import homerep.springy.service.ImageStorageService;
+import homerep.springy.type.LatLong;
 import jakarta.transaction.Transactional;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,12 +24,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -55,6 +52,9 @@ public class ServiceRequestController {
 
     @Autowired
     private ServiceRequestConfiguration.PictureConfig pictureConfig;
+
+    @Autowired
+    private GeocodingService geocodingService;
 
     @PostMapping("/create")
     public int createPost(@RequestBody @Validated ServiceRequestModel serviceRequestModel, @AuthenticationPrincipal User user) {
@@ -122,7 +122,7 @@ public class ServiceRequestController {
         List<ServiceRequest> serviceRequests = serviceRequestRepository.findAllByCustomerAccountEmail(user.getUsername());
         List<ServiceRequestModel> models = new ArrayList<>(serviceRequests.size());
         for (ServiceRequest serviceRequest : serviceRequests) {
-            models.add(toModel(serviceRequest));
+            models.add(ServiceRequestModel.fromEntity(serviceRequest));
         }
         return models;
     }
@@ -133,7 +133,7 @@ public class ServiceRequestController {
         if (serviceRequest == null) {
             throw new NonExistentPostException();
         }
-        return toModel(serviceRequest);
+        return ServiceRequestModel.fromEntity(serviceRequest);
     }
 
     @GetMapping("/services")
@@ -168,9 +168,19 @@ public class ServiceRequestController {
         }
         serviceRequest.setDollars(serviceRequestModel.dollars());
         serviceRequest.setAddress(serviceRequestModel.address());
-        double[] coords = getCoordinates(serviceRequestModel.address(), "AIzaSyB-Hir-BFLaHrDngWHU5dXi3wA4VfIshs4");
-        serviceRequest.setLatitude(coords[0]);
-        serviceRequest.setLongitude(coords[1]);
+
+        try {
+            LatLong location = geocodingService.geocode(serviceRequestModel.address());
+            if (location == null) {
+                throw new ApiException("geocoding_error", "Unable to geocode address.");
+            }
+            serviceRequest.setLatitude(location.latitude());
+            serviceRequest.setLongitude(location.longitude());
+            serviceRequest.setLocationRetrievalTime(Instant.now());
+        } catch (GeocodingException e) {
+            throw new ApiException("geocoding_error", "Unable to geocode address.", e);
+        }
+
         if (serviceRequestModel.pictures() != null) {
             Map<String, ImageInfo> alreadyAttached = serviceRequest.getPictures().stream()
                     .collect(Collectors.toMap(imageInfo -> imageInfo.getUuid().toString(), Function.identity()));
@@ -198,60 +208,4 @@ public class ServiceRequestController {
         }
     }
 
-
-
-    private ServiceRequestModel toModel(ServiceRequest serviceRequest) {
-        return new ServiceRequestModel(
-                serviceRequest.getId(),
-                serviceRequest.getTitle(),
-                serviceRequest.getDescription(),
-                serviceRequest.getService(),
-                serviceRequest.getStatus(),
-                serviceRequest.getDollars(),
-                serviceRequest.getAddress(),
-                serviceRequest.getImagesUUIDs(),
-                serviceRequest.getCreationDate(),
-                serviceRequest.getLatitude(),
-                serviceRequest.getLongitude()
-        );
-    }
-
-    public double[] getCoordinates(String address, String apiKey) {
-        try {
-            String encodedAddress = URLEncoder.encode(address, "UTF-8");
-            String apiUrl = "https://maps.googleapis.com/maps/api/geocode/json?address=" + encodedAddress + "&key=" + apiKey;
-
-            URL url = new URL(apiUrl);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            int responsecode = connection.getResponseCode();
-
-            if (responsecode != 200) {
-                throw new IOException("HTTP Response Code: " + responsecode);
-            }
-
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-                StringBuilder response = new StringBuilder();
-                String line;
-
-                while ((line = reader.readLine()) != null) {
-                    response.append(line);
-                }
-
-                JSONObject json = new JSONObject(response.toString());
-
-                if ("OK".equals(json.getString("status"))) {
-                    JSONArray results = json.getJSONArray("results");
-                    JSONObject location = results.getJSONObject(0).getJSONObject("geometry").getJSONObject("location");
-                    double lat = location.getDouble("lat");
-                    double lng = location.getDouble("lng");
-                    return new double[]{lat, lng};
-                } else {
-                    throw new IOException("Geocoding API Error: " + json.getString("status"));
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace(); // Consider logging the error instead of printing to the console
-            return null; // Return null to indicate an error
-        }
-    }
 }
