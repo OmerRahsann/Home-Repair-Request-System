@@ -6,9 +6,9 @@ import homerep.springy.entity.ImageInfo;
 import homerep.springy.exception.ImageStoreException;
 import homerep.springy.repository.ImageInfoRepository;
 import homerep.springy.service.ImageStorageService;
-import org.im4java.core.ConvertCmd;
 import org.im4java.core.IM4JavaException;
 import org.im4java.core.IMOperation;
+import org.im4java.core.ImageCommand;
 import org.im4java.process.ArrayListOutputConsumer;
 import org.im4java.process.Pipe;
 import org.slf4j.Logger;
@@ -127,10 +127,10 @@ public class ImageStorageServiceImpl implements ImageStorageService {
         // output to standard output
         op.addImage("JPEG:-");
 
-        ConvertCmd convert = new ConvertCmd();
+        ImageCommand convert = new ImageCommand("magick");
         convert.setInputProvider(new Pipe(inputStream, null));
         convert.setOutputConsumer(new Pipe(null, outputStream));
-        convert.run(op); // TODO should this be async??
+        convert.run(op);
     }
 
     private void checkIMPolicy() {
@@ -140,7 +140,7 @@ public class ImageStorageServiceImpl implements ImageStorageService {
             op.list("policy");
 
             ArrayListOutputConsumer consumer = new ArrayListOutputConsumer();
-            ConvertCmd cmd = new ConvertCmd();
+            ImageCommand cmd = new ImageCommand("magick");
             cmd.setOutputConsumer(consumer);
             cmd.run(op);
             // Scan through the list for
