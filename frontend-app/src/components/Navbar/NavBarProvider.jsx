@@ -11,10 +11,8 @@ import { InputBase } from '@material-ui/core'
 import { FaSearch } from 'react-icons/fa'
 
 const navigation = [
-  { name: 'Home', href: '/provider/home', current: true },
-  { name: 'Service Requests', href: '/provider/viewrequests', current: false },
-  { name: 'Link 3', href: '#', current: false },
-  { name: 'Link 4', href: '#', current: false },
+  { name: 'Find Jobs', href: '/provider/viewrequests', current: true },
+  { name: 'My Jobs', href: '/provider/myjobs', current: false },
 ]
 
 function classNames(...classes) {

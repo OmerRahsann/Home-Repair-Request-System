@@ -4,9 +4,22 @@ import RequestDetails from '../Customer/RequestDetails'
 import ServiceRequestCard from './ServiceRequestCard'
 import { CircularProgress, Typography } from '@material-ui/core'
 import './scrollbar.css'
+import { Autocomplete } from '@react-google-maps/api'
+import { InputBase } from '@material-ui/core'
+import useStyles from './styles.js'
+import { FaSearch } from 'react-icons/fa'
 
-function RequestList({ onSearch, requests, isLoading, selectedCardIndex }) {
+function RequestList({
+  onSearch,
+  requests,
+  isLoading,
+  selectedCardIndex,
+  onLoad,
+  onRequestChanged,
+  locationName,
+}) {
   const [elRefs, setElRefs] = useState([])
+  const classes = useStyles()
 
   useEffect(() => {
     setElRefs((refs) =>
@@ -43,31 +56,47 @@ function RequestList({ onSearch, requests, isLoading, selectedCardIndex }) {
     <div className="">
       {isLoading ? (
         <div className="flex justify-center items-center p-2">
-        <CircularProgress size="5rem" />
-      </div>
+          <CircularProgress size="5rem" />
+        </div>
       ) : (
         <>
-          <div className="flex flex-col md:flex-row justify-center md:justify-between  md:pb-10">
-  <Select
-    options={category}
-    placeholder="Category"
-    value={categoryChange}
-    onChange={handleCategoryChage}
-    isSearchable={true}
-    isMulti
-    className="bg-custom-gray w-full md:w-1/2 md:mr-4"
-  />
+          <div className="w-full">
+            <Autocomplete onLoad={onLoad} onPlaceChanged={onRequestChanged}>
+              <div className="flex flex-row p-2 border rounded-lg shadow-sm bg-custom-gray items-center">
+                <FaSearch className="text-gray-500 mr-2" />
+                <InputBase
+                  classes={{
+                    root: classes.inputRoot,
+                    input: classes.inputInput,
+                  }}
+                  fullWidth="true"
+                  placeholder="Search by location..."
+                />
+              </div>
+            </Autocomplete>
+          </div>
 
-  <Select
-    options={priceRange}
-    placeholder="Price Range"
-    value={priceRangeChange}
-    onChange={handlePriceSelect}
-    isSearchable={true}
-    isMulti
-    className="bg-custom-gray w-full md:w-1/2"
-  />
-</div>
+          <div className="flex flex-col md:flex-row justify-center md:justify-between  md:pb-2 md:pt-2">
+            <Select
+              options={category}
+              placeholder="Category"
+              value={categoryChange}
+              onChange={handleCategoryChage}
+              isSearchable={true}
+              isMulti
+              className="bg-custom-gray w-full md:w-1/2 md:mr-4"
+            />
+
+            <Select
+              options={priceRange}
+              placeholder="Price Range"
+              value={priceRangeChange}
+              onChange={handlePriceSelect}
+              isSearchable={true}
+              isMulti
+              className="bg-custom-gray w-full md:w-1/2"
+            />
+          </div>
 
           <div className="h-[75vh] overflow-y-auto custom-scrollbar">
             <div className="flex flex-wrap gap-4">
