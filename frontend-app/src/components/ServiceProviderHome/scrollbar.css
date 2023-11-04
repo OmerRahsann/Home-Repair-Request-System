@@ -1,7 +1,7 @@
 .custom-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: #999 #ccc;
-    overflow: scroll;
+    overflow-y: scroll;
   }
   
   .custom-scrollbar::-webkit-scrollbar {

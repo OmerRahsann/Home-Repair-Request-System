@@ -10,11 +10,10 @@ import { FaSearch } from 'react-icons/fa'
 
 function RequestView() {
   const [requests, setRequests] = useState([])
-
   const [coords, setCoords] = useState({})
   const [bounds, setBounds] = useState(null)
   const [selectedCardIndex, setSelectedCardIndex] = useState(0)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [autocomplete, setAutocomplete] = useState(null)
   const [showNavBar, setShowNavBar] = useState(true)
   const [selectedLocation, setSelectedLocation] = useState(null)
@@ -31,7 +30,9 @@ function RequestView() {
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
+    
       ({ coords: { latitude, longitude } }) => {
+        setIsLoading(true)
         
         setCoords({ lat: latitude, lng: longitude })
         const ne = {
@@ -44,6 +45,7 @@ function RequestView() {
           lng: longitude - .015,
         };
         setBounds({ ne, sw });
+        setIsLoading(false)
 
       },
       
@@ -52,6 +54,7 @@ function RequestView() {
 
   useEffect(() => {
     if (bounds) {
+      setIsLoading(true)
       const { ne, sw } = bounds
 
       const url = `http://localhost:8080/api/provider/service_requests/nearby?latitudeSW=${sw.lat}&longitudeSW=${sw.lng}&latitudeNE=${ne.lat}&longitudeNE=${ne.lng}`
@@ -67,6 +70,7 @@ function RequestView() {
         .catch((error) => {
           console.error('Error:', error)
         })
+        setIsLoading(false)
     }
   }, [bounds])
 

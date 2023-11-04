@@ -42,34 +42,34 @@ function RequestList({ onSearch, requests, isLoading, selectedCardIndex }) {
   return (
     <div className="">
       {isLoading ? (
-        <div className="flex justify-center p-2">
-          <CircularProgress size="5rem" color="black" />
-        </div>
+        <div className="flex justify-center items-center p-2">
+        <CircularProgress size="5rem" />
+      </div>
       ) : (
         <>
-          <div className="flex flex-row justify-between pt-10 pb-10">
-            <Select
-              options={category}
-              placeholder="Category"
-              value={categoryChange}
-              onChange={handleCategoryChage}
-              isSearchable={true}
-              isMulti
-              className="bg-custom-gray"
-            />
+          <div className="flex flex-col md:flex-row justify-center md:justify-between  md:pb-10">
+  <Select
+    options={category}
+    placeholder="Category"
+    value={categoryChange}
+    onChange={handleCategoryChage}
+    isSearchable={true}
+    isMulti
+    className="bg-custom-gray w-full md:w-1/2 md:mr-4"
+  />
 
-            <Select
-              options={priceRange}
-              placeholder="Price Range"
-              value={priceRangeChange}
-              onChange={handlePriceSelect}
-              isSearchable={true}
-              isMulti
-              className="bg-custom-gray"
-            />
-          </div>
+  <Select
+    options={priceRange}
+    placeholder="Price Range"
+    value={priceRangeChange}
+    onChange={handlePriceSelect}
+    isSearchable={true}
+    isMulti
+    className="bg-custom-gray w-full md:w-1/2"
+  />
+</div>
 
-          <div className="h-[65vh] overflow-y-auto custom-scrollbar">
+          <div className="h-[75vh] overflow-y-auto custom-scrollbar">
             <div className="flex flex-wrap gap-4">
               {requests?.map((request, i) => (
                 <div className="w-full p-2 " key={i} ref={elRefs[i]}>
