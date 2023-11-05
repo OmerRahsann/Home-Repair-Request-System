@@ -18,7 +18,7 @@ function RequestList({
   onLoad,
   onRequestChanged,
   setCategoryChange,
-  setPriceRangeChange
+  setPriceRangeChange,
 }) {
   const [elRefs, setElRefs] = useState([])
   const classes = useStyles()
@@ -31,30 +31,28 @@ function RequestList({
     )
   }, [requests])
 
-    const [services, setServices] = useState([]);
-  
-    useEffect(() => {
-      // Call the getServices function and update the state with the returned data
-      getServices()
-        .then((transformedServices) => {
-          setServices(transformedServices);
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-        });
-    }, []);
+  const [services, setServices] = useState([])
 
- 
+  useEffect(() => {
+    // Call the getServices function and update the state with the returned data
+    getServices()
+      .then((transformedServices) => {
+        setServices(transformedServices)
+      })
+      .catch((error) => {
+        console.error('Error:', error)
+      })
+  }, [])
 
-    const priceRange = [
-      { value: [0, 50], label: '$0-50' },
-      { value: [51, 100], label: '$51-100' },
-      { value: [101, 200], label: '$101-200' },
-      { value: [201, 500], label: '$201-500' },
-      { value: [501, 1000], label: '$501-1000' },
-      { value: [1001, 2500], label: '$1001-2500' },
-      { value: [2501, 10000], label: '$2501-10000' },
-    ];
+  const priceRange = [
+    { value: [0, 50], label: '$0-50' },
+    { value: [51, 100], label: '$51-100' },
+    { value: [101, 200], label: '$101-200' },
+    { value: [201, 500], label: '$201-500' },
+    { value: [501, 1000], label: '$501-1000' },
+    { value: [1001, 2500], label: '$1001-2500' },
+    { value: [2501, 10000], label: '$2501-10000' },
+  ]
 
   return (
     <div className="">
