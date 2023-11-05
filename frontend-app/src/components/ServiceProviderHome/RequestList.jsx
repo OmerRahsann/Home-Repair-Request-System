@@ -8,6 +8,7 @@ import { Autocomplete } from '@react-google-maps/api'
 import { InputBase } from '@material-ui/core'
 import useStyles from './styles.js'
 import { FaSearch } from 'react-icons/fa'
+import { getServices } from '../../Helpers/helpers'
 
 function RequestList({
   onSearch,
@@ -16,7 +17,8 @@ function RequestList({
   selectedCardIndex,
   onLoad,
   onRequestChanged,
-  locationName,
+  setCategoryChange,
+  setPriceRangeChange
 }) {
   const [elRefs, setElRefs] = useState([])
   const classes = useStyles()
@@ -29,28 +31,30 @@ function RequestList({
     )
   }, [requests])
 
-  const category = [
-    { value: 'plumbing', label: 'Plumbing' },
-    { value: 'yardwork', label: 'Yardwork' },
-    { value: 'roofing', label: 'Roofing' },
-  ]
+    const [services, setServices] = useState([]);
+  
+    useEffect(() => {
+      // Call the getServices function and update the state with the returned data
+      getServices()
+        .then((transformedServices) => {
+          setServices(transformedServices);
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+    }, []);
 
-  const priceRange = [
-    { value: '500', label: '$0-500' },
-    { value: '1000', label: '500-$1000' },
-    { value: '2500', label: '$1000-10,000' },
-  ]
+ 
 
-  const [categoryChange, setCategoryChange] = useState([])
-  const [priceRangeChange, setPriceRangeChange] = useState([])
-
-  function handleCategoryChage(data) {
-    setCategoryChange(data)
-  }
-
-  function handlePriceSelect(data) {
-    setPriceRangeChange(data)
-  }
+    const priceRange = [
+      { value: [0, 50], label: '$0-50' },
+      { value: [51, 100], label: '$51-100' },
+      { value: [101, 200], label: '$101-200' },
+      { value: [201, 500], label: '$201-500' },
+      { value: [501, 1000], label: '$501-1000' },
+      { value: [1001, 2500], label: '$1001-2500' },
+      { value: [2501, 10000], label: '$2501-10000' },
+    ];
 
   return (
     <div className="">
@@ -78,23 +82,21 @@ function RequestList({
 
           <div className="flex flex-col md:flex-row justify-center md:justify-between  md:pb-2 md:pt-2">
             <Select
-              options={category}
+              options={services}
               placeholder="Category"
-              value={categoryChange}
-              onChange={handleCategoryChage}
+              onChange={setCategoryChange}
               isSearchable={true}
-              isMulti
               className="bg-custom-gray w-full md:w-1/2 md:mr-4"
+              isClearable
             />
 
             <Select
               options={priceRange}
               placeholder="Price Range"
-              value={priceRangeChange}
-              onChange={handlePriceSelect}
+              onChange={setPriceRangeChange}
               isSearchable={true}
-              isMulti
               className="bg-custom-gray w-full md:w-1/2"
+              isClearable
             />
           </div>
 

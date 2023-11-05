@@ -27,7 +27,7 @@ function ProviderSignIn() {
         .then(
           (res) => {
             console.log(res.data)
-            navigate('/provider/home')
+            navigate('/provider/viewrequests')
           },
           (fail) => {
             alert('Unrecognized email or password')

@@ -12,8 +12,9 @@ function RequestView() {
   const [isLoading, setIsLoading] = useState(true)
   const [autocomplete, setAutocomplete] = useState(null)
   const [selectedLocation, setSelectedLocation] = useState(null)
+  const [categoryChange, setCategoryChange] = useState(null);
+  const [priceRangeChange, setPriceRangeChange] = useState(null);
 
-  // Handle card click and store the index
   const handleCardClick = (index) => {
     setSelectedCardIndex(index)
   }
@@ -44,7 +45,18 @@ function RequestView() {
       setIsLoading(true)
       const { ne, sw } = bounds
 
-      const url = `http://localhost:8080/api/provider/service_requests/nearby?latitudeSW=${sw.lat}&longitudeSW=${sw.lng}&latitudeNE=${ne.lat}&longitudeNE=${ne.lng}`
+      let url = `http://localhost:8080/api/provider/service_requests/nearby?latitudeSW=${sw.lat}&longitudeSW=${sw.lng}&latitudeNE=${ne.lat}&longitudeNE=${ne.lng}`;
+      if (categoryChange) {
+        url += `&serviceType=${categoryChange.value}`;
+      }
+  
+      // Add price range parameters if selected
+      if (priceRangeChange) {
+        url += `&lowerDollarRange=${priceRangeChange.value[0]}&higherDollarRange=${priceRangeChange.value[1]}`;
+      }
+
+      console.log(url)
+
 
       // Make the GET request using Axios
       axios
@@ -59,7 +71,7 @@ function RequestView() {
         })
       setIsLoading(false)
     }
-  }, [bounds])
+  }, [bounds, categoryChange, priceRangeChange])
 
   const onRequestChanged = () => {
     const place = autocomplete.getPlace()
@@ -70,7 +82,6 @@ function RequestView() {
   }
 
   const onLoad = (autoC) => setAutocomplete(autoC)
-
   return (
     <div>
       <NavBarProvider />
@@ -83,6 +94,8 @@ function RequestView() {
             isLoading={isLoading}
             onLoad={onLoad}
             onRequestChanged={onRequestChanged}
+            setCategoryChange={setCategoryChange}
+            setPriceRangeChange={setPriceRangeChange}
           />
         </div>
         <div className="w-2/3">
