@@ -77,8 +77,9 @@ public class ServiceProviderRequestsController {
                         boolean matchesServiceType = (serviceType == null) || request.getService().equalsIgnoreCase(serviceType);
                         double desiredPrice = request.getDollars();
                         boolean isWithinDollarsRange = ((lowerDollarRange == null) && (higherDollarRange==null)) || (lowerDollarRange <= desiredPrice) && (desiredPrice <= higherDollarRange);
+                        boolean isPending = request.getStatus().equals(ServiceRequest.Status.PENDING);
 
-                        return isWithinBounds && matchesServiceType && isWithinDollarsRange;
+                        return isWithinBounds && matchesServiceType && isWithinDollarsRange && isPending;
 
                     } catch (IOException e) {
                         throw new RuntimeException(e);
