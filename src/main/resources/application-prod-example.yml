@@ -38,10 +38,14 @@ spring:
 homerep:
   email-templates:
     email-verification: file:/abs/path/to/actual-templates/email-verification.eml
+  image-storage:
+    quality: 90.0
+    storage-root: ./image-storage-root
+  geocoding:
+    google-maps-api-key: API_KEY
+    # nominatim-url: http://your-local-instance:8090
+  require-verification: true
   service-request:
     images:
       max-num-pictures: 10
       max-size-pixels: 1920
-  geocoding:
-    google-maps-api-key: API_KEY
-    # nominatim-url: http://your-local-instance:8090

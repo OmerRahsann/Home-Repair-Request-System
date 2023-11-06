@@ -1,6 +1,6 @@
 package homerep.springy.controller.customer;
 
-import homerep.springy.config.ServiceRequestConfiguration;
+import homerep.springy.config.ServiceRequestPictureConfig;
 import homerep.springy.entity.*;
 import homerep.springy.exception.ApiException;
 import homerep.springy.exception.GeocodingException;
@@ -51,7 +51,7 @@ public class ServiceRequestController {
     private ImageStorageService imageStorage;
 
     @Autowired
-    private ServiceRequestConfiguration.PictureConfig pictureConfig;
+    private ServiceRequestPictureConfig pictureConfig;
 
     @Autowired
     private GeocodingService geocodingService;

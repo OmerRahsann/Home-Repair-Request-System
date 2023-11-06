@@ -1,6 +1,6 @@
 package homerep.springy.customer;
 
-import homerep.springy.config.ServiceRequestConfiguration;
+import homerep.springy.config.ServiceRequestPictureConfig;
 import homerep.springy.entity.Account;
 import homerep.springy.entity.ImageInfo;
 import homerep.springy.entity.ServiceRequest;
@@ -37,7 +37,7 @@ public class ImageServiceRequestTests extends AbstractServiceRequestTests {
     private ImageStorageService imageStorageService;
 
     @Autowired
-    private ServiceRequestConfiguration.PictureConfig pictureConfig;
+    private ServiceRequestPictureConfig pictureConfig;
 
     private int postId;
 
