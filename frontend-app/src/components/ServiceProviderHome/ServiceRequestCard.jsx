@@ -29,12 +29,12 @@ function ServiceRequestCard({ request, selected, refProp }) {
                 {request.title}
               </h1>
               <button
-                className={`text-white bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-[1vh] rounded-lg text-sm px-3 py-1 text-center dark:bg-primary-600 dark:hover-bg-primary-700 dark:focus-ring-primary-800 hidden sm:inline-block sm:text-sm sm:px-4 sm:py-2`}
+                className={`text-white text-[1.5vh] bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-[1vh] rounded-lg text-sm px-3 py-1 text-center dark:bg-primary-600 dark:hover-bg-primary-700 dark:focus-ring-primary-800 hidden sm:inline-block sm:text-sm sm:px-4 sm:py-2`}
               >
                 Open Job
               </button>
             </div>
-            <div className="flex flex-row justify-between pr-1">
+            <div className="md:flex md:flex-row justify-between pr-1 sm:flex-col text-[1.5vh]">
               <h1>{request.service}</h1>
               <h1 className=" text-custom-maroon">
                 ${createRoundedRange(request.dollars)}
