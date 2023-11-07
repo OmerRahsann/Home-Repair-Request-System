@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react'
 import GoogleMapReact from 'google-map-react'
 import { Circle, Marker } from '@react-google-maps/api'
 import { FaMapMarkerAlt } from 'react-icons/fa'
+import CircleMarker from './CircleMarker'
 
-const Map = ({ places, address, setBounds, setChildClicked, weatherData }) => {
+const Map = ({ places, address, isProvider }) => {
   //const matches = useMediaQuery('(min-width:600px)');
   //const classes = useStyles();
   const [latLng, setLatLng] = useState(null)
@@ -54,20 +55,23 @@ const Map = ({ places, address, setBounds, setChildClicked, weatherData }) => {
           draggable={false}
           options={{ gestureHandling: 'none', disableDefaultUI: true }}
         >
-          <Marker lat={latLng.lat} lng={latLng.lng}>
-            {/* You can customize the marker content here */}
-
-            <FaMapMarkerAlt
-              color="red"
-              title={address}
-              style={{
-                fontSize: '3em',
-                position: 'relative',
-                top: '-1em',
-                left: '-0.5em',
-              }}
-            />
-          </Marker>
+          {!isProvider ? (
+            <Marker lat={latLng.lat} lng={latLng.lng}>
+              {/* You can customize the marker content here */}
+              <FaMapMarkerAlt
+                color="red"
+                title={address}
+                style={{
+                  fontSize: '3em',
+                  position: 'relative',
+                  top: '-1em',
+                  left: '-0.5em',
+                }}
+              />
+            </Marker>
+          ) : (
+            <CircleMarker lat={latLng.lat} lng={latLng.lng} radius={250} />
+          )}
         </GoogleMapReact>
       )}
     </div>

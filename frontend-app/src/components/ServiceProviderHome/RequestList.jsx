@@ -98,7 +98,7 @@ function RequestList({
             />
           </div>
 
-          <div className="h-[75vh] overflow-y-auto custom-scrollbar">
+          <div className="h-[70vh] overflow-y-auto custom-scrollbar">
             <div className="flex flex-wrap gap-4">
               {requests?.map((request, i) => (
                 <div className="w-full p-2 " key={i} ref={elRefs[i]}>

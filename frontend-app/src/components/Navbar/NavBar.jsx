@@ -76,10 +76,10 @@ export default function NavBar({ isLoggedIn }) {
                 {!isLoggedIn ? (
                   <>
                     <a
-                      href={'/provider/login'}
-                      className=" text-custom-black hover:bg-custom-grain hover:text-white rounded-md px-3 py-2 text-[1vh] font-bold"
+                      href="/provider/login"
+                      className="text-custom-black hover:bg-custom-grain hover:text-white flex-shrink-0 hidden sm:block"
                     >
-                      Become a Servcie Provider!
+                      Become a Service Provider!
                     </a>
                     <a
                       href={'/customer/login'}

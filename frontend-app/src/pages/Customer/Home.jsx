@@ -19,22 +19,8 @@ function Home() {
     }
 
     fetchData() // Call the function when the component mounts
-    getServiceRequests()
-
     // Define the checkIsCustomerLoggedIn function here or import it from where it's defined
   }, [])
-
-  const getServiceRequests = async () => {
-    try {
-      const response = await axios.get(
-        'http://localhost:8080/api/customer/service_request',
-        { withCredentials: true },
-      )
-      setServiceRequests(response.data)
-    } catch (error) {
-      console.error('Error fetching service requests:', error)
-    }
-  }
 
   return (
     <div>

@@ -101,7 +101,7 @@ const ProviderMap = ({
                     src={`http://localhost:8080/image/${request.pictures[0]}`}
                   />
                   {console.log(request.pictures)}
-                  <h1 className="pt-1 text-center text-green-600 font-bold">
+                  <h1 className="pt-1 text-center font-bold">
                     ${createRoundedRange(request.dollars)}
                   </h1>
                 </Paper>

@@ -5,6 +5,7 @@ import { useAuth } from '../../AuthContext'
 import logo from '../../Logos/mainLogo.png'
 import ProviderDescription from '../../components/ServiceProviderHome/ProviderDescription'
 import Select from 'react-select'
+import { Autocomplete } from '@react-google-maps/api'
 
 function ProviderSignUp() {
   const navigate = useNavigate()
@@ -16,6 +17,7 @@ function ProviderSignUp() {
   ]
   const [selectedServices, setSelectedServices] = useState()
   const [description, setDescription] = useState('')
+  const [autoComplete, setAutoComplete] = useState(null)
 
   // Callback function to set the description in the parent component's state
   const handleDescriptionChange = (newDescription) => {
@@ -65,6 +67,22 @@ function ProviderSignUp() {
       })
     }
   }
+
+  const onPlaceChanged = () => {
+    if (autoComplete) {
+      const place = autoComplete.getPlace()
+      const address = place.formatted_address
+      setFormData({
+        ...formData,
+        accountInfo: {
+          ...formData.accountInfo,
+          address: address,
+        },
+      })
+    }
+  }
+
+  const onLoad = (autoC) => setAutoComplete(autoC)
 
   function handleSelect(data) {
     setSelectedServices(data)
@@ -143,17 +161,16 @@ function ProviderSignUp() {
                   required=""
                 />
               </div>
-              <div>
-                <input
-                  type="text"
-                  name="accountInfo.address"
-                  value={formData.accountInfo.address}
-                  onChange={handleChange}
-                  placeholder="Business Address"
-                  required
-                  class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
-                />
-              </div>
+
+              <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
+                <div>
+                  <input
+                    placeholder="Address"
+                    required
+                    className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
+                  />
+                </div>
+              </Autocomplete>
               <div>
                 <input
                   type="text"

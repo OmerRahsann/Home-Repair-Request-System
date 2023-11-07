@@ -3,6 +3,8 @@ import RequestList from '../../components/ServiceProviderHome/RequestList'
 import NavBarProvider from '../../components/Navbar/NavBarProvider'
 import ProviderMap from '../../components/Map/ProviderMap'
 import axios from 'axios'
+import { checkIsServiceProviderLoggedIn } from '../../AuthContext'
+import { useNavigate, useNavigation } from 'react-router-dom'
 
 function RequestView() {
   const [requests, setRequests] = useState([])
@@ -14,31 +16,59 @@ function RequestView() {
   const [selectedLocation, setSelectedLocation] = useState(null)
   const [categoryChange, setCategoryChange] = useState(null)
   const [priceRangeChange, setPriceRangeChange] = useState(null)
+  const navigate = useNavigate()
 
   const handleCardClick = (index) => {
     setSelectedCardIndex(index)
   }
 
+  const [loggedIn, setLoggedIn] = useState(false)
+  const [hasSecondEffectRun, setHasSecondEffectRun] = useState(false)
+
   useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      ({ coords: { latitude, longitude } }) => {
-        setIsLoading(true)
-
-        setCoords({ lat: latitude, lng: longitude })
-        const ne = {
-          lat: latitude + 0.015,
-          lng: longitude + 0.015,
+    const fetchData = async () => {
+      try {
+        const isLoggedIn = await checkIsServiceProviderLoggedIn()
+        setLoggedIn(isLoggedIn)
+        console.log(isLoggedIn)
+        if (!isLoggedIn) {
+          navigate('/provider/login')
+          alert(
+            'You do not have access to this page. Please create a Service Provider Account to access this page.',
+          )
         }
+      } catch (error) {
+        console.error('Error checking if customer is logged in:', error)
+      } finally {
+        setHasSecondEffectRun(true)
+      }
+    }
 
-        const sw = {
-          lat: latitude - 0.015,
-          lng: longitude - 0.015,
-        }
-        setBounds({ ne, sw })
-        setIsLoading(false)
-      },
-    )
+    fetchData()
   }, [])
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        ({ coords: { latitude, longitude } }) => {
+          setIsLoading(true)
+
+          setCoords({ lat: latitude, lng: longitude })
+          const ne = {
+            lat: latitude + 0.015,
+            lng: longitude + 0.015,
+          }
+
+          const sw = {
+            lat: latitude - 0.015,
+            lng: longitude - 0.015,
+          }
+          setBounds({ ne, sw })
+          setIsLoading(false)
+        },
+      )
+    }
+  }, [hasSecondEffectRun])
 
   useEffect(() => {
     if (bounds) {
