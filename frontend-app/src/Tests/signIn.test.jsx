@@ -2,7 +2,6 @@ import { render, screen, fireEvent, act, waitFor } from '@testing-library/react'
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from '../AuthContext.js'
-import userEvent from '@testing-library/user-event'
 import axios from 'axios'
 import CustomerSignIn from '../pages/Authentication/CustomerSignIn.jsx'
 

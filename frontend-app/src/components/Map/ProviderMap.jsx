@@ -3,11 +3,7 @@ import mapStyles from '../../mapStyles'
 import GoogleMap from 'google-maps-react-markers'
 import useStyles from './styles.js'
 import noImage from '../../Pictures/noImage.jpeg'
-import {
-  Paper,
-  useMediaQuery,
-  CircularProgress,
-} from '@material-ui/core'
+import { Paper, useMediaQuery, CircularProgress } from '@material-ui/core'
 import { createRoundedRange } from '../../Helpers/helpers'
 
 const ProviderMap = ({
@@ -95,8 +91,11 @@ const ProviderMap = ({
                   </h1>
                   <img
                     className={`${classes.pointer} w-20 h-14 md:w-20 md:h-14 lg:w-20 lg:h-14 object-cover`}
-                    src={request.pictures && request.pictures[0] ? `http://localhost:8080/image/${request.pictures[0]}` : noImage}
-
+                    src={
+                      request.pictures && request.pictures[0]
+                        ? `http://localhost:8080/image/${request.pictures[0]}`
+                        : noImage
+                    }
                   />
                   {console.log(request.pictures)}
                   <h1 className="pt-1 text-center font-bold">

@@ -232,7 +232,11 @@ function RequestEdit({ request }) {
                 <div>
                   <input
                     className="border border-gray-100 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:border-gray-600 dark:placeholder-gray-400"
-                    placeholder={request.address}
+                    placeholder={
+                      request && request.address
+                        ? request.address
+                        : 'No Address Given'
+                    }
                   />
                 </div>
               </Autocomplete>

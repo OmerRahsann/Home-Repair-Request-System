@@ -30,6 +30,10 @@ function RequestDetailsProvider({ request }) {
               </button>
             </div>
             <h2>
+              <strong>Description: </strong>
+              {request.description}
+            </h2>
+            <h2>
               <strong>Creation Date: </strong>{' '}
               {new Date(request.creationDate).toLocaleDateString('en-US', {
                 year: 'numeric',
@@ -44,11 +48,6 @@ function RequestDetailsProvider({ request }) {
             <h2>
               <strong>Desired Price Range: </strong>$
               {createRoundedRange(request.dollars)}
-            </h2>
-
-            <h2>
-              <strong>Description: </strong>
-              {request.description}
             </h2>
             <h2>
               <strong>Status: </strong>
