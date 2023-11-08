@@ -1,9 +1,7 @@
 import React from 'react'
 import ImageSlider from '../ImageSlider'
 import { Fragment, useState } from 'react'
-import RequestDetails from '../Customer/RequestDetails'
 import ServiceRequestModal from '../Customer/ServiceRequestModal'
-import ServiceRequestFinal from '../Customer/ServiceRequestFinal'
 import RequestDetailsProvider from './RequestDetailsProvider'
 import { createRoundedRange } from '../../Helpers/helpers'
 

@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import Select from 'react-select'
 import ImageSlider from '../ImageSlider'
 import RequestEdit from './RequestEdit'
 import { AiFillEdit } from 'react-icons/ai'

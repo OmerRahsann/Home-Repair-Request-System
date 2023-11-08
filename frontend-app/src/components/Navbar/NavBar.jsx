@@ -1,11 +1,10 @@
-import { Fragment, useState } from 'react'
+import { Fragment } from 'react'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
-import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import { UserCircleIcon } from '@heroicons/react/24/outline'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import logo from '../../Logos/mainLogo.png'
-import { useAuth, checkIsLoggedIn, logout } from '../../AuthContext'
-import axios from 'axios'
+import { logout } from '../../AuthContext'
 
 const navigation = [
   { name: 'Home', href: '/', current: true },

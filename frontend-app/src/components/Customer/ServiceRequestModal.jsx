@@ -1,6 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
-import axios from 'axios'
-import image from '../../Pictures/banner.jpeg'
+import React, { useState } from 'react'
 
 function ServiceRequestModal({ isVisible, onClose, children, isFinal }) {
   const [serviceRequestModel, setServiceRequestModel] = useState({

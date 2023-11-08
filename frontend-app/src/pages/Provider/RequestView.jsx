@@ -4,7 +4,7 @@ import NavBarProvider from '../../components/Navbar/NavBarProvider'
 import ProviderMap from '../../components/Map/ProviderMap'
 import axios from 'axios'
 import { checkIsServiceProviderLoggedIn } from '../../AuthContext'
-import { useNavigate, useNavigation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 function RequestView() {
   const [requests, setRequests] = useState([])

@@ -1,14 +1,10 @@
-import { Fragment, useState } from 'react'
+import { Fragment } from 'react'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
-import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import { UserCircleIcon } from '@heroicons/react/24/outline'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import logo from '../../Logos/mainLogo.png'
-import { useAuth, checkIsLoggedIn, logout } from '../../AuthContext'
-import axios from 'axios'
-import { Autocomplete } from '@react-google-maps/api'
-import { InputBase } from '@material-ui/core'
-import { FaSearch } from 'react-icons/fa'
+import { logout } from '../../AuthContext'
 
 const navigation = [
   { name: 'Find Jobs', href: '/provider/viewrequests', current: true },

@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useRef, Fragment } from 'react'
-import axios from 'axios'
 import image from '../../Pictures/banner.jpeg'
 import ServiceRequestModal from './ServiceRequestModal'
 import ServiceRequestForm from './ServiceRequestForm'
 import { checkIsCustomerLoggedIn } from '../../AuthContext'
-import { GoogleMap } from '@react-google-maps/api'
 
 function ServiceRequestBanner() {
   const [imageLoaded, setImageLoaded] = useState(false)

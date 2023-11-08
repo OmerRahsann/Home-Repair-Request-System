@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import GoogleMapReact from 'google-map-react'
-import { Circle, Marker } from '@react-google-maps/api'
+import { Marker } from '@react-google-maps/api'
 import { FaMapMarkerAlt } from 'react-icons/fa'
 import CircleMarker from './CircleMarker'
 

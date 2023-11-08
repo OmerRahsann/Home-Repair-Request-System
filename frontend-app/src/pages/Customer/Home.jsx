@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import ServiceRequest from '../../components/Customer/ServiceRequest'
 import Navbar from '../../components/Navbar/NavBar'
-import axios from 'axios'
 import { checkIsCustomerLoggedIn } from '../../AuthContext'
 
 function Home() {
