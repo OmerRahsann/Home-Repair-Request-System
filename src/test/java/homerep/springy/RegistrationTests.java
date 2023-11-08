@@ -7,6 +7,7 @@ import com.icegreen.greenmail.store.FolderException;
 import homerep.springy.authorities.AccountType;
 import homerep.springy.config.AccountServiceConfig;
 import homerep.springy.config.TestDatabaseConfig;
+import homerep.springy.config.TestDisableRateLimitConfig;
 import homerep.springy.config.TestMailConfig;
 import homerep.springy.entity.Account;
 import homerep.springy.entity.Customer;
@@ -42,7 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-@Import(TestMailConfig.class)
+@Import({TestMailConfig.class, TestDisableRateLimitConfig.class})
 @TestDatabaseConfig
 class RegistrationTests {
 
@@ -121,7 +122,7 @@ class RegistrationTests {
         // with a link to verify the account
         assertTrue(message.getContent() instanceof String);
         String content = (String) message.getContent();
-        String tokenUrl = "http://localhost:0/api/verify?token=" + account.getVerificationToken();
+        String tokenUrl = "http://localhost:3000/verify?token=" + account.getVerificationToken();
         assertTrue(content.contains(tokenUrl));
 
         // Attempting to register twice fails

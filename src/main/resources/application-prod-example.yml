@@ -6,7 +6,6 @@ server:
   http2:
     enabled: true
   port: 8080
-  base-url: "http://example.com"
   allowed-origin-patterns: http://localhost:8080,http://localhost:4000
 spring:
   datasource:

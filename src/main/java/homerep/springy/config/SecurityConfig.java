@@ -15,6 +15,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,6 +26,8 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
+import org.springframework.session.jdbc.JdbcIndexedSessionRepository;
+import org.springframework.session.security.SpringSessionBackedSessionRegistry;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -55,6 +58,7 @@ public class SecurityConfig {
                         .requestMatchers(mvc.pattern("/api/verify")).permitAll()
                         .requestMatchers(mvc.pattern("/api/login")).permitAll()
                         .requestMatchers(mvc.pattern("/api/logout")).permitAll()
+                        .requestMatchers(mvc.pattern("/api/reset_password/**")).permitAll()
                         .requestMatchers(mvc.pattern("/api/customer/**")).access(
                                 AuthorizationManagers.allOf(
                                         AuthorityAuthorizationManager.hasAuthority(AccountType.CUSTOMER.getAuthority()),
@@ -114,5 +118,10 @@ public class SecurityConfig {
                 new RequestAttributeSecurityContextRepository(),
                 new HttpSessionSecurityContextRepository()
         );
+    }
+
+    @Bean
+    public SessionRegistry sessionRegistry(JdbcIndexedSessionRepository sessionRepository) {
+        return new SpringSessionBackedSessionRegistry<>(sessionRepository);
     }
 }

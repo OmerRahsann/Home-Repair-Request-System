@@ -15,6 +15,7 @@ public class EmailTemplateConfig {
         // Default email templates
         Map<String, String> map = new HashMap<>();
         map.put("email-verification", "classpath:email-templates/email-verification.eml");
+        map.put("reset-password", "classpath:email-templates/reset-password.eml");
         return map;
     }
 }

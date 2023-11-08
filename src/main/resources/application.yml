@@ -12,6 +12,10 @@ logging:
       springframework:
         security: TRACE
 spring:
+  jpa:
+    hibernate:
+      naming:
+        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyComponentPathImpl
   mail:
     properties:
       "[mail.smtp.connectiontimeout]": 5000
