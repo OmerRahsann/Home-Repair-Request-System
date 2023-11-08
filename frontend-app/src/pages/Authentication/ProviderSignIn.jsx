@@ -104,7 +104,7 @@ function ProviderSignIn() {
                           </div>
                       </div> */}
                 <a
-                  href="#"
+                  href="/reset_password"
                   class="text-sm font-medium text-primary-600 hover:underline dark:text-primary-500"
                 >
                   Forgot password?
