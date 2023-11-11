@@ -65,7 +65,7 @@ public class ServiceProviderServiceRequestTests {
 
     @BeforeEach
     @WithMockUser(username = CUSTOMER_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
-    void setupCustomer() throws Exception {
+    void setupCustomer() {
         Account customerAccount = new Account();
         customerAccount.setEmail(CUSTOMER_EMAIL);
         customerAccount.setPassword(null); // Not testing auth
@@ -133,10 +133,10 @@ public class ServiceProviderServiceRequestTests {
     @WithMockUser(username = SERVICE_PROVIDER_EMAIL, authorities = {"SERVICE_PROVIDER", "VERIFIED"})
     void testQueryRange() throws Exception {
         MvcResult result = this.mvc.perform(get("/api/provider/service_requests/nearby")
-                        .queryParam("latitudeS", String.valueOf(SERVICE_REQUEST_LOCATION.latitude() - 1))
-                        .queryParam("latitudeN", String.valueOf(SERVICE_REQUEST_LOCATION.latitude() + 1))
-                        .queryParam("longitudeW", String.valueOf(SERVICE_REQUEST_LOCATION.longitude() - 1))
-                        .queryParam("longitudeE", String.valueOf(SERVICE_REQUEST_LOCATION.longitude() + 1)))
+                        .queryParam("latitudeS", String.valueOf(SERVICE_REQUEST_LOCATION.latitude() - 0.2))
+                        .queryParam("latitudeN", String.valueOf(SERVICE_REQUEST_LOCATION.latitude() + 0.2))
+                        .queryParam("longitudeW", String.valueOf(SERVICE_REQUEST_LOCATION.longitude() - 0.2))
+                        .queryParam("longitudeE", String.valueOf(SERVICE_REQUEST_LOCATION.longitude() + 0.2)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andReturn();
@@ -144,6 +144,22 @@ public class ServiceProviderServiceRequestTests {
         ServiceRequestModel[] models = mapper.readValue(result.getResponse().getContentAsString(), ServiceRequestModel[].class);
         assertEquals(1, models.length);
         assertEquals(serviceRequestA, models[0]);
+    }
+
+    @Test
+    @WithMockUser(username = SERVICE_PROVIDER_EMAIL, authorities = {"SERVICE_PROVIDER", "VERIFIED"})
+    void testQueryLargeRange() throws Exception {
+        MvcResult result = this.mvc.perform(get("/api/provider/service_requests/nearby")
+                        .queryParam("latitudeS", String.valueOf(SERVICE_REQUEST_LOCATION.latitude() - 2))
+                        .queryParam("latitudeN", String.valueOf(SERVICE_REQUEST_LOCATION.latitude() + 2))
+                        .queryParam("longitudeW", String.valueOf(SERVICE_REQUEST_LOCATION.longitude() - 2))
+                        .queryParam("longitudeE", String.valueOf(SERVICE_REQUEST_LOCATION.longitude() + 2)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andReturn();
+        // response is empty, as the range is too large
+        ServiceRequestModel[] models = mapper.readValue(result.getResponse().getContentAsString(), ServiceRequestModel[].class);
+        assertEquals(0, models.length);
     }
 
     @Test
