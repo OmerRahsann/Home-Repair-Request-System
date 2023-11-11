@@ -9,6 +9,7 @@ import RequestPasswordReset from "./pages/Authentication/ResetPassword/RequestPa
 import ResetPassword from "./pages/Authentication/ResetPassword/ResetPassword";
 import RequestView from "./pages/Provider/RequestView"
 import MyRequests from "./pages/Customer/MyRequests";
+import MyJobs from "pages/Provider/MyJobs";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
             <Route path="/provider/viewrequests" element={<RequestView/>} />
             <Route path="/reset_password" element={<RequestPasswordReset/>} />
             <Route path="/reset_password/form" element={<ResetPassword/>} />
+            <Route path='/provider/myjobs' element={<MyJobs/>} />
             
           </Routes>
         </Router>

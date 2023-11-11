@@ -62,7 +62,7 @@ function ImageSlider({ images }) {
         {images.map((imageUrl, index) => (
           <div key={index} className="">
             <img
-              src={`http://localhost:8080/image/${imageUrl}`}
+              src={`${process.env.REACT_APP_API_URL}/image/${imageUrl}`}
               alt={`Image ${index}`}
               className="object-cover sm:h-14px sm:w-20px md:h-14px md:w-20px lg:h-[40vh] lg:w-[80vh]"
             />

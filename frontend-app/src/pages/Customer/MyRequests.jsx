@@ -12,7 +12,7 @@ function MyRequests() {
   const getServiceRequests = async () => {
     try {
       const response = await axios.get(
-        'http://localhost:8080/api/customer/service_request',
+        `${process.env.REACT_APP_API_URL}/api/customer/service_request`,
         { withCredentials: true },
       )
       setServiceRequests(response.data)

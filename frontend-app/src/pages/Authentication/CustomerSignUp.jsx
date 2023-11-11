@@ -74,7 +74,7 @@ function CustomerSignUp() {
     try {
       const { email, password, type, accountInfo } = formData
       await axios
-        .post('http://localhost:8080/api/register', {
+        .post(`${process.env.REACT_APP_API_URL}/api/register`, {
           email: email,
           password: password,
           type: type,
@@ -95,7 +95,7 @@ function CustomerSignUp() {
             navigate('/customer/login')
           },
           (fail) => {
-            alert('An account with that email already exists.')
+            alert('Oops...an error occurred. Please try again.')
             console.error(fail) // Error!
           },
         )

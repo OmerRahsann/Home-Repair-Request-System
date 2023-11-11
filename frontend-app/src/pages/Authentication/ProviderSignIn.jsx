@@ -17,7 +17,7 @@ function ProviderSignIn() {
       const { email, password } = state
       await axios
         .post(
-          'http://localhost:8080/api/login',
+          `${process.env.REACT_APP_API_URL}/api/login`,
           {
             email: email,
             password: password,
@@ -30,7 +30,7 @@ function ProviderSignIn() {
             navigate('/provider/viewrequests')
           },
           (fail) => {
-            alert('Unrecognized email or password')
+            alert('Oops...an error occurred. Please try again.')
             console.error(fail) // Error!
           },
         )

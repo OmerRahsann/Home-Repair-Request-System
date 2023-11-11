@@ -32,7 +32,7 @@ function RequestEdit({ request }) {
   async function getServices() {
     try {
       const response = await axios.get(
-        'http://localhost:8080/api/customer/service_request/services',
+        `${process.env.REACT_APP_API_URL}/api/customer/service_request/services`,
         {
           withCredentials: true,
         },

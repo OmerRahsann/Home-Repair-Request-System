@@ -39,7 +39,7 @@ export default function ResetPassword() {
     const { password } = state
     await axios
       .post(
-        'http://localhost:8080/api/reset_password',
+        `${process.env.REACT_APP_API_URL}/api/reset_password`,
         {
           password,
           token

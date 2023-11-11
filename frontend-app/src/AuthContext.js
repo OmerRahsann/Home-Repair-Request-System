@@ -47,7 +47,7 @@ export function checkIsLoggedIn() {
 
   export async function checkIsServiceProviderLoggedIn() {
     try {
-      const response = await axios.get("http://localhost:8080/api/account/type", { withCredentials: true });
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/account/type`, { withCredentials: true });
       const type = response.data;
       console.log(type );
       if(type === "SERVICE_PROVIDER") return true
@@ -60,7 +60,7 @@ export function checkIsLoggedIn() {
 
   export async function checkIsCustomerLoggedIn() {
     try {
-      const response = await axios.get("http://localhost:8080/api/account/type", { withCredentials: true });
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/account/type`, { withCredentials: true });
       const type = response.data;
       console.log(type );
       if(type === "CUSTOMER") return true
@@ -73,7 +73,7 @@ export function checkIsLoggedIn() {
   }
 
 export function logout() {
-  axios.get("http://localhost:8080/api/logout", {withCredentials: true})
+  axios.get(`${process.env.REACT_APP_API_URL}/api/logout`, {withCredentials: true})
   alert("You have now been Logged Out. ")
     // Clear any other user-related data as well
   }

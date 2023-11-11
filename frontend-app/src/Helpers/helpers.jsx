@@ -16,7 +16,7 @@ export function createRoundedRange(value) {
 export async function getServices() {
   try {
     const response = await axios.get(
-      'http://localhost:8080/api/provider/service_requests/services',
+      `${process.env.REACT_APP_API_URL}/api/provider/service_requests/services`,
       {
         withCredentials: true,
       },

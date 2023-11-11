@@ -15,7 +15,7 @@ export default function RequestPasswordReset() {
     event.preventDefault()
     await axios
       .post(
-        'http://localhost:8080/api/reset_password/send',
+        `${process.env.REACT_APP_API_URL}/api/reset_password/send`,
         {
           email: email,
         },

@@ -24,7 +24,7 @@ function ServiceRequestFinal({ request }) {
       // User confirmed, proceed with the deletion
       try {
         const response = await axios.delete(
-          `http://localhost:8080/api/customer/service_request/${request.id}`,
+          `${process.env.REACT_APP_API_URL}/api/customer/service_request/${request.id}`,
           { withCredentials: true },
         )
         setTimeout(() => {
