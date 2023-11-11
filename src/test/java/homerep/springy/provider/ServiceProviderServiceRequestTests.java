@@ -24,10 +24,12 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -56,12 +58,29 @@ public class ServiceProviderServiceRequestTests {
     @Autowired
     private ObjectMapper mapper;
 
-    private ServiceRequestModel serviceRequestA;
+    private ServiceRequestModel serviceRequestModel;
+
+    private ServiceRequestModel serviceRequestModelPos179;
+    private ServiceRequestModel serviceRequestModelNeg179;
 
     private static final String CUSTOMER_EMAIL = "customer@localhost";
     private static final String SERVICE_PROVIDER_EMAIL = "serviceprovider@localhost";
 
     protected static final LatLong SERVICE_REQUEST_LOCATION = new LatLong(39.709824, -75.1206862);
+
+    private ServiceRequest createServiceRequestAt(Customer customer, double latitude, double longitude) {
+        ServiceRequest serviceRequest = new ServiceRequest(customer);
+        serviceRequest.setTitle("test");
+        serviceRequest.setDescription("description");
+        serviceRequest.setService("HVAC");
+        serviceRequest.setStatus(ServiceRequest.Status.PENDING);
+        serviceRequest.setDollars(100);
+        serviceRequest.setCreationDate(new Date());
+        serviceRequest.setAddress(latitude + "," + longitude);
+        serviceRequest.setLongitude(longitude);
+        serviceRequest.setLatitude(latitude);
+        return serviceRequest;
+    }
 
     @BeforeEach
     @WithMockUser(username = CUSTOMER_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
@@ -80,19 +99,16 @@ public class ServiceProviderServiceRequestTests {
         customer.setAddress("");
         customerRepository.save(customer);
 
-        ServiceRequest serviceRequest = new ServiceRequest(customer);
-        serviceRequest.setTitle("test");
-        serviceRequest.setDescription("description");
-        serviceRequest.setService("HVAC");
-        serviceRequest.setStatus(ServiceRequest.Status.PENDING);
-        serviceRequest.setDollars(100);
-        serviceRequest.setCreationDate(new Date());
-        serviceRequest.setAddress("201 Mullica Hill Rd, Glassboro, NJ 08028");
-        serviceRequest.setLongitude(SERVICE_REQUEST_LOCATION.longitude());
-        serviceRequest.setLatitude(SERVICE_REQUEST_LOCATION.latitude());
-        serviceRequest = serviceRequestRepository.save(serviceRequest);
+        ServiceRequest serviceRequestA = createServiceRequestAt(customer, SERVICE_REQUEST_LOCATION.latitude(), SERVICE_REQUEST_LOCATION.longitude());
+        serviceRequestA = serviceRequestRepository.save(serviceRequestA);
+        serviceRequestModel = ServiceRequestModel.fromEntity(serviceRequestA);
 
-        serviceRequestA = ServiceRequestModel.fromEntity(serviceRequest);
+        ServiceRequest serviceRequestPos179 = createServiceRequestAt(customer, 0, 179.8);
+        serviceRequestPos179 = serviceRequestRepository.save(serviceRequestPos179);
+        serviceRequestModelPos179 = ServiceRequestModel.fromEntity(serviceRequestPos179);
+        ServiceRequest serviceRequestNeg179 = createServiceRequestAt(customer, 0, -179.8);
+        serviceRequestNeg179 = serviceRequestRepository.save(serviceRequestNeg179);
+        serviceRequestModelNeg179 = ServiceRequestModel.fromEntity(serviceRequestNeg179);
     }
 
     @BeforeEach
@@ -125,8 +141,10 @@ public class ServiceProviderServiceRequestTests {
                 .andReturn();
         // response is an array of ServiceRequestModels
         ServiceRequestModel[] models = mapper.readValue(result.getResponse().getContentAsString(), ServiceRequestModel[].class);
-        assertEquals(1, models.length);
-        assertEquals(serviceRequestA, models[0]);
+        assertEquals(3, models.length);
+        assertTrue(Arrays.stream(models).anyMatch(x -> x.equals(serviceRequestModel)));
+        assertTrue(Arrays.stream(models).anyMatch(x -> x.equals(serviceRequestModelPos179)));
+        assertTrue(Arrays.stream(models).anyMatch(x -> x.equals(serviceRequestModelNeg179)));
     }
 
     @Test
@@ -143,7 +161,7 @@ public class ServiceProviderServiceRequestTests {
         // response is an array of ServiceRequestModels
         ServiceRequestModel[] models = mapper.readValue(result.getResponse().getContentAsString(), ServiceRequestModel[].class);
         assertEquals(1, models.length);
-        assertEquals(serviceRequestA, models[0]);
+        assertEquals(serviceRequestModel, models[0]);
     }
 
     @Test
@@ -176,5 +194,24 @@ public class ServiceProviderServiceRequestTests {
         // response is an array of ServiceRequestModels
         ServiceRequestModel[] models = mapper.readValue(result.getResponse().getContentAsString(), ServiceRequestModel[].class);
         assertEquals(0, models.length);
+    }
+
+    @Test
+    @WithMockUser(username = SERVICE_PROVIDER_EMAIL, authorities = {"SERVICE_PROVIDER", "VERIFIED"})
+    void testQueryWrapAround() throws Exception {
+        MvcResult result = this.mvc.perform(get("/api/provider/service_requests/nearby")
+                        .queryParam("latitudeS", "-0.5")
+                        .queryParam("longitudeW", "179.5")
+                        .queryParam("latitudeN", "0.5")
+                        .queryParam("longitudeE", "-179.5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andReturn();
+        // response is an array of ServiceRequestModels
+        ServiceRequestModel[] models = mapper.readValue(result.getResponse().getContentAsString(), ServiceRequestModel[].class);
+        // Both service requests in this range are included
+        assertEquals(2, models.length);
+        assertTrue(Arrays.stream(models).anyMatch(x -> x.equals(serviceRequestModelPos179)));
+        assertTrue(Arrays.stream(models).anyMatch(x -> x.equals(serviceRequestModelNeg179)));
     }
 }
