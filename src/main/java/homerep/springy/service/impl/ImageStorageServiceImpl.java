@@ -6,6 +6,7 @@ import homerep.springy.entity.ImageInfo;
 import homerep.springy.exception.ImageStoreException;
 import homerep.springy.repository.ImageInfoRepository;
 import homerep.springy.service.ImageStorageService;
+import org.im4java.core.ConvertCmd;
 import org.im4java.core.IM4JavaException;
 import org.im4java.core.IMOperation;
 import org.im4java.core.ImageCommand;
@@ -42,6 +43,9 @@ public class ImageStorageServiceImpl implements ImageStorageService {
 
     private final ApplicationEventPublisher applicationEventPublisher;
 
+    private boolean hasMagickCmd = false;
+    private boolean hasConvertCmd = false;
+
     public ImageStorageServiceImpl(ImageInfoRepository imageInfoRepository,
                                    ImageStorageConfig config,
                                    ApplicationEventPublisher applicationEventPublisher) {
@@ -49,6 +53,7 @@ public class ImageStorageServiceImpl implements ImageStorageService {
         this.config = config;
         this.applicationEventPublisher = applicationEventPublisher;
 
+        checkIMVersion();
         checkIMPolicy();
     }
 
@@ -127,10 +132,53 @@ public class ImageStorageServiceImpl implements ImageStorageService {
         // output to standard output
         op.addImage("JPEG:-");
 
-        ImageCommand convert = new ImageCommand("magick");
+        ImageCommand convert = createConvertCmd();
         convert.setInputProvider(new Pipe(inputStream, null));
         convert.setOutputConsumer(new Pipe(null, outputStream));
         convert.run(op);
+    }
+
+    private void checkIMVersion() {
+        IMOperation op = new IMOperation();
+        op.version();
+        try {
+            // 'magick' is available in ImageMagick version 7 and should be preferred
+            // over 'convert' as 'convert' conflicts with a built-in Windows command
+            ArrayListOutputConsumer consumer = new ArrayListOutputConsumer();
+            ImageCommand cmd = new ImageCommand("magick");
+            cmd.setOutputConsumer(consumer);
+            cmd.run(op);
+            hasMagickCmd = true;
+            LOGGER.info("Found 'magick' command");
+        } catch (IOException | InterruptedException | IM4JavaException e) {
+            LOGGER.debug("Testing 'magick' command failed", e);
+        }
+        try {
+            // 'convert' is available in ImageMagick version 6 and 7. We fall back to
+            // this command just in case an older version of ImageMagick was installed.
+            ArrayListOutputConsumer consumer = new ArrayListOutputConsumer();
+            ConvertCmd cmd = new ConvertCmd();
+            cmd.setOutputConsumer(consumer);
+            cmd.run(op);
+            hasConvertCmd = true;
+            LOGGER.info("Found 'convert' command");
+        } catch (IOException | InterruptedException | IM4JavaException e) {
+            LOGGER.debug("Testing 'convert' command failed", e);
+        }
+        if (hasMagickCmd) {
+            LOGGER.info("Utilizing 'magick' command for image conversion.");
+        } else if (hasConvertCmd) {
+            LOGGER.info("Utilizing 'convert' command for image conversion.");
+        } else {
+            LOGGER.error("No suitable ImageMagick command was found! Make sure ImageMagick is installed and the 'magick' or 'convert' commands work.");
+        }
+    }
+
+    private ImageCommand createConvertCmd() {
+        if (hasMagickCmd) {
+            return new ImageCommand("magick");
+        }
+        return new ConvertCmd();
     }
 
     private void checkIMPolicy() {
@@ -140,7 +188,7 @@ public class ImageStorageServiceImpl implements ImageStorageService {
             op.list("policy");
 
             ArrayListOutputConsumer consumer = new ArrayListOutputConsumer();
-            ImageCommand cmd = new ImageCommand("magick");
+            ImageCommand cmd = createConvertCmd();
             cmd.setOutputConsumer(consumer);
             cmd.run(op);
             // Scan through the list for
