@@ -3,10 +3,7 @@ package homerep.springy.entity;
 import jakarta.persistence.*;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 public class ServiceRequest {
@@ -38,9 +35,12 @@ public class ServiceRequest {
 
     private Instant locationRetrievalTime;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.REMOVE)
     @OrderColumn
     private List<ImageInfo> pictures = new ArrayList<>();
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "serviceRequest", cascade = CascadeType.REMOVE)
+    private Set<EmailRequest> emailRequests = new HashSet<>();
 
     protected ServiceRequest() {}
 
@@ -153,6 +153,14 @@ public class ServiceRequest {
 
     public void setLocationRetrievalTime(Instant locationRetrievalTime) {
         this.locationRetrievalTime = locationRetrievalTime;
+    }
+
+    public Set<EmailRequest> getEmailRequests() {
+        return emailRequests;
+    }
+
+    public void setEmailRequests(Set<EmailRequest> emailRequests) {
+        this.emailRequests = emailRequests;
     }
 
     public enum Status {

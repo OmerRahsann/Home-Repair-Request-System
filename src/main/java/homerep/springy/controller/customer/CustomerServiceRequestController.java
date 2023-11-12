@@ -32,8 +32,8 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/customer/service_request")
-public class ServiceRequestController {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ServiceRequestController.class);
+public class CustomerServiceRequestController {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CustomerServiceRequestController.class);
 
     @Autowired
     private CustomerRepository customerRepository;
