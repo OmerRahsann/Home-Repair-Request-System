@@ -9,7 +9,7 @@ import jakarta.persistence.OneToOne;
 public class Customer {
     @Id
     @GeneratedValue
-    private int customerId;
+    private int id;
 
     @OneToOne
     private Account account;

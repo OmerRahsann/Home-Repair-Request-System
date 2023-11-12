@@ -8,7 +8,7 @@ import java.util.List;
 public class ServiceProvider {
     @Id
     @GeneratedValue
-    private int providerId;
+    private int id;
 
     @OneToOne
     private Account account;

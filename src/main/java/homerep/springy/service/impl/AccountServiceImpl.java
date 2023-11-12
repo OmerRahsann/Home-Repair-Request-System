@@ -187,14 +187,14 @@ public class AccountServiceImpl implements AccountService, UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Account account = accountRepository.findByEmail(username);
-        if (account != null) {
-            List<GrantedAuthority> authorities = new ArrayList<>();
-            authorities.add(account.getType());
-            if (account.isVerified()) {
-                authorities.add(Verified.INSTANCE);
-            }
-            return new User(account.getEmail(), account.getPassword(), authorities);
+        if (account == null) {
+            throw new UsernameNotFoundException("No user with the given email was found.");
         }
-        return null;
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(account.getType());
+        if (account.isVerified()) {
+            authorities.add(Verified.INSTANCE);
+        }
+        return new User(account.getEmail(), account.getPassword(), authorities);
     }
 }
