@@ -26,11 +26,13 @@ function Home() {
       <div>
         <Navbar isLoggedIn={loggedIn} />
       </div>
-      <div className="">
+      <div>
         <ServiceRequest />
       </div>
-      <div></div>
-      <div></div>
+      
+      
+
+
     </div>
   )
 }

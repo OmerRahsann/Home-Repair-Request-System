@@ -10,10 +10,14 @@ import ResetPassword from "./pages/Authentication/ResetPassword/ResetPassword";
 import RequestView from "./pages/Provider/RequestView"
 import MyRequests from "./pages/Customer/MyRequests";
 import MyJobs from "pages/Provider/MyJobs";
+import { CustomerProfile } from "pages/Customer/CustomerProfile";
+import { ProviderProfile } from "pages/Provider/ProviderProfile";
+import Footer from "components/Footer";
 
 function App() {
   return (
     <div>
+    <div className="min-h-[100vh]">
       <AuthProvider>
         <Router>
           {/* <LocationFetcher /> */}
@@ -28,10 +32,15 @@ function App() {
             <Route path="/reset_password" element={<RequestPasswordReset/>} />
             <Route path="/reset_password/form" element={<ResetPassword/>} />
             <Route path='/provider/myjobs' element={<MyJobs/>} />
+            <Route path='/customer/myprofile' element={<CustomerProfile/>} />
+            <Route path='/provider/myprofile' element={<ProviderProfile/>} />
             
           </Routes>
         </Router>
       </AuthProvider>
+      
+    </div>
+    <Footer/>
     </div>
   );
 }
