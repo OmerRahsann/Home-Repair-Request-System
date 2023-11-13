@@ -4,6 +4,7 @@ import homerep.springy.entity.EmailRequest;
 import homerep.springy.entity.ServiceRequest;
 import homerep.springy.exception.ApiException;
 import homerep.springy.exception.NonExistentPostException;
+import homerep.springy.model.accountinfo.ServiceProviderInfoModel;
 import homerep.springy.model.emailrequest.EmailRequestInfoModel;
 import homerep.springy.model.emailrequest.EmailRequestStatus;
 import homerep.springy.repository.EmailRequestRepository;
@@ -35,8 +36,11 @@ public class CustomerEmailRequestController {
         }
         List<EmailRequestInfoModel> models = new ArrayList<>(serviceRequest.getEmailRequests().size());
         for (EmailRequest emailRequest : serviceRequest.getEmailRequests()) {
-            // TODO fill out service provider info
-            models.add(new EmailRequestInfoModel(emailRequest.getId(), null, emailRequest.getStatus()));
+            models.add(new EmailRequestInfoModel(
+                    emailRequest.getId(),
+                    ServiceProviderInfoModel.fromEntity(emailRequest.getServiceProvider()),
+                    emailRequest.getStatus()
+            ));
         }
         return models;
     }
@@ -55,7 +59,7 @@ public class CustomerEmailRequestController {
         if (emailRequest == null) {
             throw new ApiException("non_existent_email_request", "Email request not found.");
         }
-        emailRequest.setStatus(accepted ? EmailRequestStatus.ACCEPTED : EmailRequestStatus.DENIED);
+        emailRequest.setStatus(accepted ? EmailRequestStatus.ACCEPTED : EmailRequestStatus.REJECTED);
         emailRequestRepository.save(emailRequest);
     }
 }
