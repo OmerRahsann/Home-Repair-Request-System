@@ -1,15 +1,13 @@
 package homerep.springy.controller.provider;
 
-import homerep.springy.entity.EmailRequest;
 import homerep.springy.entity.ServiceProvider;
 import homerep.springy.entity.ServiceRequest;
 import homerep.springy.exception.ApiException;
 import homerep.springy.exception.NonExistentPostException;
 import homerep.springy.model.emailrequest.EmailRequestModel;
-import homerep.springy.model.emailrequest.EmailRequestStatus;
-import homerep.springy.repository.EmailRequestRepository;
 import homerep.springy.repository.ServiceProviderRepository;
 import homerep.springy.repository.ServiceRequestRepository;
+import homerep.springy.service.EmailRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
@@ -26,7 +24,7 @@ public class ServiceProviderEmailRequestController {
     private ServiceRequestRepository serviceRequestRepository;
 
     @Autowired
-    private EmailRequestRepository emailRequestRepository;
+    private EmailRequestService emailRequestService;
 
     @GetMapping("/{id}/email")
     public EmailRequestModel getEmail(@PathVariable("id") int id, @AuthenticationPrincipal User user) {
@@ -35,15 +33,7 @@ public class ServiceProviderEmailRequestController {
             throw new NonExistentPostException();
         }
         ServiceProvider serviceProvider = serviceProviderRepository.findByAccountEmail(user.getUsername());
-        EmailRequest emailRequest = emailRequestRepository.findByServiceProviderAndServiceRequest(serviceProvider, serviceRequest);
-        if (emailRequest == null) {
-            return new EmailRequestModel(EmailRequestStatus.NOT_REQUESTED);
-        }
-        if (emailRequest.getStatus() != EmailRequestStatus.ACCEPTED) {
-            return new EmailRequestModel(emailRequest.getStatus());
-        }
-        String email = serviceRequest.getCustomer().getAccount().getEmail();
-        return new EmailRequestModel(email, EmailRequestStatus.ACCEPTED);
+        return emailRequestService.getEmail(serviceRequest, serviceProvider);
     }
 
     @PostMapping("/{id}/email/request")
@@ -53,12 +43,8 @@ public class ServiceProviderEmailRequestController {
             throw new NonExistentPostException();
         }
         ServiceProvider serviceProvider = serviceProviderRepository.findByAccountEmail(user.getUsername());
-        EmailRequest emailRequest = emailRequestRepository.findByServiceProviderAndServiceRequest(serviceProvider, serviceRequest);
-        if (emailRequest != null) {
+        if (!emailRequestService.sendEmailRequest(serviceRequest, serviceProvider)) {
             throw new ApiException("already_requested", "Email request was already sent.");
         }
-        emailRequest = new EmailRequest(serviceProvider, serviceRequest);
-        emailRequestRepository.save(emailRequest);
-        // TODO notification of some sort?
     }
 }

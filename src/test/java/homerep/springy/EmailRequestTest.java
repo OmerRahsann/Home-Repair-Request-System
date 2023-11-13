@@ -1,15 +1,19 @@
 package homerep.springy;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import homerep.springy.authorities.AccountType;
+import homerep.springy.authorities.Verified;
 import homerep.springy.config.TestDatabaseConfig;
 import homerep.springy.config.TestStorageConfig;
+import homerep.springy.controller.customer.CustomerEmailRequestController;
+import homerep.springy.controller.provider.ServiceProviderEmailRequestController;
 import homerep.springy.entity.*;
+import homerep.springy.exception.ApiException;
 import homerep.springy.model.accountinfo.ServiceProviderInfoModel;
 import homerep.springy.model.emailrequest.EmailRequestInfoModel;
 import homerep.springy.model.emailrequest.EmailRequestModel;
 import homerep.springy.model.emailrequest.EmailRequestStatus;
 import homerep.springy.repository.*;
+import homerep.springy.service.EmailRequestService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,27 +21,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.security.core.userdetails.User;
 
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @TestDatabaseConfig
 @Import(TestStorageConfig.class)
 public class EmailRequestTest {
-    @Autowired
-    private MockMvc mvc;
 
     @Autowired
     private AccountRepository accountRepository;
@@ -55,14 +51,22 @@ public class EmailRequestTest {
     private EmailRequestRepository emailRequestRepository;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    private EmailRequestService emailRequestService;
 
-    private int serviceRequestId;
-    private ServiceProviderInfoModel serviceProviderInfoModel;
+    @Autowired
+    private CustomerEmailRequestController customerEmailRequestController;
+
+    @Autowired
+    private ServiceProviderEmailRequestController serviceProviderEmailRequestController;
+
+    private ServiceProvider serviceProvider;
+    private ServiceRequest serviceRequest;
 
     private static final String CUSTOMER_EMAIL = "test@localhost";
+    private static final User CUSTOMER_USER = new User(CUSTOMER_EMAIL, "", List.of(AccountType.CUSTOMER, Verified.INSTANCE));
 
     private static final String SERVICE_PROVIDER_EMAIL = "example@example.com";
+    private static final User SERVICE_PROVIDER_USER = new User(SERVICE_PROVIDER_EMAIL, "", List.of(AccountType.SERVICE_PROVIDER, Verified.INSTANCE));
 
     @BeforeEach
     void setupCustomer() {
@@ -77,7 +81,7 @@ public class EmailRequestTest {
         customer.setLastName("Proasheck");
         customer = customerRepository.save(customer);
 
-        ServiceRequest serviceRequest = new ServiceRequest(customer);
+        serviceRequest = new ServiceRequest(customer);
         serviceRequest.setTitle("test");
         serviceRequest.setDescription("description");
         serviceRequest.setService("HVAC");
@@ -88,7 +92,6 @@ public class EmailRequestTest {
         serviceRequest.setLongitude(0);
         serviceRequest.setLatitude(0);
         serviceRequest = serviceRequestRepository.save(serviceRequest);
-        serviceRequestId = serviceRequest.getId();
     }
 
     @BeforeEach
@@ -99,7 +102,7 @@ public class EmailRequestTest {
         providerAccount.setVerified(true);
         providerAccount = accountRepository.save(providerAccount);
 
-        ServiceProvider serviceProvider = new ServiceProvider(providerAccount);
+        serviceProvider = new ServiceProvider(providerAccount);
         serviceProvider.setName("Sakura HVAC and Plumbing");
         serviceProvider.setDescription("Heating, cooling, and plumbing");
         serviceProvider.setServices(List.of("HVAC", "Plumbing"));
@@ -109,16 +112,14 @@ public class EmailRequestTest {
         serviceProvider.setLongitude(39.709824);
         serviceProvider.setLatitude(-75.1206862);
         serviceProvider = serviceProviderRepository.save(serviceProvider);
-        serviceProviderInfoModel = ServiceProviderInfoModel.fromEntity(serviceProvider);
     }
 
     @Test
-    @WithMockUser(username = SERVICE_PROVIDER_EMAIL, authorities = {"SERVICE_PROVIDER", "VERIFIED"})
-    void getEmailNoRequest() throws Exception {
+    void getEmailNoRequest() {
         // No email requests
         assertTrue(emailRequestRepository.findAll().isEmpty());
         // Try to get the email without sending a request
-        EmailRequestModel emailRequestModel = getEmailRequest(serviceRequestId);
+        EmailRequestModel emailRequestModel = emailRequestService.getEmail(serviceRequest, serviceProvider);
         assertNotNull(emailRequestModel);
         // email is not supplied
         assertNull(emailRequestModel.email());
@@ -126,175 +127,135 @@ public class EmailRequestTest {
     }
 
     @Test
-    @WithMockUser(username = SERVICE_PROVIDER_EMAIL, authorities = {"SERVICE_PROVIDER", "VERIFIED"})
-    void getEmailWithRequest() throws Exception {
+    void getEmailAfterRequested() {
         // No email requests
         assertTrue(emailRequestRepository.findAll().isEmpty());
+        Instant start = Instant.now();
         // Send an email request
-        this.mvc.perform(post("/api/provider/service_requests/{1}/email/request", serviceRequestId))
-                .andExpect(status().isOk());
+        emailRequestService.sendEmailRequest(serviceRequest, serviceProvider);
+        // Email request is created
         assertEquals(1, emailRequestRepository.findAll().size());
         EmailRequest emailRequest = emailRequestRepository.findAll().get(0);
         // status is REQUESTED
         assertEquals(EmailRequestStatus.REQUESTED, emailRequest.getStatus());
-
+        // timestamp is sensible
+        assertTrue(emailRequest.getRequestTimestamp().isAfter(start));
         // Try to get the email with a request that has not been accepted or denied
-        EmailRequestModel emailRequestModel = getEmailRequest(serviceRequestId);
+        EmailRequestModel emailRequestModel = emailRequestService.getEmail(serviceRequest, serviceProvider);
         assertNotNull(emailRequestModel);
         // email is not supplied
         assertNull(emailRequestModel.email());
         assertEquals(EmailRequestStatus.REQUESTED, emailRequestModel.status());
+    }
 
-        emailRequest.setStatus(EmailRequestStatus.ACCEPTED);
-        emailRequest = emailRequestRepository.save(emailRequest);
+    @Test
+    void getEmailAfterAccepted() {
+        // No email requests
+        assertTrue(emailRequestRepository.findAll().isEmpty());
+        // Send an email request
+        emailRequestService.sendEmailRequest(serviceRequest, serviceProvider);
+        // Email request is created
+        assertEquals(1, emailRequestRepository.findAll().size());
+        EmailRequest emailRequest = emailRequestRepository.findAll().get(0);
+        // status is REQUESTED
+        assertEquals(EmailRequestStatus.REQUESTED, emailRequest.getStatus());
+        // Accept the email request
+        emailRequestService.updateEmailRequestStatus(emailRequest, true);
         // Email is provided after the request is accepted
-        emailRequestModel = getEmailRequest(serviceRequestId);
+        EmailRequestModel emailRequestModel = emailRequestService.getEmail(serviceRequest, serviceProvider);
         assertNotNull(emailRequestModel);
         assertEquals(CUSTOMER_EMAIL, emailRequestModel.email());
         assertEquals(EmailRequestStatus.ACCEPTED, emailRequestModel.status());
+    }
 
-        emailRequest.setStatus(EmailRequestStatus.REJECTED);
-        emailRequest = emailRequestRepository.save(emailRequest);
-        // Email is not provided when the request is REJECTED
-        emailRequestModel = getEmailRequest(serviceRequestId);
+    @Test
+    void getEmailAfterRejected() {
+        // No email requests
+        assertTrue(emailRequestRepository.findAll().isEmpty());
+        // Send an email request
+        emailRequestService.sendEmailRequest(serviceRequest, serviceProvider);
+        // Email request is created
+        assertEquals(1, emailRequestRepository.findAll().size());
+        EmailRequest emailRequest = emailRequestRepository.findAll().get(0);
+        // status is REQUESTED
+        assertEquals(EmailRequestStatus.REQUESTED, emailRequest.getStatus());
+        // Reject the email request
+        emailRequestService.updateEmailRequestStatus(emailRequest, false);
+        // Email is not provided after the request is rejected
+        EmailRequestModel emailRequestModel = emailRequestService.getEmail(serviceRequest, serviceProvider);
         assertNotNull(emailRequestModel);
-        // email is not supplied
         assertNull(emailRequestModel.email());
         assertEquals(EmailRequestStatus.REJECTED, emailRequestModel.status());
     }
 
     @Test
-    @WithMockUser(username = SERVICE_PROVIDER_EMAIL, authorities = {"SERVICE_PROVIDER", "VERIFIED"})
-    void getEmailNonExistentServiceRequest() throws Exception {
-        // Try to get the email for a non-existent post results in an error
-        this.mvc.perform(get("/api/provider/service_requests/{1}/email", Integer.MAX_VALUE))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("timestamp").isNumber())
-                .andExpect(jsonPath("type").value("non_existent_post"));
-    }
-
-    @Test
-    @WithMockUser(username = SERVICE_PROVIDER_EMAIL, authorities = {"SERVICE_PROVIDER", "VERIFIED"})
-    void doubleEmailRequest() throws Exception {
-        // No email requests
-        assertTrue(emailRequestRepository.findAll().isEmpty());
-        // Sending an email request is successful
-        this.mvc.perform(post("/api/provider/service_requests/{1}/email/request", serviceRequestId))
-                .andExpect(status().isOk());
-        assertEquals(1, emailRequestRepository.findAll().size());
-        // Sending another email request results in an error
-        this.mvc.perform(post("/api/provider/service_requests/{1}/email/request", serviceRequestId))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("timestamp").isNumber())
-                .andExpect(jsonPath("type").value("already_requested"));
-        // no additional email requets are created
-        assertEquals(1, emailRequestRepository.findAll().size());
-    }
-
-    @Test
-    @WithMockUser(username = SERVICE_PROVIDER_EMAIL, authorities = {"SERVICE_PROVIDER", "VERIFIED"})
     @Transactional
-    void sendEmailRequest() throws Exception {
+    void listEmailRequests() {
         // No email requests
         assertTrue(emailRequestRepository.findAll().isEmpty());
-        Instant start = Instant.now();
+        // The email request list is also empty
+        List<EmailRequestInfoModel> models = emailRequestService.listEmailRequests(serviceRequest);
+        assertTrue(models.isEmpty());
         // Send an email request
-        this.mvc.perform(post("/api/provider/service_requests/{1}/email/request", serviceRequestId))
-                .andExpect(status().isOk());
+        emailRequestService.sendEmailRequest(serviceRequest, serviceProvider);
         // Email request is created
         assertEquals(1, emailRequestRepository.findAll().size());
         EmailRequest emailRequest = emailRequestRepository.findAll().get(0);
-        // from the current ServiceProvider
-        assertEquals(SERVICE_PROVIDER_EMAIL, emailRequest.getServiceProvider().getAccount().getEmail());
-        // for the right ServiceRequest
-        assertEquals(serviceRequestId, emailRequest.getServiceRequest().getId());
-        assertEquals(CUSTOMER_EMAIL, emailRequest.getServiceRequest().getCustomer().getAccount().getEmail());
-        // and the current status is REQUESTED
-        assertEquals(EmailRequestStatus.REQUESTED, emailRequest.getStatus());
-        // with a sensible timestamp
-        assertTrue(emailRequest.getRequestTimestamp().isAfter(start));
-        // TODO check for notification?
-    }
-
-    @Test
-    @WithMockUser(username = CUSTOMER_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
-    void acceptEmailRequest() throws Exception {
-        // No email requests
-        assertTrue(emailRequestRepository.findAll().isEmpty());
-        // Create an email request
-        ServiceProvider serviceProvider = serviceProviderRepository.findByAccountEmail(SERVICE_PROVIDER_EMAIL);
-        ServiceRequest serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountEmail(serviceRequestId, CUSTOMER_EMAIL);
-        EmailRequest emailRequest = new EmailRequest(serviceProvider, serviceRequest);
-        emailRequest = emailRequestRepository.save(emailRequest);
-        // Customer can get a list of email requests for a ServiceRequest
-        EmailRequestInfoModel[] models = listEmailRequests(serviceRequestId);
-        assertEquals(1, models.length);
-        EmailRequestInfoModel model = models[0];
+        // List includes the created email request
+        models = emailRequestService.listEmailRequests(serviceRequest);
+        assertEquals(1, models.size());
+        EmailRequestInfoModel model = models.get(0);
         // Model matches repository information
         assertEquals(emailRequest.getId(), model.id());
-        assertEquals(serviceProviderInfoModel, model.serviceProvider());
-        assertEquals(EmailRequestStatus.REQUESTED, model.status()); // Status is REQUESTED
+        assertEquals(ServiceProviderInfoModel.fromEntity(serviceProvider), model.serviceProvider());
+        assertEquals(EmailRequestStatus.REQUESTED, model.status()); // Status starts as REQUESTED
         assertEquals(emailRequest.getStatus(), model.status());
-        // Customer can accept an email request
-        updateEmailRequestStatus(serviceRequestId, emailRequest.getId(), true);
-        // Status is updated
-        models = listEmailRequests(serviceRequestId);
-        assertEquals(1, models.length);
-        model = models[0];
-        // to ACCEPTED
-        assertEquals(EmailRequestStatus.ACCEPTED, model.status());
-        // Customer can reject an email request
-        updateEmailRequestStatus(serviceRequestId, emailRequest.getId(), false);
-        // Status is updated
-        models = listEmailRequests(serviceRequestId);
-        assertEquals(1, models.length);
-        model = models[0];
-        // to DENIED
-        assertEquals(EmailRequestStatus.REJECTED, model.status());
-        // TODO check for notification?
     }
 
     @Test
-    @WithMockUser(username = CUSTOMER_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
-    void listEmailRequestNonExistentServiceRequest() throws Exception {
-        // Trying to list the email requests for a nonexistent service request fails
-        this.mvc.perform(get("/api/customer/service_request/{1}/email_requests", Integer.MAX_VALUE))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("timestamp").isNumber())
-                .andExpect(jsonPath("type").value("non_existent_post"));
+    void nonExistentPost() {
+        // Trying to get the email for a non-existent post results in an ApiException
+        ApiException exception = assertThrows(ApiException.class,
+                () -> serviceProviderEmailRequestController.getEmail(Integer.MAX_VALUE, SERVICE_PROVIDER_USER));
+        assertEquals(exception.getType(), "non_existent_post");
+
+        // Trying to send an email request for a non-existent post results in an ApiException
+        exception = assertThrows(ApiException.class,
+                () -> serviceProviderEmailRequestController.requestEmail(Integer.MAX_VALUE, SERVICE_PROVIDER_USER));
+        assertEquals(exception.getType(), "non_existent_post");
+
+        // Trying to list email requests for a non-existent post results in an ApiException
+        exception = assertThrows(ApiException.class,
+                () -> customerEmailRequestController.getEmailRequests(Integer.MAX_VALUE, CUSTOMER_USER));
+        assertEquals(exception.getType(), "non_existent_post");
+
+        // Trying to accept an email request for a non-existent post results in an ApiException
+        exception = assertThrows(ApiException.class,
+                () -> customerEmailRequestController.updateEmailRequestStatus(Integer.MAX_VALUE, 0, true, CUSTOMER_USER));
+        assertEquals(exception.getType(), "non_existent_post");
     }
 
     @Test
-    @WithMockUser(username = CUSTOMER_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
-    void acceptNonExistentEmailRequest() throws Exception {
-        // Trying to accept an email requests that doesn't exist fails
-        this.mvc.perform(post("/api/customer/service_request/{service_request_id}/email_requests/{email_request_id}/accepted", serviceRequestId, Integer.MAX_VALUE)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("true"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("timestamp").isNumber())
-                .andExpect(jsonPath("type").value("non_existent_email_request"));
+    void nonExistentEmailRequest() {
+        // Trying to accept a non-existent email request results in an ApiException
+        ApiException exception = assertThrows(ApiException.class,
+                () -> customerEmailRequestController.updateEmailRequestStatus(serviceRequest.getId(), Integer.MAX_VALUE, true, CUSTOMER_USER));
+        assertEquals(exception.getType(), "non_existent_email_request");
     }
 
-    private EmailRequestModel getEmailRequest(int serviceRequestId) throws Exception {
-        MvcResult result = this.mvc.perform(get("/api/provider/service_requests/{1}/email", serviceRequestId))
-                .andExpect(status().isOk())
-                .andReturn();
-        return objectMapper.readValue(result.getResponse().getContentAsString(), EmailRequestModel.class);
-    }
-
-    private EmailRequestInfoModel[] listEmailRequests(int serviceRequestId) throws Exception {
-        MvcResult result = this.mvc.perform(get("/api/customer/service_request/{1}/email_requests", serviceRequestId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andReturn();
-        return objectMapper.readValue(result.getResponse().getContentAsString(), EmailRequestInfoModel[].class);
-    }
-
-    private void updateEmailRequestStatus(int serviceRequestId, long emailRequestId, boolean accepted) throws Exception {
-        this.mvc.perform(post("/api/customer/service_request/{service_request_id}/email_requests/{email_request_id}/accepted", serviceRequestId, emailRequestId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(String.valueOf(accepted)))
-                .andExpect(status().isOk());
+    @Test
+    @Transactional
+    void doubleEmailRequest() {
+        // No email requests
+        assertTrue(emailRequestRepository.findAll().isEmpty());
+        // Sending a single email request is successful
+        assertDoesNotThrow(() -> serviceProviderEmailRequestController.requestEmail(serviceRequest.getId(), SERVICE_PROVIDER_USER));
+        assertEquals(1, emailRequestRepository.findAll().size());
+        // Sending another email request results in an error
+        ApiException exception = assertThrows(ApiException.class,
+                () -> serviceProviderEmailRequestController.requestEmail(serviceRequest.getId(), SERVICE_PROVIDER_USER));
+        assertEquals(exception.getType(), "already_requested");
+        // no additional email requests are created
+        assertEquals(1, emailRequestRepository.findAll().size());
     }
 }
