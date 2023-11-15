@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import ServiceRequest from '../../components/Customer/ServiceRequest'
 import Navbar from '../../components/Navbar/NavBar'
 import { checkIsCustomerLoggedIn } from '../../AuthContext'
+import { InlineWidget } from "react-calendly";
+import { Calendar, momentLocalizer } from 'react-big-calendar'
 
 function Home() {
   const [serviceRequests, setServiceRequests] = useState([])
@@ -29,6 +31,7 @@ function Home() {
       <div>
         <ServiceRequest />
       </div>
+      
       
       
 

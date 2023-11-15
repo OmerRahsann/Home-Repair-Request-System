@@ -2,13 +2,13 @@ import { Fragment } from 'react'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import { UserCircleIcon } from '@heroicons/react/24/outline'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import logo from '../../Logos/mainLogo.png'
 import { logout } from '../../AuthContext'
 
 const navigation = [
   { name: 'Find Jobs', href: '/provider/viewrequests', current: true },
-  { name: 'My Jobs', href: '/provider/myjobs', current: false },
+  { name: 'My Schedule', href: '/provider/myschedule', current: false },
 ]
 
 function classNames(...classes) {
@@ -24,6 +24,11 @@ export default function NavBarProvider({
   const handleSignIn = () => {
     navigate('/customer/signup')
   }
+  const location = useLocation()
+
+navigation.forEach((item) => {
+  item.current = item.href === location.pathname
+})
 
   return (
     <Disclosure as="nav">

@@ -68,7 +68,7 @@ function ServiceRequestBanner() {
           ref={imageRef}
           src={image}
           alt="Banner Image"
-          className="w-full h-auto opacity-30"
+          className="w-full h-[90vh] opacity-30"
         />
         <div
           className="absolute text-white"

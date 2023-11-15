@@ -9,6 +9,8 @@ import { logout } from '../../AuthContext'
 const navigation = [
   { name: 'Home', href: '/', current: true },
   { name: 'My Requests', href: '/customer/myrequests', current: false },
+  { name: 'My Quotes', href: '/customer/myquotes', current: false },
+
 ]
 
 function classNames(...classes) {

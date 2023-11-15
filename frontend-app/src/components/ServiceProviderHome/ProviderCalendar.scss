@@ -1,0 +1,19 @@
+// ProviderCalendar.scss
+@import 'react-big-calendar/lib/sass/styles';
+@import 'react-big-calendar/lib/addons/dragAndDrop/styles';
+
+// Your custom variables
+
+.rbc-event {
+    border: none;
+    box-sizing: border-box;
+    box-shadow: none;
+    margin: 0;
+    padding: 2px 5px;
+    background-color: #76323f;
+    border-radius: 5px;
+    color: #fff;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+}

@@ -13,11 +13,12 @@ import MyJobs from "pages/Provider/MyJobs";
 import { CustomerProfile } from "pages/Customer/CustomerProfile";
 import { ProviderProfile } from "pages/Provider/ProviderProfile";
 import Footer from "components/Footer";
+import { MyQuotes } from "pages/Customer/MyQuotes";
 
 function App() {
   return (
     <div>
-    <div className="min-h-[100vh]">
+    <div className="min-h-[92vh]">
       <AuthProvider>
         <Router>
           {/* <LocationFetcher /> */}
@@ -31,9 +32,10 @@ function App() {
             <Route path="/provider/viewrequests" element={<RequestView/>} />
             <Route path="/reset_password" element={<RequestPasswordReset/>} />
             <Route path="/reset_password/form" element={<ResetPassword/>} />
-            <Route path='/provider/myjobs' element={<MyJobs/>} />
+            <Route path='/provider/myschedule' element={<MyJobs/>} />
             <Route path='/customer/myprofile' element={<CustomerProfile/>} />
             <Route path='/provider/myprofile' element={<ProviderProfile/>} />
+            <Route path='/customer/myquotes' element={<MyQuotes/>} />
             
           </Routes>
         </Router>
