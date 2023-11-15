@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.time.DateTimeException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,6 +48,12 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler
     public ResponseEntity<ApiErrorModel> handleFileSizeLimitExceededException(FileSizeLimitExceededException ex) {
         ApiErrorModel errorModel = new ApiErrorModel("file_size_limit_exceeded", ex.getMessage());
+        return ResponseEntity.badRequest().body(errorModel);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ApiErrorModel> handleDateTimeException(DateTimeException ex) {
+        ApiErrorModel errorModel = new ApiErrorModel("invalid_date_time", "An invalid date/time was specified.");
         return ResponseEntity.badRequest().body(errorModel);
     }
 }

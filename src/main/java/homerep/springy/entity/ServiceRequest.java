@@ -42,6 +42,9 @@ public class ServiceRequest {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "serviceRequest", cascade = CascadeType.REMOVE)
     private Set<EmailRequest> emailRequests = new HashSet<>();
 
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "serviceRequest", cascade = CascadeType.REMOVE)
+    private List<Appointment> appointments = new ArrayList<>();
+
     protected ServiceRequest() {}
 
     public ServiceRequest(Customer customer) {
@@ -161,6 +164,14 @@ public class ServiceRequest {
 
     public void setEmailRequests(Set<EmailRequest> emailRequests) {
         this.emailRequests = emailRequests;
+    }
+
+    public List<Appointment> getAppointments() {
+        return appointments;
+    }
+
+    public void setAppointments(List<Appointment> appointments) {
+        this.appointments = appointments;
     }
 
     public enum Status {
