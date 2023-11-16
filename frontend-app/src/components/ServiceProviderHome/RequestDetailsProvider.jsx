@@ -5,12 +5,22 @@ import {
   extractTownAndStateFromAddress,
 } from '../../Helpers/helpers'
 import Map from '../Map/Map'
+import { CreateQuote } from './CreateQuote'
+import ServiceRequestModal from 'components/Customer/ServiceRequestModal'
 
 function RequestDetailsProvider({ request }) {
-  const [showModal, setShowModal] = useState(false)
+  const [showSecondStep, setShowSecondStep] = useState(false);
   const handleClick = async () => {
-    setShowModal(true)
+    setShowSecondStep(true)
   }
+
+  const createQuote = () => {
+    return (
+      <ServiceRequestModal isVisible={showSecondStep} onClose={()=>setShowSecondStep(false)} last={true} isFinal={true}>
+          <CreateQuote/>
+      </ServiceRequestModal>
+    );
+  };
 
   return (
     <Fragment>
@@ -25,8 +35,10 @@ function RequestDetailsProvider({ request }) {
               <h1 className="text-[2.5vh] font-bold text-custom-maroon">
                 {request.title}
               </h1>
-              <button className="text-white bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
-                Save Job
+              <button 
+                onClick={handleClick}
+                className="text-white bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
+                Send Quote
               </button>
             </div>
             <h2>
@@ -62,6 +74,7 @@ function RequestDetailsProvider({ request }) {
             <Map address={request.address} isProvider={true} />
           </div>
         </div>
+        {showSecondStep && createQuote()}
       </div>
     </Fragment>
   )

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-function ServiceRequestModal({ isVisible, onClose, children, isFinal }) {
+function ServiceRequestModal({ isVisible, onClose, children, isFinal, last }) {
   const [serviceRequestModel, setServiceRequestModel] = useState({
     title: '',
     description: '',
@@ -22,12 +22,12 @@ function ServiceRequestModal({ isVisible, onClose, children, isFinal }) {
       id="wrapper"
       onClick={handleClose}
     >
-      <div className={isFinal ? 'w-[100vh]' : 'w-[80vh]'}>
+      <div className={isFinal ? 'w-[100vh] h-[80vh]' : 'w-[80vh]'}>
         <button
           className="text-white text-xl place-self-end"
           onClick={() => onClose()}
         >
-          X
+          {last ? <div className='p-1 mt-[-20px] rounded-md bg-gray-500 font-bold'>BACK</div> : 'X'}
         </button>
         <div className="bg-white p-2 overflow-auto max-h-[70vh] rounded-lg">
           {children}

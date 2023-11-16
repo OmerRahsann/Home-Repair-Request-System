@@ -84,7 +84,7 @@ const events = [
     } else {
       return {
         defaultDate: new Date(2015, 3, 1),
-        views: [Views.MONTH, Views.DAY, Views.AGENDA],
+        views: [Views.MONTH, Views.DAY, Views.AGENDA, Views.WEEK],
       };
     }
   }, []);

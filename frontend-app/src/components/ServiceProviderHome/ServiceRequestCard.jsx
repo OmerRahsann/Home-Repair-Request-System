@@ -4,8 +4,9 @@ import { Fragment, useState } from 'react'
 import ServiceRequestModal from '../Customer/ServiceRequestModal'
 import RequestDetailsProvider from './RequestDetailsProvider'
 import { createRoundedRange } from '../../Helpers/helpers'
+import { Quote } from 'components/Quotes/Quote'
 
-function ServiceRequestCard({ request, selected, refProp }) {
+function ServiceRequestCard({ request, selected, refProp}) {
   if (selected)
     refProp?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   const [showModal, setShowModal] = useState(false)
@@ -46,6 +47,7 @@ function ServiceRequestCard({ request, selected, refProp }) {
           isFinal={true}
         >
           <RequestDetailsProvider request={request} />
+          
         </ServiceRequestModal>
       </div>
     </Fragment>
