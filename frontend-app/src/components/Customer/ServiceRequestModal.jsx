@@ -27,7 +27,13 @@ function ServiceRequestModal({ isVisible, onClose, children, isFinal, last }) {
           className="text-white text-xl place-self-end"
           onClick={() => onClose()}
         >
-          {last ? <div className='p-1 mt-[-20px] rounded-md bg-gray-500 font-bold'>BACK</div> : 'X'}
+          {last ? (
+            <div className="p-1 mt-[-20px] rounded-md bg-gray-500 font-bold">
+              BACK
+            </div>
+          ) : (
+            'X'
+          )}
         </button>
         <div className="bg-white p-2 overflow-auto max-h-[70vh] rounded-lg">
           {children}

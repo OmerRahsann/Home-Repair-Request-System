@@ -6,11 +6,11 @@ export default function RequestPasswordReset() {
   const FormState = {
     Inital: 0,
     Success: 1,
-    Error: 2
+    Error: 2,
   }
 
   const [formState, setFormState] = React.useState(FormState.Inital)
-  const [email, setEmail] = React.useState("")
+  const [email, setEmail] = React.useState('')
   async function sendResetPassword(event) {
     event.preventDefault()
     await axios
@@ -19,14 +19,14 @@ export default function RequestPasswordReset() {
         {
           email: email,
         },
-        {withCredentials: true}
+        { withCredentials: true },
       )
       .then((_) => setFormState(FormState.Success))
       .catch((_) => setFormState(FormState.Error))
   }
 
   const resetState = () => {
-    setEmail("")
+    setEmail('')
     setFormState(FormState.Inital)
   }
 
@@ -35,7 +35,7 @@ export default function RequestPasswordReset() {
     setEmail(value)
   }
 
-  let content;
+  let content
   switch (formState) {
     case FormState.Inital:
       content = (
@@ -75,15 +75,13 @@ export default function RequestPasswordReset() {
       break
     case FormState.Success:
       content = (
-        <form
-          className="space-y-4 md:space-y-6"
-          action="/customer/login"
-        >
-          <h1 className='block mb-2 text-sm font-medium text-gray-900 text-left'>
-            Check your email for a link to reset your password. If it doesn't appear within a few minutes, check your spam folder.
+        <form className="space-y-4 md:space-y-6" action="/customer/login">
+          <h1 className="block mb-2 text-sm font-medium text-gray-900 text-left">
+            Check your email for a link to reset your password. If it doesn't
+            appear within a few minutes, check your spam folder.
           </h1>
           <button
-            type='submit'
+            type="submit"
             className="text-white w-full bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
           >
             Return to log in
@@ -98,11 +96,12 @@ export default function RequestPasswordReset() {
           action="#"
           onSubmit={resetState}
         >
-          <h1 className='block mb-2 text-sm font-medium text-red-900 text-left'>
-            Failed to send password reset email. Please try again in a few minutes.
+          <h1 className="block mb-2 text-sm font-medium text-red-900 text-left">
+            Failed to send password reset email. Please try again in a few
+            minutes.
           </h1>
           <button
-            type='submit'
+            type="submit"
             className="text-white w-full bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
           >
             Try again

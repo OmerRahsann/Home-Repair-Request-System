@@ -27,7 +27,7 @@ function QuoteDetails({ quote }) {
           onClose={() => setShowModal(false)}
           isFinal={true}
         >
-          <Quote quote={quote}/>
+          <Quote quote={quote} />
         </ServiceRequestModal>
       </div>
     </Fragment>

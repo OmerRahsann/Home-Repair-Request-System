@@ -8,26 +8,26 @@ export default function ResetPassword() {
   const FormState = {
     Inital: 0,
     Success: 1,
-    Expired: 2
+    Expired: 2,
   }
 
   const [formState, setFormState] = React.useState(FormState.Inital)
   const [state, setState] = React.useState({
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
   })
   const [canSubmit, setCanSubmit] = React.useState(false)
 
-  const [searchParams, _] = useSearchParams();
-  const token = searchParams.get("token")
-  if (!token || token === "") {
+  const [searchParams, _] = useSearchParams()
+  const token = searchParams.get('token')
+  if (!token || token === '') {
     // No token?? Go to the request password reset form
     return <Navigate to="/reset_password" />
   }
-  
-  const expireAt = parseInt(searchParams.get("expire_at"))
+
+  const expireAt = parseInt(searchParams.get('expire_at'))
   if (formState == FormState.Inital && expireAt) {
-    const currentTimestamp = Math.ceil(new Date().getTime() / 1000);
+    const currentTimestamp = Math.ceil(new Date().getTime() / 1000)
     if (currentTimestamp >= expireAt) {
       // The link + token has expired
       setFormState(FormState.Expired)
@@ -42,17 +42,18 @@ export default function ResetPassword() {
         `${process.env.REACT_APP_API_URL}/api/reset_password`,
         {
           password,
-          token
+          token,
         },
-        {withCredentials: true}
+        { withCredentials: true },
       )
       .then((_) => setFormState(FormState.Success))
       .catch((error) => {
-        if (error.response && error.response.status == 400) { // Received bad request
-          if (error.response.data.type === "validation_error") {
+        if (error.response && error.response.status == 400) {
+          // Received bad request
+          if (error.response.data.type === 'validation_error') {
             // Shouldn't happen? We have input validation with PasswordStrength
             console.log(error.response.data)
-            alert("Unknown error occured!")
+            alert('Unknown error occured!')
             return
           }
         }
@@ -69,7 +70,7 @@ export default function ResetPassword() {
     })
   }
 
-  let content;
+  let content
   switch (formState) {
     case FormState.Inital:
       content = (
@@ -100,7 +101,11 @@ export default function ResetPassword() {
               className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
             />
           </div>
-          <PasswordStrength password={state.password} confirmPassword={state.confirmPassword} updateSatisfied={setCanSubmit}/>
+          <PasswordStrength
+            password={state.password}
+            confirmPassword={state.confirmPassword}
+            updateSatisfied={setCanSubmit}
+          />
           <button
             type="submit"
             disabled={!canSubmit}
@@ -117,15 +122,13 @@ export default function ResetPassword() {
       break
     case FormState.Success:
       content = (
-        <form
-          className="space-y-4 md:space-y-6"
-          action="/customer/login"
-        >
-          <h1 className='block mb-2 text-sm font-medium text-gray-900 text-left'>
-            Password has been reset. Please log in with your email and new password.
+        <form className="space-y-4 md:space-y-6" action="/customer/login">
+          <h1 className="block mb-2 text-sm font-medium text-gray-900 text-left">
+            Password has been reset. Please log in with your email and new
+            password.
           </h1>
           <button
-            type='submit'
+            type="submit"
             className="text-white w-full bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
           >
             Return to log in
@@ -135,15 +138,13 @@ export default function ResetPassword() {
       break
     case FormState.Expired:
       content = (
-        <form
-          className="space-y-4 md:space-y-6"
-          action="/reset_password"
-        >
-          <h1 className='block mb-2 text-sm font-medium text-red-900 text-left'>
-            Password reset link has expired. Please request a new password reset email.
+        <form className="space-y-4 md:space-y-6" action="/reset_password">
+          <h1 className="block mb-2 text-sm font-medium text-red-900 text-left">
+            Password reset link has expired. Please request a new password reset
+            email.
           </h1>
           <button
-            type='submit'
+            type="submit"
             className="text-white w-full bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
           >
             Request a new reset email

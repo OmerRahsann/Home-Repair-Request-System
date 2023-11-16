@@ -1,22 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 
 const PriceRangePicker = () => {
-  const [selectedRange, setSelectedRange] = useState(null);
-  const [customRange, setCustomRange] = useState('');
+  const [selectedRange, setSelectedRange] = useState(null)
+  const [customRange, setCustomRange] = useState('')
 
   const handleRangeChange = (event) => {
-    setSelectedRange(event.target.value);
-  };
+    setSelectedRange(event.target.value)
+  }
 
   const handleCustomRangeChange = (event) => {
-    setCustomRange(event.target.value);
+    setCustomRange(event.target.value)
     // Clear selectedRange when custom range is being input
-    setSelectedRange(null);
-  };
+    setSelectedRange(null)
+  }
 
   return (
     <div className="flex flex-col">
-      <label className="text-lg font-semibold mb-2">Select or Enter Price Range:</label>
+      <label className="text-lg font-semibold mb-2">
+        Select or Enter Price Range:
+      </label>
 
       <div className="flex items-center mb-4">
         <input
@@ -27,7 +29,9 @@ const PriceRangePicker = () => {
           onChange={handleRangeChange}
           className="mr-2"
         />
-        <label htmlFor="range1" className="mr-4">$</label>
+        <label htmlFor="range1" className="mr-4">
+          $
+        </label>
 
         <input
           type="radio"
@@ -37,7 +41,9 @@ const PriceRangePicker = () => {
           onChange={handleRangeChange}
           className="mr-2"
         />
-        <label htmlFor="range2" className="mr-4">$$</label>
+        <label htmlFor="range2" className="mr-4">
+          $$
+        </label>
 
         <input
           type="radio"
@@ -65,7 +71,7 @@ const PriceRangePicker = () => {
         {customRange && <span>, Custom Range: {customRange}</span>}
       </p>
     </div>
-  );
-};
+  )
+}
 
-export default PriceRangePicker;
+export default PriceRangePicker

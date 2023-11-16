@@ -10,8 +10,6 @@ const navigation = [
   { name: 'Find Jobs', href: '/provider/viewrequests', current: true },
   { name: 'My Schedule', href: '/provider/myschedule', current: false },
   { name: 'Quotes', href: '/provider/quotes', current: false },
-  
-
 ]
 
 function classNames(...classes) {
@@ -29,9 +27,9 @@ export default function NavBarProvider({
   }
   const location = useLocation()
 
-navigation.forEach((item) => {
-  item.current = item.href === location.pathname
-})
+  navigation.forEach((item) => {
+    item.current = item.href === location.pathname
+  })
 
   return (
     <Disclosure as="nav">

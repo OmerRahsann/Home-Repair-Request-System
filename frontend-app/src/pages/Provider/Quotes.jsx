@@ -1,7 +1,5 @@
 import React from 'react'
 
 export const Quotes = () => {
-  return (
-    <div>Quotes</div>
-  )
+  return <div>Quotes</div>
 }

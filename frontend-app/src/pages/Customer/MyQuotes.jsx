@@ -1,12 +1,12 @@
 import NavBar from 'components/Navbar/NavBar'
-import React, {useState, useEffect} from 'react'
+import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import { checkIsCustomerLoggedIn } from 'AuthContext'
 import QuoteDetails from 'components/Quotes/QuoteDetails'
 
 export const MyQuotes = () => {
-    const [serviceRequests, setServiceRequests] = useState([])
-    const emailRequests= ['email1' , 'email24'];
+  const [serviceRequests, setServiceRequests] = useState([])
+  const emailRequests = ['email1', 'email24']
   const [loggedIn, setLoggedIn] = useState(false) // Initialize loggedIn with a default value
   const [showModal, setShowModal] = useState(false)
 
@@ -50,7 +50,6 @@ export const MyQuotes = () => {
 
   return (
     <div>
-
       <div>
         <NavBar isLoggedIn={loggedIn} />
       </div>
@@ -64,23 +63,23 @@ export const MyQuotes = () => {
               </div>
             ))}
           </div>
-          <div className='w-1/3 p-2 h-[90vh] overflow-y-auto'>
-                <p className='text-center'><strong>Requested Emails: </strong></p>
-                {emailRequests.map((emailRequest, i) => (
-                    <div className='p-2 rounded-sm border-2 border-gray-500 pb-3 mb-2 '>
-                        <div>
-                            <p>{emailRequest}</p>
-                            <p>Customer Name: John</p>
-
-
-                            </div>
-                        </div>
-                ))}
-        </div>
+          <div className="w-1/3 p-2 h-[90vh] overflow-y-auto">
+            <p className="text-center">
+              <strong>Requested Emails: </strong>
+            </p>
+            {emailRequests.map((emailRequest, i) => (
+              <div className="p-2 rounded-sm border-2 border-gray-500 pb-3 mb-2 ">
+                <div>
+                  <p>{emailRequest}</p>
+                  <p>Customer Name: John</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       ) : (
         <h1 className="font-bold text-center text-xl">
-         You do not have any quotes yet. 
+          You do not have any quotes yet.
         </h1>
       )}
     </div>

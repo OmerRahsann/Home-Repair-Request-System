@@ -5,7 +5,6 @@ import { checkIsServiceProviderLoggedIn } from '../../AuthContext'
 import SearchBar from '../../components/ServiceProviderHome/SearchBar'
 import axios from 'axios'
 
-
 const ServiceProviderHome = ({ component: Component, ...rest }) => {
   const [type, setType] = useState([])
   const navigate = useNavigate()
@@ -44,7 +43,6 @@ const ServiceProviderHome = ({ component: Component, ...rest }) => {
       <NavBarProvider isLoggedIn={loggedIn} />
       <div>
         <SearchBar onSearch={setSearchKeyword} />
-        
       </div>
     </div>
   )
