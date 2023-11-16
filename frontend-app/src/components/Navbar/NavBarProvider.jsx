@@ -9,6 +9,9 @@ import { logout } from '../../AuthContext'
 const navigation = [
   { name: 'Find Jobs', href: '/provider/viewrequests', current: true },
   { name: 'My Schedule', href: '/provider/myschedule', current: false },
+  { name: 'Quotes', href: '/provider/quotes', current: false },
+  
+
 ]
 
 function classNames(...classes) {
