@@ -1,5 +1,6 @@
 package homerep.springy.service;
 
+import homerep.springy.entity.Customer;
 import homerep.springy.entity.EmailRequest;
 import homerep.springy.entity.ServiceProvider;
 import homerep.springy.entity.ServiceRequest;
@@ -13,7 +14,13 @@ public interface EmailRequestService {
 
     boolean sendEmailRequest(ServiceRequest serviceRequest, ServiceProvider serviceProvider);
 
-    List<EmailRequestInfoModel> listEmailRequests(ServiceRequest serviceRequest);
+    List<EmailRequestInfoModel> getPendingEmailRequests(Customer customer);
 
-    void updateEmailRequestStatus(EmailRequest emailRequest, boolean accepted);
+    List<EmailRequestModel> getAcceptedEmailRequests(ServiceProvider serviceProvider);
+
+    List<EmailRequestInfoModel> getEmailRequests(ServiceRequest serviceRequest);
+
+    boolean acceptEmailRequest(EmailRequest emailRequest);
+
+    void rejectEmailRequest(EmailRequest emailRequest);
 }

@@ -35,11 +35,12 @@ public class ServiceRequest {
 
     private Instant locationRetrievalTime;
 
-    @OneToMany(cascade = CascadeType.REMOVE)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
     @OrderColumn
     private List<ImageInfo> pictures = new ArrayList<>();
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "serviceRequest", cascade = CascadeType.REMOVE)
+    @OrderBy("requestTimestamp desc")
     private Set<EmailRequest> emailRequests = new HashSet<>();
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "serviceRequest", cascade = CascadeType.REMOVE)

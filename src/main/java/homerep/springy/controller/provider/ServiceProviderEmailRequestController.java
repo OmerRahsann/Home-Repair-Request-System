@@ -13,8 +13,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/api/provider/service_requests/")
+@RequestMapping("/api/provider/")
 public class ServiceProviderEmailRequestController {
 
     @Autowired
@@ -26,7 +28,13 @@ public class ServiceProviderEmailRequestController {
     @Autowired
     private EmailRequestService emailRequestService;
 
-    @GetMapping("/{id}/email")
+    @GetMapping("/email_requests")
+    public List<EmailRequestModel> getAcceptedEmailRequests(@AuthenticationPrincipal User user) {
+        ServiceProvider serviceProvider = serviceProviderRepository.findByAccountEmail(user.getUsername());
+        return emailRequestService.getAcceptedEmailRequests(serviceProvider);
+    }
+
+    @GetMapping("/service_requests/{id}/email")
     public EmailRequestModel getEmail(@PathVariable("id") int id, @AuthenticationPrincipal User user) {
         ServiceRequest serviceRequest = serviceRequestRepository.findById(id).orElse(null);
         if (serviceRequest == null) {
@@ -36,7 +44,7 @@ public class ServiceProviderEmailRequestController {
         return emailRequestService.getEmail(serviceRequest, serviceProvider);
     }
 
-    @PostMapping("/{id}/email/request")
+    @PostMapping("/service_requests/{id}/email/request")
     public void requestEmail(@PathVariable("id") int id, @AuthenticationPrincipal User user) {
         ServiceRequest serviceRequest = serviceRequestRepository.findById(id).orElse(null);
         if (serviceRequest == null) {

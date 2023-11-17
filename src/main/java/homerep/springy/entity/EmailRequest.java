@@ -2,6 +2,7 @@ package homerep.springy.entity;
 
 import homerep.springy.model.emailrequest.EmailRequestStatus;
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
 import java.util.Objects;
@@ -20,7 +21,10 @@ public class EmailRequest {
     @JoinColumn
     private ServiceRequest serviceRequest;
 
+    @CreationTimestamp
     private Instant requestTimestamp;
+
+    private Instant updateTimestamp;
 
     private EmailRequestStatus status;
 
@@ -29,8 +33,7 @@ public class EmailRequest {
     public EmailRequest(ServiceProvider serviceProvider, ServiceRequest serviceRequest) {
         this.serviceProvider = serviceProvider;
         this.serviceRequest = serviceRequest;
-        this.requestTimestamp = Instant.now();
-        this.status = EmailRequestStatus.REQUESTED;
+        this.status = EmailRequestStatus.PENDING;
     }
 
     public long getId() {
@@ -63,6 +66,14 @@ public class EmailRequest {
 
     public void setRequestTimestamp(Instant requestTime) {
         this.requestTimestamp = requestTime;
+    }
+
+    public Instant getUpdateTimestamp() {
+        return updateTimestamp;
+    }
+
+    public void setUpdateTimestamp(Instant statusChangeTimestamp) {
+        this.updateTimestamp = statusChangeTimestamp;
     }
 
     public EmailRequestStatus getStatus() {

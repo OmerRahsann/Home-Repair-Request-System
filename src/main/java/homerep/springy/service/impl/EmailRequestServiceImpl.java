@@ -1,5 +1,6 @@
 package homerep.springy.service.impl;
 
+import homerep.springy.entity.Customer;
 import homerep.springy.entity.EmailRequest;
 import homerep.springy.entity.ServiceProvider;
 import homerep.springy.entity.ServiceRequest;
@@ -11,9 +12,12 @@ import homerep.springy.repository.EmailRequestRepository;
 import homerep.springy.repository.ServiceRequestRepository;
 import homerep.springy.service.EmailRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Service
@@ -28,14 +32,7 @@ public class EmailRequestServiceImpl implements EmailRequestService {
     @Override
     public EmailRequestModel getEmail(ServiceRequest serviceRequest, ServiceProvider serviceProvider) {
         EmailRequest emailRequest = emailRequestRepository.findByServiceProviderAndServiceRequest(serviceProvider, serviceRequest);
-        if (emailRequest == null) {
-            return new EmailRequestModel(EmailRequestStatus.NOT_REQUESTED);
-        }
-        if (emailRequest.getStatus() != EmailRequestStatus.ACCEPTED) {
-            return new EmailRequestModel(emailRequest.getStatus());
-        }
-        String email = serviceRequest.getCustomer().getAccount().getEmail();
-        return new EmailRequestModel(email, EmailRequestStatus.ACCEPTED);
+        return toModel(serviceRequest, emailRequest);
     }
 
     @Override
@@ -53,22 +50,80 @@ public class EmailRequestServiceImpl implements EmailRequestService {
     }
 
     @Override
-    public List<EmailRequestInfoModel> listEmailRequests(ServiceRequest serviceRequest) {
-        List<EmailRequestInfoModel> models = new ArrayList<>(serviceRequest.getEmailRequests().size());
-        for (EmailRequest emailRequest : serviceRequest.getEmailRequests()) {
-            models.add(new EmailRequestInfoModel(
-                    emailRequest.getId(),
-                    ServiceProviderInfoModel.fromEntity(emailRequest.getServiceProvider()),
-                    emailRequest.getStatus()
-            ));
+    public List<EmailRequestInfoModel> getPendingEmailRequests(Customer customer) {
+        List<EmailRequest> emailRequests = emailRequestRepository.findAllByServiceRequestCustomerAndStatus(
+                customer,
+                EmailRequestStatus.PENDING,
+                Sort.by(Sort.Direction.DESC, "requestTimestamp")
+        );
+        return toInfoModels(emailRequests);
+    }
+
+    @Override
+    public List<EmailRequestModel> getAcceptedEmailRequests(ServiceProvider serviceProvider) {
+        List<EmailRequest> emailRequests = emailRequestRepository.findAllByServiceProviderAndStatus(
+                serviceProvider,
+                EmailRequestStatus.ACCEPTED,
+                Sort.by(Sort.Direction.DESC, "updateTimestamp")
+        );
+        // TODO should expire after some time and after service request is complete
+        return toModels(emailRequests);
+    }
+
+    @Override
+    public List<EmailRequestInfoModel> getEmailRequests(ServiceRequest serviceRequest) {
+        return toInfoModels(serviceRequest.getEmailRequests());
+    }
+
+    @Override
+    public boolean acceptEmailRequest(EmailRequest emailRequest) {
+        if (emailRequest.getStatus() != EmailRequestStatus.PENDING) {
+            return false;
+        }
+        emailRequest.setStatus(EmailRequestStatus.ACCEPTED);
+        emailRequest.setUpdateTimestamp(Instant.now());
+        emailRequestRepository.save(emailRequest);
+        // TODO notification of some sort?
+        return true;
+    }
+
+    @Override
+    public void rejectEmailRequest(EmailRequest emailRequest) {
+        emailRequest.setStatus(EmailRequestStatus.REJECTED);
+        emailRequest.setUpdateTimestamp(Instant.now());
+        emailRequestRepository.save(emailRequest);
+    }
+
+    private EmailRequestModel toModel(ServiceRequest serviceRequest, EmailRequest emailRequest) {
+        if (emailRequest == null) {
+            return new EmailRequestModel(serviceRequest.getId(), EmailRequestStatus.NOT_REQUESTED);
+        }
+        if (emailRequest.getStatus() != EmailRequestStatus.ACCEPTED) {
+            return new EmailRequestModel(serviceRequest.getId(), emailRequest.getStatus());
+        }
+        String email = serviceRequest.getCustomer().getAccount().getEmail();
+        return new EmailRequestModel(serviceRequest.getId(), email, EmailRequestStatus.ACCEPTED, emailRequest.getUpdateTimestamp());
+    }
+
+    private List<EmailRequestModel> toModels(List<EmailRequest> emailRequests) {
+        List<EmailRequestModel> models = new ArrayList<>(emailRequests.size());
+        for (EmailRequest emailRequest : emailRequests) {
+            models.add(toModel(emailRequest.getServiceRequest(), emailRequest));
         }
         return models;
     }
 
-    @Override
-    public void updateEmailRequestStatus(EmailRequest emailRequest, boolean accepted) {
-        emailRequest.setStatus(accepted ? EmailRequestStatus.ACCEPTED : EmailRequestStatus.REJECTED);
-        emailRequestRepository.save(emailRequest);
-        // TODO notification of some sort?
+    private List<EmailRequestInfoModel> toInfoModels(Collection<EmailRequest> emailRequests) {
+        List<EmailRequestInfoModel> models = new ArrayList<>(emailRequests.size());
+        for (EmailRequest emailRequest : emailRequests) {
+            models.add(new EmailRequestInfoModel(
+                    emailRequest.getId(),
+                    emailRequest.getServiceRequest().getId(),
+                    ServiceProviderInfoModel.fromEntity(emailRequest.getServiceProvider()),
+                    emailRequest.getStatus(),
+                    emailRequest.getRequestTimestamp()
+            ));
+        }
+        return models;
     }
 }
