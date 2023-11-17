@@ -3,12 +3,21 @@ import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import { checkIsCustomerLoggedIn } from 'AuthContext'
 import QuoteDetails from 'components/Quotes/QuoteDetails'
+import { Rating } from '@smastrom/react-rating'
+import {
+  CheckCircleIcon,
+  UserCircleIcon,
+  XCircleIcon,
+} from '@heroicons/react/24/outline'
+
+import '@smastrom/react-rating/style.css'
 
 export const MyQuotes = () => {
   const [serviceRequests, setServiceRequests] = useState([])
   const emailRequests = ['email1', 'email24']
   const [loggedIn, setLoggedIn] = useState(false) // Initialize loggedIn with a default value
   const [showModal, setShowModal] = useState(false)
+  const iconSize = window.innerWidth > 768 ? 60 : 30
 
   const getServiceRequests = async () => {
     try {
@@ -63,16 +72,31 @@ export const MyQuotes = () => {
               </div>
             ))}
           </div>
-          <div className="w-1/3 p-2 h-[90vh] overflow-y-auto">
-            <p className="text-center">
-              <strong>Requested Emails: </strong>
+
+          <div className="w-1/3  h-[90vh] overflow-y-auto">
+            <p className="text-center pb-2">
+              <strong>Email Permission Requests: </strong>
             </p>
             {emailRequests.map((emailRequest, i) => (
-              <div className="p-2 rounded-sm border-2 border-gray-500 pb-3 mb-2 ">
-                <div>
-                  <p>{emailRequest}</p>
-                  <p>Customer Name: John</p>
+              <div className="rounded-sm border border-gray-400 ">
+                <div className="text-center font-bold">
+                  <a href="#">{/*quote.provider*/}Ben's Roofing</a>
                 </div>
+
+                <div>
+                  <div className="flex flex-row justify-between">
+                    <UserCircleIcon width={iconSize} />
+                    <div className="flex flex-col justify-center items-center">
+                      <p className='text-gray-400'>certified plumbing</p>
+                      <Rating value={5} style={{ maxWidth: 75 }} />
+                    </div>
+                    <div className="flex flex-row">
+                      <XCircleIcon color="maroon" width={30} />
+                      <CheckCircleIcon color="green" width={30} />
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-row"></div>
               </div>
             ))}
           </div>

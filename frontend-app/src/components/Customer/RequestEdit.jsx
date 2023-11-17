@@ -76,7 +76,7 @@ function RequestEdit({ request }) {
     event.preventDefault()
     try {
       const response = await axios.post(
-        `http://localhost:8080/api/customer/service_request/${request.id}/edit`,
+        `${process.env.REACT_APP_API_URL}/api/customer/service_request/${request.id}/edit`,
         serviceRequestModel,
         { withCredentials: true },
       )
@@ -92,7 +92,7 @@ function RequestEdit({ request }) {
         // Make a POST request to attach the image to the service request
         await axios
           .post(
-            `http://localhost:8080/api/customer/service_request/${request.id}/attach`,
+            `${process.env.REACT_APP_API_URL}/api/customer/service_request/${request.id}/attach`,
             imageFormData,
             { withCredentials: true },
           )

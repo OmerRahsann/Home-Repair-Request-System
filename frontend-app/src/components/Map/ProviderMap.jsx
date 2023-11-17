@@ -22,14 +22,15 @@ const ProviderMap = ({
   console.log({ c })
 
   const handleMapChange = (map) => {
+    console.log(map)
     const newBounds = {
       ne: {
-        lat: map.bounds.mb.hi,
-        lng: map.bounds.Oa.hi,
+        lat: map.bounds.eb.hi,
+        lng: map.bounds.La.hi,
       },
       sw: {
-        lat: map.bounds.mb.lo,
-        lng: map.bounds.Oa.lo,
+        lat: map.bounds.eb.lo,
+        lng: map.bounds.La.lo,
       },
     }
 
