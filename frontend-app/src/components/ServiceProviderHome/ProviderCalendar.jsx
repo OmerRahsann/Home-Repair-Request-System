@@ -4,25 +4,38 @@ import { Calendar, momentLocalizer, Views } from 'react-big-calendar'
 import moment from 'moment'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 import './ProviderCalendar.scss' // Import your SASS file
+import ServiceRequestModal from 'components/Customer/ServiceRequestModal'
+
+const initialEvents = [
+  {
+    title: 'Slot 1',
+    start: new Date(2023, 10, 1, 10, 0),
+    end: new Date(2023, 10, 1, 12, 0),
+  },
+  {
+    title: 'Slot 2',
+    start: new Date(2023, 10, 5, 14, 0),
+    end: new Date(2023, 10, 5, 16, 0),
+    id: 1,
+  },
+  // Add more events as needed
+]
 
 const ProviderCalendar = ({ customerView }) => {
   const localizer = momentLocalizer(moment)
-  const events = [
-    {
-      title: 'Slot 1',
-      start: new Date(2023, 10, 1, 10, 0),
-      end: new Date(2023, 10, 1, 12, 0),
-    },
-    {
-      title: 'Slot 2',
-      start: new Date(2023, 10, 5, 14, 0),
-      end: new Date(2023, 10, 5, 16, 0),
-      id: 1,
-    },
-    // Add more events as needed
-  ]
+  const [events, setEvents] = useState(initialEvents)
+  const [showEvent, setShowEvent] = useState(false)
+  const [eventContent, setEventContent] = useState([])
 
   const clickRef = useRef(null)
+
+  const formatDateIn12HourFormat = (date) => {
+    return date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true,
+    })
+  }
 
   function buildMessage(calEvent, eventType) {
     console.log(calEvent)
@@ -39,17 +52,30 @@ const ProviderCalendar = ({ customerView }) => {
     return message
   }
 
-  const onSelectSlot = useCallback((slotInfo) => {
-    /**
-     * Here we are waiting 250 milliseconds (use what you want) prior to firing
-     * our method. Why? Because both 'click' and 'doubleClick'
-     * would fire, in the event of a 'doubleClick'. By doing
-     * this, the 'click' handler is overridden by the 'doubleClick'
-     * action.
-     */
+  const onSelectSlot = useCallback((calEvent) => {
     window.clearTimeout(clickRef?.current)
+
+    // Set a timeout to detect whether it's a single or double click
     clickRef.current = window.setTimeout(() => {
-      window.alert(slotInfo)
+      // Single click logic
+      const shouldCreateNewEvent = window.confirm(
+        `Do you want to create a new event at ${calEvent.start}?`,
+      )
+
+      if (shouldCreateNewEvent) {
+        const eventTitle = prompt('Enter the title for the new event:')
+        if (eventTitle) {
+          // If a title is provided, update the events array with the new event
+          const newEvent = {
+            title: eventTitle,
+            start: calEvent.start,
+            end: calEvent.end, // You may want to adjust the end time accordingly
+            id: events.length + 1, // Assign a unique ID, adjust as needed
+          }
+
+          setEvents((prevEvents) => [...prevEvents, newEvent])
+        }
+      }
     }, 250)
   }, [])
 
@@ -61,9 +87,11 @@ const ProviderCalendar = ({ customerView }) => {
      * this, the 'click' handler is overridden by the 'doubleClick'
      * action.
      */
+
     window.clearTimeout(clickRef?.current)
     clickRef.current = window.setTimeout(() => {
-      window.alert(buildMessage(calEvent, 'onSelectEvent'))
+      setShowEvent(true)
+      setEventContent(calEvent)
     }, 250)
   }, [])
 
@@ -105,6 +133,26 @@ const ProviderCalendar = ({ customerView }) => {
         selectable
         views={views}
       />
+      {showEvent && (
+        <ServiceRequestModal
+          isVisible={showEvent}
+          onClose={() => setShowEvent(false)}
+        >
+          <p>{eventContent.title}</p>
+          <p>
+            {new Date(eventContent.start).toLocaleString('en-US', {
+              month: 'long',
+            })}{' '}
+            {new Date(eventContent.start).getDay()},{' '}
+            {new Date(eventContent.start).getFullYear()}
+          </p>
+
+          <p>
+            {formatDateIn12HourFormat(new Date(eventContent.start))} -{' '}
+            {formatDateIn12HourFormat(new Date(eventContent.end))}
+          </p>
+        </ServiceRequestModal>
+      )}
     </div>
   )
 }

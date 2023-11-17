@@ -87,7 +87,7 @@ export const MyQuotes = () => {
                   <div className="flex flex-row justify-between">
                     <UserCircleIcon width={iconSize} />
                     <div className="flex flex-col justify-center items-center">
-                      <p className='text-gray-400'>certified plumbing</p>
+                      <p className="text-gray-400">certified plumbing</p>
                       <Rating value={5} style={{ maxWidth: 75 }} />
                     </div>
                     <div className="flex flex-row">
@@ -95,7 +95,7 @@ export const MyQuotes = () => {
                       <CheckCircleIcon color="green" width={30} />
                     </div>
                   </div>
-                 <p className='text-center'>{new Date().toISOString()}</p>
+                  <p className="text-center">{new Date().toISOString()}</p>
                 </div>
                 <div className="flex flex-row"></div>
               </div>
