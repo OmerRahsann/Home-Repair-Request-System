@@ -2,50 +2,40 @@ package homerep.springy;
 
 import homerep.springy.authorities.AccountType;
 import homerep.springy.authorities.Verified;
+import homerep.springy.component.DummyDataComponent;
 import homerep.springy.config.TestDatabaseConfig;
 import homerep.springy.config.TestStorageConfig;
 import homerep.springy.controller.customer.CustomerEmailRequestController;
 import homerep.springy.controller.provider.ServiceProviderEmailRequestController;
-import homerep.springy.entity.*;
+import homerep.springy.entity.Customer;
+import homerep.springy.entity.EmailRequest;
+import homerep.springy.entity.ServiceProvider;
+import homerep.springy.entity.ServiceRequest;
 import homerep.springy.exception.ApiException;
+import homerep.springy.exception.NonExistentPostException;
 import homerep.springy.model.accountinfo.ServiceProviderInfoModel;
 import homerep.springy.model.emailrequest.EmailRequestInfoModel;
 import homerep.springy.model.emailrequest.EmailRequestModel;
 import homerep.springy.model.emailrequest.EmailRequestStatus;
-import homerep.springy.repository.*;
+import homerep.springy.repository.EmailRequestRepository;
 import homerep.springy.service.EmailRequestService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.core.userdetails.User;
 
 import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@AutoConfigureMockMvc
 @TestDatabaseConfig
 @Import(TestStorageConfig.class)
 public class EmailRequestTest {
-
-    @Autowired
-    private AccountRepository accountRepository;
-
-    @Autowired
-    private CustomerRepository customerRepository;
-
-    @Autowired
-    private ServiceProviderRepository serviceProviderRepository;
-
-    @Autowired
-    private ServiceRequestRepository serviceRequestRepository;
 
     @Autowired
     private EmailRequestRepository emailRequestRepository;
@@ -58,6 +48,9 @@ public class EmailRequestTest {
 
     @Autowired
     private ServiceProviderEmailRequestController serviceProviderEmailRequestController;
+
+    @Autowired
+    private DummyDataComponent dummyDataComponent;
 
     private ServiceProvider serviceProvider1;
     private ServiceProvider serviceProvider2;
@@ -73,60 +66,14 @@ public class EmailRequestTest {
     private static final String SERVICE_PROVIDER_2_EMAIL = "example2@example.com";
     private static final User SERVICE_PROVIDER_2_USER = new User(SERVICE_PROVIDER_2_EMAIL, "", List.of(AccountType.SERVICE_PROVIDER, Verified.INSTANCE));
 
-    private ServiceRequest createServiceRequest(Customer customer, String title) {
-        ServiceRequest serviceRequest = new ServiceRequest(customer);
-        serviceRequest.setTitle(title);
-        serviceRequest.setDescription("description");
-        serviceRequest.setService("HVAC");
-        serviceRequest.setStatus(ServiceRequest.Status.PENDING);
-        serviceRequest.setDollars(100);
-        serviceRequest.setCreationDate(new Date());
-        serviceRequest.setAddress("");
-        serviceRequest.setLongitude(0);
-        serviceRequest.setLatitude(0);
-        return serviceRequestRepository.save(serviceRequest);
-    }
-
     @BeforeEach
-    void setupCustomer() {
-        Account account = new Account();
-        account.setEmail(CUSTOMER_EMAIL);
-        account.setType(AccountType.CUSTOMER);
-        account.setVerified(true);
-        account = accountRepository.save(account);
+    void setup() {
+        Customer customer = dummyDataComponent.createCustomer(CUSTOMER_EMAIL);
+        serviceRequest1 = dummyDataComponent.createServiceRequest(customer);
+        serviceRequest2 = dummyDataComponent.createServiceRequest(customer);
 
-        Customer customer = new Customer(account);
-        customer.setFirstName("Zoey");
-        customer.setLastName("Proasheck");
-        customer = customerRepository.save(customer);
-
-        serviceRequest1 = createServiceRequest(customer, "Service request 1");
-        serviceRequest2 = createServiceRequest(customer, "Service request 2");
-    }
-
-    private ServiceProvider createServiceProvider(String email) {
-        Account providerAccount = new Account();
-        providerAccount.setEmail(email);
-        providerAccount.setType(AccountType.SERVICE_PROVIDER);
-        providerAccount.setVerified(true);
-        providerAccount = accountRepository.save(providerAccount);
-
-        ServiceProvider serviceProvider = new ServiceProvider(providerAccount);
-        serviceProvider.setName(email + " HVAC and Plumbing");
-        serviceProvider.setDescription("Heating, cooling, and plumbing");
-        serviceProvider.setServices(List.of("HVAC", "Plumbing"));
-        serviceProvider.setPhoneNumber("1231231234");
-        serviceProvider.setAddress("201 Mullica Hill Rd, Glassboro, NJ 08028");
-        serviceProvider.setContactEmailAddress(email);
-        serviceProvider.setLongitude(39.709824);
-        serviceProvider.setLatitude(-75.1206862);
-        return serviceProviderRepository.save(serviceProvider);
-    }
-
-    @BeforeEach
-    void setupServiceProvider() {
-        serviceProvider1 = createServiceProvider(SERVICE_PROVIDER_1_EMAIL);
-        serviceProvider2 = createServiceProvider(SERVICE_PROVIDER_2_EMAIL);
+        serviceProvider1 = dummyDataComponent.createServiceProvider(SERVICE_PROVIDER_1_EMAIL);
+        serviceProvider2 = dummyDataComponent.createServiceProvider(SERVICE_PROVIDER_2_EMAIL);
     }
 
     @Test
@@ -252,19 +199,16 @@ public class EmailRequestTest {
     @Test
     void nonExistentPost() {
         // Trying to get the email for a non-existent post results in an ApiException
-        ApiException exception = assertThrows(ApiException.class,
+        assertThrows(NonExistentPostException.class,
                 () -> serviceProviderEmailRequestController.getEmail(Integer.MAX_VALUE, SERVICE_PROVIDER_1_USER));
-        assertEquals(exception.getType(), "non_existent_post");
 
         // Trying to send an email request for a non-existent post results in an ApiException
-        exception = assertThrows(ApiException.class,
+        assertThrows(NonExistentPostException.class,
                 () -> serviceProviderEmailRequestController.requestEmail(Integer.MAX_VALUE, SERVICE_PROVIDER_1_USER));
-        assertEquals(exception.getType(), "non_existent_post");
 
         // Trying to list email requests for a non-existent post results in an ApiException
-        exception = assertThrows(ApiException.class,
+        assertThrows(NonExistentPostException.class,
                 () -> customerEmailRequestController.getEmailRequests(Integer.MAX_VALUE, CUSTOMER_USER));
-        assertEquals(exception.getType(), "non_existent_post");
     }
 
     @Test
@@ -307,10 +251,10 @@ public class EmailRequestTest {
         // Both requests in the list are pending
         assertEquals(EmailRequestStatus.PENDING, requests.get(0).status());
         assertEquals(EmailRequestStatus.PENDING, requests.get(1).status());
-        // request 0 is from serviceProvider2
-        assertEquals(SERVICE_PROVIDER_2_EMAIL, requests.get(0).serviceProvider().contactEmailAddress());
-        // request 1 is from serviceProvider1
-        assertEquals(SERVICE_PROVIDER_1_EMAIL, requests.get(1).serviceProvider().contactEmailAddress());
+        // request 0 has serviceProvider2's info
+        assertEquals(ServiceProviderInfoModel.fromEntity(serviceProvider2), requests.get(0).serviceProvider());
+        // request 1 has serviceProvider1's info
+        assertEquals(ServiceProviderInfoModel.fromEntity(serviceProvider1), requests.get(1).serviceProvider());
         // List is sorted by request timestamp in descending order
         Instant request0Timestamp = requests.get(0).requestTimestamp();
         Instant request1Timestamp = requests.get(1).requestTimestamp();

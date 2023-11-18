@@ -1,12 +1,12 @@
 package homerep.springy;
 
 import homerep.springy.authorities.AccountType;
+import homerep.springy.component.DummyDataComponent;
 import homerep.springy.config.TestDatabaseConfig;
 import homerep.springy.config.TestStorageConfig;
 import homerep.springy.entity.Account;
 import homerep.springy.entity.ImageInfo;
 import homerep.springy.exception.ImageStoreException;
-import homerep.springy.repository.AccountRepository;
 import homerep.springy.service.ImageStorageService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,7 +29,8 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
@@ -41,7 +42,7 @@ public class ImageControllerTest {
     private MockMvc mvc;
 
     @Autowired
-    private AccountRepository accountRepository;
+    private DummyDataComponent dummyDataComponent;
 
     @Autowired
     private ImageStorageService imageStorageService;
@@ -57,13 +58,7 @@ public class ImageControllerTest {
 
     @BeforeEach
     void storeImage() throws IOException, ImageStoreException {
-        Account uploader = new Account();
-        uploader.setEmail(TEST_EMAIL);
-        uploader.setPassword(null);
-        uploader.setVerified(true);
-        uploader.setType(AccountType.CUSTOMER);
-
-        uploader = accountRepository.save(uploader);
+        Account uploader = dummyDataComponent.createAccount(TEST_EMAIL, AccountType.CUSTOMER);
         Resource testImage = resourceLoader.getResource(TEST_PNG_LOCATION);
         // Store an image
         ImageInfo imageInfo = imageStorageService.storeImage(testImage.getInputStream(), 320, 320, uploader);

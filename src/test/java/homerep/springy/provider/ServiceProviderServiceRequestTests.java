@@ -1,16 +1,13 @@
 package homerep.springy.provider;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import homerep.springy.authorities.AccountType;
+import homerep.springy.component.DummyDataComponent;
 import homerep.springy.config.TestDatabaseConfig;
 import homerep.springy.config.TestStorageConfig;
-import homerep.springy.entity.Account;
 import homerep.springy.entity.Customer;
 import homerep.springy.entity.ServiceProvider;
 import homerep.springy.entity.ServiceRequest;
 import homerep.springy.model.ServiceRequestModel;
-import homerep.springy.repository.AccountRepository;
-import homerep.springy.repository.CustomerRepository;
 import homerep.springy.repository.ServiceProviderRepository;
 import homerep.springy.repository.ServiceRequestRepository;
 import homerep.springy.type.LatLong;
@@ -25,8 +22,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -44,16 +39,13 @@ public class ServiceProviderServiceRequestTests {
     private MockMvc mvc;
 
     @Autowired
-    private AccountRepository accountRepository;
-
-    @Autowired
-    private CustomerRepository customerRepository;
-
-    @Autowired
     private ServiceProviderRepository serviceProviderRepository;
 
     @Autowired
     private ServiceRequestRepository serviceRequestRepository;
+
+    @Autowired
+    private DummyDataComponent dummyDataComponent;
 
     @Autowired
     private ObjectMapper mapper;
@@ -69,67 +61,34 @@ public class ServiceProviderServiceRequestTests {
     protected static final LatLong SERVICE_REQUEST_LOCATION = new LatLong(39.709824, -75.1206862);
 
     private ServiceRequest createServiceRequestAt(Customer customer, double latitude, double longitude) {
-        ServiceRequest serviceRequest = new ServiceRequest(customer);
-        serviceRequest.setTitle("test");
-        serviceRequest.setDescription("description");
-        serviceRequest.setService("HVAC");
-        serviceRequest.setStatus(ServiceRequest.Status.PENDING);
-        serviceRequest.setDollars(100);
-        serviceRequest.setCreationDate(new Date());
+        ServiceRequest serviceRequest = dummyDataComponent.createServiceRequest(customer);
         serviceRequest.setAddress(latitude + "," + longitude);
         serviceRequest.setLongitude(longitude);
         serviceRequest.setLatitude(latitude);
-        return serviceRequest;
+        return serviceRequestRepository.save(serviceRequest);
     }
 
     @BeforeEach
     @WithMockUser(username = CUSTOMER_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
     void setupCustomer() {
-        Account customerAccount = new Account();
-        customerAccount.setEmail(CUSTOMER_EMAIL);
-        customerAccount.setPassword(null); // Not testing auth
-        customerAccount.setType(AccountType.CUSTOMER);
-        customerAccount.setVerified(true);
-        customerAccount = accountRepository.save(customerAccount);
-
-        Customer customer = new Customer(customerAccount);
-        customer.setFirstName("Zoey");
-        customer.setMiddleName(""); // TODO remove
-        customer.setLastName("Proasheck");
-        customer.setAddress("");
-        customerRepository.save(customer);
+        Customer customer = dummyDataComponent.createCustomer(CUSTOMER_EMAIL);
 
         ServiceRequest serviceRequestA = createServiceRequestAt(customer, SERVICE_REQUEST_LOCATION.latitude(), SERVICE_REQUEST_LOCATION.longitude());
-        serviceRequestA = serviceRequestRepository.save(serviceRequestA);
         serviceRequestModel = ServiceRequestModel.fromEntity(serviceRequestA);
 
         ServiceRequest serviceRequestPos179 = createServiceRequestAt(customer, 0, 179.8);
-        serviceRequestPos179 = serviceRequestRepository.save(serviceRequestPos179);
         serviceRequestModelPos179 = ServiceRequestModel.fromEntity(serviceRequestPos179);
         ServiceRequest serviceRequestNeg179 = createServiceRequestAt(customer, 0, -179.8);
-        serviceRequestNeg179 = serviceRequestRepository.save(serviceRequestNeg179);
         serviceRequestModelNeg179 = ServiceRequestModel.fromEntity(serviceRequestNeg179);
     }
 
     @BeforeEach
     void setupProvider() {
-        Account providerAccount = new Account();
-        providerAccount.setEmail(SERVICE_PROVIDER_EMAIL);
-        providerAccount.setPassword(null); // Not testing auth
-        providerAccount.setType(AccountType.SERVICE_PROVIDER);
-        providerAccount.setVerified(true);
-        providerAccount = accountRepository.save(providerAccount);
-
-        ServiceProvider serviceProvider = new ServiceProvider(providerAccount);
-        serviceProvider.setName("Sakura HVAC and Plumbing");
-        serviceProvider.setDescription("");
-        serviceProvider.setServices(List.of("HVAC", "Plumbing"));
-        serviceProvider.setPhoneNumber("");
+        ServiceProvider serviceProvider = dummyDataComponent.createServiceProvider(SERVICE_PROVIDER_EMAIL);
         serviceProvider.setAddress("201 Mullica Hill Rd, Glassboro, NJ 08028");
-        serviceProvider.setContactEmailAddress(SERVICE_PROVIDER_EMAIL);
         serviceProvider.setLongitude(39.709824);
         serviceProvider.setLatitude(-75.1206862);
-        serviceProvider = serviceProviderRepository.save(serviceProvider);
+        serviceProviderRepository.save(serviceProvider);
     }
 
     @Test

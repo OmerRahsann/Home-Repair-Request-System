@@ -1,12 +1,12 @@
 package homerep.springy;
 
 import homerep.springy.authorities.AccountType;
+import homerep.springy.component.DummyDataComponent;
 import homerep.springy.config.TestDatabaseConfig;
 import homerep.springy.config.TestStorageConfig;
 import homerep.springy.entity.Account;
 import homerep.springy.entity.ImageInfo;
 import homerep.springy.exception.ImageStoreException;
-import homerep.springy.repository.AccountRepository;
 import homerep.springy.repository.ImageInfoRepository;
 import homerep.springy.service.ImageStorageService;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestDatabaseConfig
 public class ImageStorageServiceTests {
     @Autowired
-    private AccountRepository accountRepository;
+    private DummyDataComponent dummyDataComponent;
 
     @Autowired
     private ImageStorageService imageStorageService;
@@ -53,26 +53,21 @@ public class ImageStorageServiceTests {
     @Autowired
     private ResourceLoader resourceLoader;
 
+    private Account uploader;
+
     private static final String TEST_EMAIL = "example@example.com";
 
     private static final String TEST_PNG_LOCATION = "classpath:image-storage-test/logo.png";
 
     @BeforeEach
     void setupAccount() {
-        Account account = new Account();
-        account.setEmail(TEST_EMAIL);
-        account.setPassword(null);
-        account.setVerified(true);
-        account.setType(AccountType.CUSTOMER);
-
-        accountRepository.save(account);
+        uploader = dummyDataComponent.createAccount(TEST_EMAIL, AccountType.CUSTOMER);
     }
 
     @Test
     void storeImage() throws IOException, ImageStoreException {
         Instant start = Instant.now();
 
-        Account uploader = accountRepository.findByEmail(TEST_EMAIL);
         Resource testImage = resourceLoader.getResource(TEST_PNG_LOCATION);
         ImageInfo imageInfo = imageStorageService.storeImage(testImage.getInputStream(), 320, 320, uploader);
         // It's stored into the repository
@@ -127,7 +122,6 @@ public class ImageStorageServiceTests {
 
     @Test
     void testStoreRollback() throws IOException {
-        Account uploader = accountRepository.findByEmail(TEST_EMAIL);
         InputStream testImageStream = resourceLoader.getResource(TEST_PNG_LOCATION).getInputStream();
         // Try to store an image but roll it back
         TransactionTemplate txTemplate = new TransactionTemplate(transactionManager);
@@ -153,7 +147,6 @@ public class ImageStorageServiceTests {
 
     @Test
     void testDeleteRollback() throws IOException, ImageStoreException {
-        Account uploader = accountRepository.findByEmail(TEST_EMAIL);
         Resource testImage = resourceLoader.getResource(TEST_PNG_LOCATION);
         // Store an image
         ImageInfo imageInfo = imageStorageService.storeImage(testImage.getInputStream(), 320, 320, uploader);
@@ -183,7 +176,6 @@ public class ImageStorageServiceTests {
 
     @Test
     void testInvalidImage() throws IOException {
-        Account uploader = accountRepository.findByEmail(TEST_EMAIL);
         // Try to store an obviously invalid image
         InputStream inputStream = new ByteArrayInputStream(new byte[]{0x41, 0x6d, 0x62, 0x65, 0x72});
         assertThrows(ImageStoreException.class, () -> imageStorageService.storeImage(inputStream, 320, 320, uploader));

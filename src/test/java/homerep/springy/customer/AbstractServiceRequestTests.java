@@ -2,10 +2,9 @@ package homerep.springy.customer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import homerep.springy.authorities.AccountType;
+import homerep.springy.component.DummyDataComponent;
 import homerep.springy.config.TestDatabaseConfig;
 import homerep.springy.config.TestStorageConfig;
-import homerep.springy.entity.Account;
 import homerep.springy.entity.Customer;
 import homerep.springy.entity.ServiceRequest;
 import homerep.springy.model.ServiceRequestModel;
@@ -48,6 +47,9 @@ public abstract class AbstractServiceRequestTests {
     protected ServiceRequestRepository serviceRequestRepository;
 
     @Autowired
+    private DummyDataComponent dummyDataComponent;
+
+    @Autowired
     protected ObjectMapper mapper;
 
     @Autowired
@@ -75,18 +77,8 @@ public abstract class AbstractServiceRequestTests {
     );
 
     @BeforeEach
-    void reset() {
-        Account account = new Account();
-        account.setEmail(TEST_EMAIL);
-        account.setPassword(null); // Not testing auth
-        account.setType(AccountType.CUSTOMER);
-        account.setVerified(true);
-        account = accountRepository.save(account);
-
-        Customer customer = new Customer(account);
-        customer.setFirstName("Zoey");
-        customer.setMiddleName(""); // TODO remove
-        customer.setLastName("Proasheck");
+    void setup() {
+        Customer customer = dummyDataComponent.createCustomer(TEST_EMAIL);
         customer.setAddress(CUSTOMER_ADDRESS);
         customerRepository.save(customer);
     }
