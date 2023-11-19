@@ -1,22 +1,18 @@
 package homerep.springy.component;
 
 import homerep.springy.authorities.AccountType;
-import homerep.springy.entity.Account;
-import homerep.springy.entity.Customer;
-import homerep.springy.entity.ServiceProvider;
-import homerep.springy.entity.ServiceRequest;
-import homerep.springy.repository.AccountRepository;
-import homerep.springy.repository.CustomerRepository;
-import homerep.springy.repository.ServiceProviderRepository;
-import homerep.springy.repository.ServiceRequestRepository;
+import homerep.springy.entity.*;
+import homerep.springy.model.appointment.CreateAppointmentModel;
+import homerep.springy.repository.*;
+import homerep.springy.service.AppointmentService;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class DummyDataComponent {
@@ -41,6 +37,12 @@ public class DummyDataComponent {
 
     @Autowired
     private ServiceRequestRepository serviceRequestRepository;
+
+    @Autowired
+    private AppointmentRepository appointmentRepository;
+
+    @Autowired
+    private AppointmentService appointmentService;
 
     private final Random random = new Random(0);
 
@@ -86,6 +88,50 @@ public class DummyDataComponent {
         serviceRequest.setLongitude(random.nextDouble(-180, 180));
         serviceRequest.setLatitude(random.nextDouble(-180, 180));
         return serviceRequestRepository.save(serviceRequest);
+    }
+
+    public List<Appointment> createAppointmentsFor(ServiceProvider serviceProvider, ServiceRequest serviceRequest, YearMonth yearMonth) {
+        Set<LocalDate> usedDates = appointmentRepository.findAll().stream()
+                .map(Appointment::getDate)
+                .collect(Collectors.toSet());
+
+        int count = random.nextInt(2, 4);
+        List<Appointment> appointments = new ArrayList<>(count + 2);
+
+        LocalDate start = yearMonth.atDay(1);
+        if (usedDates.add(start)) {
+            CreateAppointmentModel model = new CreateAppointmentModel(
+                    start,
+                    generateDummySentence()
+            );
+            appointments.add(appointmentService.createAppointment(serviceProvider, serviceRequest, model));
+        }
+
+        LocalDate end = yearMonth.atEndOfMonth();
+        if (usedDates.add(end)) {
+            CreateAppointmentModel model = new CreateAppointmentModel(
+                    end,
+                    generateDummySentence()
+            );
+            appointments.add(appointmentService.createAppointment(serviceProvider, serviceRequest, model));
+        }
+
+        for (int i = 0; i < count; i++) {
+            // Try 10 times to generate a non conflicting date
+            for (int j = 0; j < 10; j++) {
+                int day = random.nextInt(1, end.getDayOfMonth() + 1);
+                LocalDate date = yearMonth.atDay(day);
+                if (usedDates.add(date)) {
+                    CreateAppointmentModel model = new CreateAppointmentModel(
+                            date,
+                            generateDummySentence()
+                    );
+                    appointments.add(appointmentService.createAppointment(serviceProvider, serviceRequest, model));
+                    break;
+                }
+            }
+        }
+        return appointments;
     }
 
     private <T> T randomFrom(List<T> list) {

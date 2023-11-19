@@ -12,6 +12,8 @@ import java.util.List;
 public interface EmailRequestService {
     EmailRequestModel getEmail(ServiceRequest serviceRequest, ServiceProvider serviceProvider);
 
+    boolean canAccessEmail(ServiceProvider serviceProvider, ServiceRequest serviceRequest);
+
     boolean sendEmailRequest(ServiceRequest serviceRequest, ServiceProvider serviceProvider);
 
     List<EmailRequestInfoModel> getPendingEmailRequests(Customer customer);

@@ -3,15 +3,16 @@ package homerep.springy.controller.provider;
 import homerep.springy.entity.Appointment;
 import homerep.springy.entity.ServiceProvider;
 import homerep.springy.entity.ServiceRequest;
+import homerep.springy.exception.ApiException;
 import homerep.springy.exception.NonExistentAppointmentException;
 import homerep.springy.exception.NonExistentPostException;
-import homerep.springy.model.accountinfo.CustomerInfoModel;
 import homerep.springy.model.appointment.AppointmentModel;
 import homerep.springy.model.appointment.CreateAppointmentModel;
 import homerep.springy.repository.AppointmentRepository;
 import homerep.springy.repository.ServiceProviderRepository;
 import homerep.springy.repository.ServiceRequestRepository;
 import homerep.springy.service.AppointmentService;
+import homerep.springy.service.impl.EmailRequestServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
@@ -19,7 +20,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.YearMonth;
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -37,6 +37,9 @@ public class ServiceProviderAppointmentController {
     @Autowired
     private ServiceRequestRepository serviceRequestRepository;
 
+    @Autowired
+    private EmailRequestServiceImpl emailRequestService;
+
     @GetMapping("/appointments")
     public List<AppointmentModel> getAppointments(
             @RequestParam(value = "year") int year,
@@ -44,12 +47,7 @@ public class ServiceProviderAppointmentController {
             @AuthenticationPrincipal User user) {
         YearMonth yearMonth = YearMonth.of(year, month);
         ServiceProvider serviceProvider = serviceProviderRepository.findByAccountEmail(user.getUsername());
-        List<Appointment> appointments = appointmentService.listAppointments(serviceProvider, yearMonth);
-        List<AppointmentModel> appointmentModels = new ArrayList<>(appointments.size());
-        for (Appointment appointment : appointments) {
-            appointmentModels.add(toModel(appointment));
-        }
-        return appointmentModels;
+        return appointmentService.getAppointmentsByMonth(serviceProvider, yearMonth);
     }
 
     @GetMapping("/appointments/{id}")
@@ -58,7 +56,13 @@ public class ServiceProviderAppointmentController {
         if (appointment == null) {
             throw new NonExistentAppointmentException();
         }
-        return toModel(appointment);
+        return AppointmentModel.fromEntity(appointment);
+    }
+
+    @GetMapping("/appointments/updated")
+    public List<AppointmentModel> getUpdatedAppointments(@AuthenticationPrincipal User user) {
+        ServiceProvider serviceProvider = serviceProviderRepository.findByAccountEmail(user.getUsername());
+        return appointmentService.getUpdatedAppointments(serviceProvider);
     }
 
     @PostMapping("/service_requests/{service_request_id}/appointments/create")
@@ -66,12 +70,14 @@ public class ServiceProviderAppointmentController {
             @PathVariable("service_request_id") int serviceRequestId,
             @RequestBody @Validated CreateAppointmentModel createAppointmentModel,
             @AuthenticationPrincipal User user) {
-        // TODO some authorization before making an appointment? Must request email frist?
         ServiceRequest serviceRequest = serviceRequestRepository.findById(serviceRequestId).orElse(null);
         if (serviceRequest == null) {
             throw new NonExistentPostException();
         }
         ServiceProvider serviceProvider = serviceProviderRepository.findByAccountEmail(user.getUsername());
+        if (!emailRequestService.canAccessEmail(serviceProvider, serviceRequest)) {
+            throw new ApiException("missing_accepted_email_request", "Can't create appointment for service request without an accepted email request.");
+        }
         Appointment appointment = appointmentService.createAppointment(serviceProvider, serviceRequest, createAppointmentModel);
         return appointment.getId();
     }
@@ -83,23 +89,5 @@ public class ServiceProviderAppointmentController {
             throw new NonExistentAppointmentException();
         }
         appointmentService.cancelAppointment(appointment);
-    }
-
-    private AppointmentModel toModel(Appointment appointment) {
-        return new AppointmentModel(
-                appointment.getId(),
-                new CustomerInfoModel(
-                        appointment.getCustomer().getFirstName(),
-                        appointment.getCustomer().getMiddleName(),
-                        appointment.getCustomer().getLastName(),
-                        null, // Use the address in the service request
-                        appointment.getCustomer().getPhoneNumber()
-                ),
-                null, // Don't need to send service providers their own information
-                appointment.getServiceRequest().getId(),
-                appointment.getDate(),
-                appointment.getStatus(),
-                appointment.getMessage()
-        );
     }
 }

@@ -4,20 +4,23 @@ import homerep.springy.entity.Appointment;
 import homerep.springy.entity.Customer;
 import homerep.springy.entity.ServiceProvider;
 import homerep.springy.entity.ServiceRequest;
+import homerep.springy.model.appointment.AppointmentModel;
 import homerep.springy.model.appointment.AppointmentStatus;
 import homerep.springy.model.appointment.CreateAppointmentModel;
 import homerep.springy.repository.AppointmentRepository;
 import homerep.springy.service.AppointmentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class AppointmentServiceImpl implements AppointmentService {
-    // TODO mark old unconfirmed appointments as cancelled or some other status
     @Autowired
     private AppointmentRepository appointmentRepository;
 
@@ -27,10 +30,13 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointment.setServiceProvider(serviceProvider);
         appointment.setServiceRequest(serviceRequest);
         appointment.setCustomer(serviceRequest.getCustomer());
+        appointment.setCreationTimestamp(Instant.now());
         appointment.setDate(createAppointmentModel.date());
         appointment.setStatus(AppointmentStatus.UNCONFIRMED);
         appointment.setMessage(createAppointmentModel.message());
         appointment = appointmentRepository.save(appointment);
+
+        serviceRequest.getAppointments().add(appointment);
         // TODO check for failure?
         // TODO send notification/email
         return appointment;
@@ -38,18 +44,16 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     public void cancelAppointment(Appointment appointment) {
-        // TODO prevent cancelling past appointments
-        if (appointment.getStatus() == AppointmentStatus.CANCELLED) {
-            return;
+        if (appointment.getStatus() == AppointmentStatus.UNCONFIRMED || appointment.getStatus() == AppointmentStatus.CONFIRMED) {
+            appointment.setStatus(AppointmentStatus.CANCELLED);
+            appointment.setUpdateTimestamp(Instant.now());
+            appointment = appointmentRepository.save(appointment);
+            // TODO send notification/email
         }
-        appointment.setStatus(AppointmentStatus.CANCELLED);
-        appointment = appointmentRepository.save(appointment);
-        // TODO send notification/email
     }
 
     @Override
     public boolean confirmAppointment(Appointment appointment) {
-        // TODO prevent confirming old appointments
         if (appointment.getStatus() == AppointmentStatus.CONFIRMED) {
             // Already confirmed
             return true;
@@ -58,24 +62,60 @@ public class AppointmentServiceImpl implements AppointmentService {
             return false;
         }
         appointment.setStatus(AppointmentStatus.CONFIRMED);
+        appointment.setUpdateTimestamp(Instant.now());
         appointment = appointmentRepository.save(appointment);
         return true;
         // TODO send notification/email
     }
 
     @Override
-    public List<Appointment> listAppointments(Customer customer, YearMonth yearMonth) {
+    public List<AppointmentModel> getAppointmentsByMonth(Customer customer, YearMonth yearMonth) {
         LocalDate start = yearMonth.atDay(1);
         LocalDate end = yearMonth.atEndOfMonth();
         // TODO include time, need timezones
-        return appointmentRepository.findAllByCustomerAndDateBetween(customer, start, end);
+        List<Appointment> appointments = appointmentRepository.findAllByCustomerAndDateBetween(customer, start, end);
+        return toModels(appointments);
     }
 
     @Override
-    public List<Appointment> listAppointments(ServiceProvider serviceProvider, YearMonth yearMonth) {
+    public List<AppointmentModel> getAppointmentsByMonth(ServiceProvider serviceProvider, YearMonth yearMonth) {
         LocalDate start = yearMonth.atDay(1);
         LocalDate end = yearMonth.atEndOfMonth();
         // TODO include time, need timezones
-        return appointmentRepository.findAllByServiceProviderAndDateBetween(serviceProvider, start, end);
+        List<Appointment> appointments = appointmentRepository.findAllByServiceProviderAndDateBetween(serviceProvider, start, end);
+        return toModels(appointments);
+    }
+
+    @Override
+    public List<AppointmentModel> getAppointmentsFor(ServiceRequest serviceRequest) {
+        return toModels(serviceRequest.getAppointments());
+    }
+
+    @Override
+    public List<AppointmentModel> getUnconfirmedAppointments(Customer customer) {
+        List<Appointment> appointments = appointmentRepository.findAllByCustomerAndStatus(
+                customer,
+                AppointmentStatus.UNCONFIRMED,
+                Sort.by(Sort.Direction.DESC, "creationTimestamp")
+        ); // TODO this needs a limit
+        return toModels(appointments);
+    }
+
+    @Override
+    public List<AppointmentModel> getUpdatedAppointments(ServiceProvider serviceProvider) {
+        List<Appointment> appointments = appointmentRepository.findAllByServiceProviderAndStatusIn(
+                serviceProvider,
+                List.of(AppointmentStatus.CANCELLED, AppointmentStatus.CONFIRMED),
+                Sort.by(Sort.Direction.DESC, "updateTimestamp")
+        ); // TODO this needs a limit
+        return toModels(appointments);
+    }
+
+    private List<AppointmentModel> toModels(List<Appointment> appointments) {
+        List<AppointmentModel> appointmentModels = new ArrayList<>(appointments.size());
+        for (Appointment appointment : appointments) {
+            appointmentModels.add(AppointmentModel.fromEntity(appointment));
+        }
+        return appointmentModels;
     }
 }

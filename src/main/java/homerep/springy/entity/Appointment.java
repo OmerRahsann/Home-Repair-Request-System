@@ -3,6 +3,7 @@ package homerep.springy.entity;
 import homerep.springy.model.appointment.AppointmentStatus;
 import jakarta.persistence.*;
 
+import java.time.Instant;
 import java.time.LocalDate;
 
 @Entity
@@ -18,14 +19,18 @@ public class Appointment {
     @GeneratedValue
     private long id;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     private ServiceProvider serviceProvider;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     private ServiceRequest serviceRequest;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     private Customer customer;
+
+    private Instant creationTimestamp;
+
+    private Instant updateTimestamp;
 
     @Temporal(value = TemporalType.DATE)
     private LocalDate date; // TODO time periods instead of full days
@@ -68,6 +73,25 @@ public class Appointment {
         this.serviceRequest = serviceRequest;
     }
 
+    public Instant getCreationTimestamp() {
+        return creationTimestamp;
+    }
+
+    public void setCreationTimestamp(Instant creationTime) {
+        this.creationTimestamp = creationTime;
+    }
+
+    /**
+     * @return a timestamp of when the service request was confirmed or cancelled
+     */
+    public Instant getUpdateTimestamp() {
+        return updateTimestamp;
+    }
+
+    public void setUpdateTimestamp(Instant updateTimestamp) {
+        this.updateTimestamp = updateTimestamp;
+    }
+
     public LocalDate getDate() {
         return date;
     }
@@ -77,6 +101,7 @@ public class Appointment {
     }
 
     public AppointmentStatus getStatus() {
+        updateStatus();
         return status;
     }
 
@@ -90,5 +115,14 @@ public class Appointment {
 
     public void setMessage(String description) {
         this.message = description;
+    }
+
+    @PostLoad
+    private void updateStatus() {
+        LocalDate now = LocalDate.now();
+        if (now.isAfter(getDate())) {
+            // Make sure the status is updated in the database on the next save
+            status = status.toExpiredStatus();
+        }
     }
 }

@@ -36,6 +36,15 @@ public class EmailRequestServiceImpl implements EmailRequestService {
     }
 
     @Override
+    public boolean canAccessEmail(ServiceProvider serviceProvider, ServiceRequest serviceRequest) {
+        EmailRequest emailRequest = emailRequestRepository.findByServiceProviderAndServiceRequest(serviceProvider, serviceRequest);
+        if (emailRequest == null) {
+            return false;
+        }
+        return emailRequest.getStatus() == EmailRequestStatus.ACCEPTED;
+    }
+
+    @Override
     public boolean sendEmailRequest(ServiceRequest serviceRequest, ServiceProvider serviceProvider) {
         EmailRequest emailRequest = emailRequestRepository.findByServiceProviderAndServiceRequest(serviceProvider, serviceRequest);
         if (emailRequest != null) {
