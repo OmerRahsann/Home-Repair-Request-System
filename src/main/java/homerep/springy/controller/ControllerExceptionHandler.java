@@ -1,10 +1,11 @@
 package homerep.springy.controller;
 
+import homerep.springy.entity.Appointment;
 import homerep.springy.exception.ApiException;
-import homerep.springy.model.error.ApiErrorModel;
-import homerep.springy.model.error.ValidationErrorModel;
-import homerep.springy.model.error.FieldErrorModel;
-import homerep.springy.model.error.ObjectErrorModel;
+import homerep.springy.exception.ConflictingAppointmentException;
+import homerep.springy.exception.UnconfirmableAppointmentException;
+import homerep.springy.model.appointment.AppointmentModel;
+import homerep.springy.model.error.*;
 import org.apache.tomcat.util.http.fileupload.impl.FileSizeLimitExceededException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
@@ -54,6 +55,22 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler
     public ResponseEntity<ApiErrorModel> handleDateTimeException(DateTimeException ex) {
         ApiErrorModel errorModel = new ApiErrorModel("invalid_date_time", "An invalid date/time was specified.");
+        return ResponseEntity.badRequest().body(errorModel);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ConflictingAppointmentErrorModel> handleConflictingAppointmentException(ConflictingAppointmentException ex) {
+        List<AppointmentModel> models = new ArrayList<>(ex.getConflictingAppointments().size());
+        for (Appointment appointment : ex.getConflictingAppointments()) {
+            models.add(AppointmentModel.fromEntity(appointment));
+        }
+        ConflictingAppointmentErrorModel errorModel = new ConflictingAppointmentErrorModel(models);
+        return ResponseEntity.badRequest().body(errorModel);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ApiErrorModel> handleUnconfirmableAppointmentException(UnconfirmableAppointmentException ex) {
+        ApiErrorModel errorModel = new ApiErrorModel("unconfirmable_appointment", ex.getMessage());
         return ResponseEntity.badRequest().body(errorModel);
     }
 }

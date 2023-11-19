@@ -12,7 +12,6 @@ spring:
     url: jdbc:mysql://host:port/schema
     username: user
     password: password
-    driver-class: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
       ddl-auto: none

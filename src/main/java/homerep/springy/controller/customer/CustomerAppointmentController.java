@@ -3,9 +3,7 @@ package homerep.springy.controller.customer;
 import homerep.springy.entity.Appointment;
 import homerep.springy.entity.Customer;
 import homerep.springy.entity.ServiceRequest;
-import homerep.springy.exception.ApiException;
-import homerep.springy.exception.NonExistentAppointmentException;
-import homerep.springy.exception.NonExistentPostException;
+import homerep.springy.exception.*;
 import homerep.springy.model.appointment.AppointmentModel;
 import homerep.springy.repository.AppointmentRepository;
 import homerep.springy.repository.CustomerRepository;
@@ -53,6 +51,15 @@ public class CustomerAppointmentController {
         return AppointmentModel.fromEntity(appointment);
     }
 
+    @GetMapping("/appointments/{id}/conflicting")
+    public List<AppointmentModel> getConflictingAppointments(@PathVariable("id") int id, @AuthenticationPrincipal User user) {
+        Appointment appointment = appointmentRepository.findByIdAndCustomerAccountEmail(id, user.getUsername());
+        if (appointment == null) {
+            throw new NonExistentAppointmentException();
+        }
+        return appointmentService.getConflictingCustomerAppointments(appointment);
+    }
+
     @GetMapping("/appointments/unconfirmed")
     public List<AppointmentModel> listUnconfirmedAppointments(@AuthenticationPrincipal User user) {
         Customer customer = customerRepository.findByAccountEmail(user.getUsername());
@@ -71,14 +78,12 @@ public class CustomerAppointmentController {
     }
 
     @PostMapping("/appointments/{id}/confirm")
-    public void confirmAppointment(@PathVariable("id") int id, @AuthenticationPrincipal User user) {
+    public void confirmAppointment(@PathVariable("id") int id, @AuthenticationPrincipal User user) throws UnconfirmableAppointmentException, ConflictingAppointmentException {
         Appointment appointment = appointmentRepository.findByIdAndCustomerAccountEmail(id, user.getUsername());
         if (appointment == null) {
             throw new NonExistentAppointmentException();
         }
-        if (!appointmentService.confirmAppointment(appointment)) {
-            throw new ApiException("unconfirmed_appointment", "Unable to confirm appointment.");
-        }
+        appointmentService.confirmAppointment(appointment);
     }
 
     @PostMapping("/appointments/{id}/cancel")

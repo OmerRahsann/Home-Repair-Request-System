@@ -26,6 +26,7 @@ public class EmailRequest {
 
     private Instant updateTimestamp;
 
+    @Enumerated(EnumType.STRING)
     private EmailRequestStatus status;
 
     public EmailRequest() {}

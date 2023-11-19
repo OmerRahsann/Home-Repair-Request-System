@@ -21,6 +21,7 @@ public class ServiceRequest {
 
     private String service;
 
+    @Enumerated(EnumType.STRING)
     private Status status;
 
     private int dollars;

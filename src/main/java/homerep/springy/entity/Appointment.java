@@ -7,13 +7,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 
 @Entity
-// TODO change this to a CHECK/EXCLUSION constraint when implementing time periods
-@Table(
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"customer_id", "date"}),
-                @UniqueConstraint(columnNames = {"service_provider_id", "date"})
-        }
-)
 public class Appointment {
     @Id
     @GeneratedValue
@@ -35,6 +28,7 @@ public class Appointment {
     @Temporal(value = TemporalType.DATE)
     private LocalDate date; // TODO time periods instead of full days
 
+    @Enumerated(EnumType.STRING)
     private AppointmentStatus status;
 
     private String message;

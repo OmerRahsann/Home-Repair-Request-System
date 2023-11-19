@@ -4,6 +4,7 @@ import homerep.springy.entity.Appointment;
 import homerep.springy.entity.ServiceProvider;
 import homerep.springy.entity.ServiceRequest;
 import homerep.springy.exception.ApiException;
+import homerep.springy.exception.ConflictingAppointmentException;
 import homerep.springy.exception.NonExistentAppointmentException;
 import homerep.springy.exception.NonExistentPostException;
 import homerep.springy.model.appointment.AppointmentModel;
@@ -69,7 +70,7 @@ public class ServiceProviderAppointmentController {
     public long createAppointment(
             @PathVariable("service_request_id") int serviceRequestId,
             @RequestBody @Validated CreateAppointmentModel createAppointmentModel,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal User user) throws ConflictingAppointmentException {
         ServiceRequest serviceRequest = serviceRequestRepository.findById(serviceRequestId).orElse(null);
         if (serviceRequest == null) {
             throw new NonExistentPostException();

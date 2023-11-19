@@ -25,6 +25,7 @@ public class Account {
     @Embedded
     private Token resetPasswordToken;
 
+    @Enumerated(EnumType.STRING)
     private AccountType type;
 
     public String getEmail() {

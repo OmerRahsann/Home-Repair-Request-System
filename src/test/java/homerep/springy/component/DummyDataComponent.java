@@ -2,6 +2,7 @@ package homerep.springy.component;
 
 import homerep.springy.authorities.AccountType;
 import homerep.springy.entity.*;
+import homerep.springy.exception.ConflictingAppointmentException;
 import homerep.springy.model.appointment.CreateAppointmentModel;
 import homerep.springy.repository.*;
 import homerep.springy.service.AppointmentService;
@@ -11,8 +12,10 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Random;
 
 @Component
 public class DummyDataComponent {
@@ -91,29 +94,27 @@ public class DummyDataComponent {
     }
 
     public List<Appointment> createAppointmentsFor(ServiceProvider serviceProvider, ServiceRequest serviceRequest, YearMonth yearMonth) {
-        Set<LocalDate> usedDates = appointmentRepository.findAll().stream()
-                .map(Appointment::getDate)
-                .collect(Collectors.toSet());
-
         int count = random.nextInt(2, 4);
         List<Appointment> appointments = new ArrayList<>(count + 2);
 
         LocalDate start = yearMonth.atDay(1);
-        if (usedDates.add(start)) {
+        try {
             CreateAppointmentModel model = new CreateAppointmentModel(
                     start,
                     generateDummySentence()
             );
             appointments.add(appointmentService.createAppointment(serviceProvider, serviceRequest, model));
+        } catch (ConflictingAppointmentException ignored) {
         }
 
         LocalDate end = yearMonth.atEndOfMonth();
-        if (usedDates.add(end)) {
+        try {
             CreateAppointmentModel model = new CreateAppointmentModel(
                     end,
                     generateDummySentence()
             );
             appointments.add(appointmentService.createAppointment(serviceProvider, serviceRequest, model));
+        } catch (ConflictingAppointmentException ignored) {
         }
 
         for (int i = 0; i < count; i++) {
@@ -121,13 +122,14 @@ public class DummyDataComponent {
             for (int j = 0; j < 10; j++) {
                 int day = random.nextInt(1, end.getDayOfMonth() + 1);
                 LocalDate date = yearMonth.atDay(day);
-                if (usedDates.add(date)) {
+                try {
                     CreateAppointmentModel model = new CreateAppointmentModel(
                             date,
                             generateDummySentence()
                     );
                     appointments.add(appointmentService.createAppointment(serviceProvider, serviceRequest, model));
                     break;
+                } catch (ConflictingAppointmentException ignored) {
                 }
             }
         }

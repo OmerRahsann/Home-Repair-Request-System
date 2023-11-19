@@ -11,9 +11,7 @@ import homerep.springy.entity.Appointment;
 import homerep.springy.entity.Customer;
 import homerep.springy.entity.ServiceProvider;
 import homerep.springy.entity.ServiceRequest;
-import homerep.springy.exception.ApiException;
-import homerep.springy.exception.NonExistentAppointmentException;
-import homerep.springy.exception.NonExistentPostException;
+import homerep.springy.exception.*;
 import homerep.springy.model.appointment.AppointmentModel;
 import homerep.springy.model.appointment.AppointmentStatus;
 import homerep.springy.model.appointment.CreateAppointmentModel;
@@ -80,7 +78,7 @@ public class AppointmentTest {
     }
 
     @Test
-    void createAppointment() {
+    void createAppointment() throws ConflictingAppointmentException {
         Instant start = Instant.now();
         LocalDate date = LocalDate.now().plusDays(2);
         CreateAppointmentModel model = new CreateAppointmentModel(
@@ -107,7 +105,41 @@ public class AppointmentTest {
     }
 
     @Test
-    void createCancelAppointment() {
+    void createConflictingAppointment() throws ConflictingAppointmentException, UnconfirmableAppointmentException {
+        LocalDate date = LocalDate.now().plusDays(2);
+        CreateAppointmentModel model = new CreateAppointmentModel(
+                date,
+                dummyDataComponent.generateDummySentence()
+        );
+        // Create an appointment
+        Appointment appointment = appointmentService.createAppointment(serviceProvider, serviceRequest, model);
+        assertNotNull(appointment);
+        // Trying to create an appointment for the same day fails
+        ConflictingAppointmentException exception = assertThrows(ConflictingAppointmentException.class,
+                () -> appointmentService.createAppointment(serviceProvider, serviceRequest, model));
+        // due to the first appointment
+        assertEquals(1, exception.getConflictingAppointments().size());
+        assertEquals(appointment.getId(), exception.getConflictingAppointments().get(0).getId());
+        // No other appointments were created
+        assertEquals(1, appointmentRepository.findAll().size());
+
+        // Accept the appointment
+        appointmentService.confirmAppointment(appointment);
+        // Trying to create an appointment for the same day still fails
+        exception = assertThrows(ConflictingAppointmentException.class, () -> appointmentService.createAppointment(serviceProvider, serviceRequest, model));
+        // due to the first appointment
+        assertEquals(1, exception.getConflictingAppointments().size());
+        assertEquals(appointment.getId(), exception.getConflictingAppointments().get(0).getId());
+
+        // Cancel the appointment to free up the time slot
+        appointmentService.cancelAppointment(appointment);
+        // Creating the appointment is successful
+        assertDoesNotThrow(() -> appointmentService.createAppointment(serviceProvider, serviceRequest, model));
+        assertEquals(2, appointmentRepository.findAll().size());
+    }
+
+    @Test
+    void createCancelAppointment() throws ConflictingAppointmentException {
         LocalDate date = LocalDate.now().plusDays(2);
         CreateAppointmentModel model = new CreateAppointmentModel(
                 date,
@@ -131,7 +163,7 @@ public class AppointmentTest {
     }
 
     @Test
-    void createConfirmAppointment() {
+    void createConfirmAppointment() throws ConflictingAppointmentException, UnconfirmableAppointmentException {
         LocalDate date = LocalDate.now().plusDays(2);
         CreateAppointmentModel model = new CreateAppointmentModel(
                 date,
@@ -141,7 +173,7 @@ public class AppointmentTest {
         Appointment appointment = appointmentService.createAppointment(serviceProvider, serviceRequest, model);
         assertNotNull(appointment);
         // Confirm the appointment
-        assertTrue(appointmentService.confirmAppointment(appointment));
+        appointmentService.confirmAppointment(appointment);
         // Status is updated
         assertEquals(AppointmentStatus.CONFIRMED, appointment.getStatus());
         // updateTimestamp is populated with the current time
@@ -149,13 +181,13 @@ public class AppointmentTest {
         assertNotNull(updateTimestamp);
         assertTrue(updateTimestamp.isAfter(appointment.getCreationTimestamp()));
         // Confirming a second time does nothing
-        assertTrue(appointmentService.confirmAppointment(appointment));
+        appointmentService.confirmAppointment(appointment);
         assertEquals(AppointmentStatus.CONFIRMED, appointment.getStatus());
         assertEquals(updateTimestamp, appointment.getUpdateTimestamp());
     }
 
     @Test
-    void cancelConfirmedAppointment() {
+    void cancelConfirmedAppointment() throws ConflictingAppointmentException, UnconfirmableAppointmentException {
         LocalDate date = LocalDate.now().plusDays(2);
         CreateAppointmentModel model = new CreateAppointmentModel(
                 date,
@@ -165,7 +197,7 @@ public class AppointmentTest {
         Appointment appointment = appointmentService.createAppointment(serviceProvider, serviceRequest, model);
         assertNotNull(appointment);
         // Confirm the appointment
-        assertTrue(appointmentService.confirmAppointment(appointment));
+        appointmentService.confirmAppointment(appointment);
         // Status is updated
         assertEquals(AppointmentStatus.CONFIRMED, appointment.getStatus());
         // updateTimestamp is populated with the current time
@@ -181,7 +213,7 @@ public class AppointmentTest {
     }
 
     @Test
-    void confirmInvalidAppointment() {
+    void confirmInvalidAppointment() throws ConflictingAppointmentException {
         LocalDate date = LocalDate.now().plusDays(2);
         CreateAppointmentModel model = new CreateAppointmentModel(
                 date,
@@ -201,7 +233,7 @@ public class AppointmentTest {
         for (AppointmentStatus status : notConfirmableStatuses) {
             appointment.setStatus(status);
             // Confirming does not work
-            assertFalse(appointmentService.confirmAppointment(appointment));
+            assertThrows(UnconfirmableAppointmentException.class, () -> appointmentService.confirmAppointment(appointment));
             // Status is unchanged
             assertEquals(status, appointment.getStatus());
             // updateTimestamp is not changed
@@ -264,7 +296,7 @@ public class AppointmentTest {
         List<Appointment> appointments = dummyDataComponent.createAppointmentsFor(serviceProvider, serviceRequest, nextMonth);
         // Generate confirmed and cancelled appointments to make sure they're being filtered out
         List<Appointment> confirmedAppointments = dummyDataComponent.createAppointmentsFor(serviceProvider, serviceRequest, nextMonth);
-        confirmedAppointments.forEach(appointmentService::confirmAppointment);
+        confirmedAppointments.forEach(x -> assertDoesNotThrow(() -> appointmentService.confirmAppointment(x)));
         List<Appointment> cancelledAppointments = dummyDataComponent.createAppointmentsFor(serviceProvider, serviceRequest, nextMonth);
         cancelledAppointments.forEach(appointmentService::cancelAppointment);
 
@@ -285,7 +317,7 @@ public class AppointmentTest {
         dummyDataComponent.createAppointmentsFor(serviceProvider, serviceRequest, nextMonth);
         // Generate confirmed and cancelled appointments
         List<Appointment> confirmedAppointments = dummyDataComponent.createAppointmentsFor(serviceProvider, serviceRequest, nextMonth);
-        confirmedAppointments.forEach(appointmentService::confirmAppointment);
+        confirmedAppointments.forEach(x -> assertDoesNotThrow(() -> appointmentService.confirmAppointment(x)));
         List<Appointment> cancelledAppointments = dummyDataComponent.createAppointmentsFor(serviceProvider, serviceRequest, nextMonth);
         cancelledAppointments.forEach(appointmentService::cancelAppointment);
 
@@ -315,9 +347,43 @@ public class AppointmentTest {
     }
 
     @Test
+    @Transactional
+    void conflictingAppointments() throws ConflictingAppointmentException, UnconfirmableAppointmentException {
+        ServiceProvider otherServiceProvider = dummyDataComponent.createServiceProvider("example2@example.com");
+
+        CreateAppointmentModel model = new CreateAppointmentModel(
+                LocalDate.now().plusDays(2),
+                dummyDataComponent.generateDummySentence()
+        );
+        // Create 2 appointments from 2 different service providers on the same day
+        Appointment appointmentA = appointmentService.createAppointment(serviceProvider, serviceRequest, model);
+        Appointment appointmentB = appointmentService.createAppointment(otherServiceProvider, serviceRequest, model);
+        // There's no conflicting appointments as nothing is confirmed yet
+        List<AppointmentModel> conflicting = appointmentService.getConflictingCustomerAppointments(appointmentA);
+        assertTrue(conflicting.isEmpty());
+        // Confirm appointmentA
+        appointmentService.confirmAppointment(appointmentA);
+        // There's no appointments conflicting with appointmentA
+        conflicting = appointmentService.getConflictingCustomerAppointments(appointmentA);
+        assertTrue(conflicting.isEmpty());
+        // appointmentA conflicts with appointmentB
+        conflicting = appointmentService.getConflictingCustomerAppointments(appointmentB);
+        assertEquals(1, conflicting.size());
+        assertEquals(AppointmentModel.fromEntity(appointmentA), conflicting.get(0));
+
+        // Attempting to confirm appointmentB fails due to the conflict with appointmentA
+        ConflictingAppointmentException exception = assertThrows(ConflictingAppointmentException.class,
+                () -> appointmentService.confirmAppointment(appointmentB));
+        assertEquals(1, exception.getConflictingAppointments().size());
+        assertEquals(appointmentA.getId(), exception.getConflictingAppointments().get(0).getId());
+    }
+
+    @Test
     void nonExistentAppointment() {
         assertThrows(NonExistentAppointmentException.class,
                 () -> customerAppointmentController.getAppointment(Integer.MAX_VALUE, CUSTOMER_USER));
+        assertThrows(NonExistentAppointmentException.class,
+                () -> customerAppointmentController.getConflictingAppointments(Integer.MAX_VALUE, CUSTOMER_USER));
         assertThrows(NonExistentAppointmentException.class,
                 () -> customerAppointmentController.confirmAppointment(Integer.MAX_VALUE, CUSTOMER_USER));
         assertThrows(NonExistentAppointmentException.class,
@@ -370,7 +436,7 @@ public class AppointmentTest {
     }
 
     @Test
-    void customerConfirmCancelledAppointment() {
+    void customerConfirmCancelledAppointment() throws ConflictingAppointmentException {
         CreateAppointmentModel model = new CreateAppointmentModel(
                 LocalDate.now().plusDays(2),
                 dummyDataComponent.generateDummySentence()
@@ -380,8 +446,7 @@ public class AppointmentTest {
         // cancel it
         appointmentService.cancelAppointment(appointment);
         // When the customer tries to confirm it, it fails
-        ApiException exception = assertThrows(ApiException.class,
+        assertThrows(UnconfirmableAppointmentException.class,
                 () -> customerAppointmentController.confirmAppointment(serviceRequest.getId(), CUSTOMER_USER));
-        assertEquals("unconfirmed_appointment", exception.getType());
     }
 }

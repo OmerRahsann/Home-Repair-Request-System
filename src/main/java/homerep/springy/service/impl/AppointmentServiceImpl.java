@@ -4,6 +4,8 @@ import homerep.springy.entity.Appointment;
 import homerep.springy.entity.Customer;
 import homerep.springy.entity.ServiceProvider;
 import homerep.springy.entity.ServiceRequest;
+import homerep.springy.exception.ConflictingAppointmentException;
+import homerep.springy.exception.UnconfirmableAppointmentException;
 import homerep.springy.model.appointment.AppointmentModel;
 import homerep.springy.model.appointment.AppointmentStatus;
 import homerep.springy.model.appointment.CreateAppointmentModel;
@@ -12,6 +14,8 @@ import homerep.springy.service.AppointmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -25,7 +29,17 @@ public class AppointmentServiceImpl implements AppointmentService {
     private AppointmentRepository appointmentRepository;
 
     @Override
-    public Appointment createAppointment(ServiceProvider serviceProvider, ServiceRequest serviceRequest, CreateAppointmentModel createAppointmentModel) {
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public Appointment createAppointment(ServiceProvider serviceProvider, ServiceRequest serviceRequest, CreateAppointmentModel createAppointmentModel) throws ConflictingAppointmentException {
+        List<Appointment> conflicting = appointmentRepository.findAllByServiceProviderAndStatusInAndDate(
+                serviceProvider,
+                List.of(AppointmentStatus.UNCONFIRMED, AppointmentStatus.CONFIRMED),
+                createAppointmentModel.date()
+        );
+        if (!conflicting.isEmpty()) {
+            throw new ConflictingAppointmentException(conflicting);
+        }
+
         Appointment appointment = new Appointment();
         appointment.setServiceProvider(serviceProvider);
         appointment.setServiceRequest(serviceRequest);
@@ -37,7 +51,6 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointment = appointmentRepository.save(appointment);
 
         serviceRequest.getAppointments().add(appointment);
-        // TODO check for failure?
         // TODO send notification/email
         return appointment;
     }
@@ -53,19 +66,42 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public boolean confirmAppointment(Appointment appointment) {
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public void confirmAppointment(Appointment appointment) throws ConflictingAppointmentException, UnconfirmableAppointmentException {
         if (appointment.getStatus() == AppointmentStatus.CONFIRMED) {
             // Already confirmed
-            return true;
+            return;
         }
         if (appointment.getStatus() != AppointmentStatus.UNCONFIRMED) {
-            return false;
+            throw new UnconfirmableAppointmentException();
         }
+        List<Appointment> conflicting = appointmentRepository.findAllByCustomerAndStatusAndDate(
+                appointment.getCustomer(),
+                AppointmentStatus.CONFIRMED,
+                appointment.getDate()
+        );
+        if (!conflicting.isEmpty()) {
+            throw new ConflictingAppointmentException(conflicting);
+        }
+
         appointment.setStatus(AppointmentStatus.CONFIRMED);
         appointment.setUpdateTimestamp(Instant.now());
         appointment = appointmentRepository.save(appointment);
-        return true;
         // TODO send notification/email
+    }
+
+    @Override
+    public List<AppointmentModel> getConflictingCustomerAppointments(Appointment appointment) {
+        if (appointment.getStatus() == AppointmentStatus.CONFIRMED) {
+            return List.of(); // Already confirmed, there shouldn't be any conflicts
+        }
+        List<Appointment> conflicting = appointmentRepository.findAllByCustomerAndStatusAndDate(
+                appointment.getCustomer(),
+                AppointmentStatus.CONFIRMED,
+                appointment.getDate()
+        );
+        conflicting.removeIf(x -> x.getId() == appointment.getId()); // Can't conflict with itself
+        return toModels(conflicting);
     }
 
     @Override
@@ -93,6 +129,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     public List<AppointmentModel> getUnconfirmedAppointments(Customer customer) {
+        cleanUpOldAppointments();
         List<Appointment> appointments = appointmentRepository.findAllByCustomerAndStatus(
                 customer,
                 AppointmentStatus.UNCONFIRMED,
@@ -103,12 +140,22 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     public List<AppointmentModel> getUpdatedAppointments(ServiceProvider serviceProvider) {
+        cleanUpOldAppointments();
         List<Appointment> appointments = appointmentRepository.findAllByServiceProviderAndStatusIn(
                 serviceProvider,
                 List.of(AppointmentStatus.CANCELLED, AppointmentStatus.CONFIRMED),
                 Sort.by(Sort.Direction.DESC, "updateTimestamp")
         ); // TODO this needs a limit
         return toModels(appointments);
+    }
+
+    private void cleanUpOldAppointments() {
+        // TODO this feels like a hack, just filter from relevant queries?
+        List<Appointment> appointments = appointmentRepository.findAllByStatusInAndDateBefore(
+                List.of(AppointmentStatus.CONFIRMED, AppointmentStatus.CANCELLED, AppointmentStatus.UNCONFIRMED),
+                LocalDate.now()
+        );
+        appointmentRepository.saveAll(appointments);
     }
 
     private List<AppointmentModel> toModels(List<Appointment> appointments) {

@@ -22,4 +22,10 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     List<Appointment> findAllByCustomerAndStatus(Customer customer, AppointmentStatus status, Sort sort);
 
     List<Appointment> findAllByServiceProviderAndStatusIn(ServiceProvider serviceProvider, List<AppointmentStatus> statuses, Sort sort);
+
+    List<Appointment> findAllByStatusInAndDateBefore(List<AppointmentStatus> statuses, LocalDate date);
+
+    List<Appointment> findAllByCustomerAndStatusAndDate(Customer customer, AppointmentStatus status, LocalDate date);
+
+    List<Appointment> findAllByServiceProviderAndStatusInAndDate(ServiceProvider serviceProvider, List<AppointmentStatus> status, LocalDate date);
 }
