@@ -7,6 +7,7 @@ import {
 import Map from '../Map/Map'
 import { CreateQuote } from './CreateQuote'
 import ServiceRequestModal from 'components/Customer/ServiceRequestModal'
+import axios from 'axios'
 
 function RequestDetailsProvider({ request }) {
   const [showSecondStep, setShowSecondStep] = useState(false)
@@ -27,6 +28,11 @@ function RequestDetailsProvider({ request }) {
     )
   }
 
+  const requestCustomerEmail = async () => {
+    const response = await axios.post(`${process.env.REACT_APP_API_URL}/service_requests/${request.id}/email/request`,
+    { withCredentials: true })
+  }
+
   return (
     <Fragment>
       <div>
@@ -40,11 +46,12 @@ function RequestDetailsProvider({ request }) {
               <h1 className="text-[2.5vh] font-bold text-custom-maroon">
                 {request.title}
               </h1>
+
               <button
-                onClick={handleClick}
+                onClick={requestCustomerEmail}
                 className="text-white bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
               >
-                Send Quote
+                Request Email
               </button>
             </div>
             <h2>

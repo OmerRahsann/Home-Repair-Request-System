@@ -88,7 +88,7 @@ function ServiceRequestForm() {
         // Make a POST request to attach the image to the service request
         await axios
           .post(
-            `http://localhost:8080/api/customer/service_request/${newServiceRequestId}/attach`,
+            `${process.env.REACT_APP_API_URL}/${newServiceRequestId}/attach`,
             imageFormData,
             { withCredentials: true },
           )
