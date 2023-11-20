@@ -21,6 +21,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.YearMonth;
+import java.time.ZoneId;
 import java.util.List;
 
 @RestController
@@ -45,10 +46,11 @@ public class ServiceProviderAppointmentController {
     public List<AppointmentModel> getAppointments(
             @RequestParam(value = "year") int year,
             @RequestParam(value = "month") int month,
+            @RequestParam(value = "zone_id") ZoneId zoneId,
             @AuthenticationPrincipal User user) {
         YearMonth yearMonth = YearMonth.of(year, month);
         ServiceProvider serviceProvider = serviceProviderRepository.findByAccountEmail(user.getUsername());
-        return appointmentService.getAppointmentsByMonth(serviceProvider, yearMonth);
+        return appointmentService.getAppointmentsByMonth(serviceProvider, yearMonth, zoneId);
     }
 
     @GetMapping("/appointments/{id}")

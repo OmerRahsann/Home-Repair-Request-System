@@ -10,8 +10,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
-import java.time.YearMonth;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -93,24 +92,26 @@ public class DummyDataComponent {
         return serviceRequestRepository.save(serviceRequest);
     }
 
-    public List<Appointment> createAppointmentsFor(ServiceProvider serviceProvider, ServiceRequest serviceRequest, YearMonth yearMonth) {
+    public List<Appointment> createAppointmentsFor(ServiceProvider serviceProvider, ServiceRequest serviceRequest, YearMonth yearMonth, ZoneId zoneId) {
         int count = random.nextInt(2, 4);
         List<Appointment> appointments = new ArrayList<>(count + 2);
 
-        LocalDate start = yearMonth.atDay(1);
+        Instant startOfMonth = yearMonth.atDay(1).atStartOfDay(zoneId).toInstant();
         try {
             CreateAppointmentModel model = new CreateAppointmentModel(
-                    start,
+                    startOfMonth,
+                    startOfMonth.plus(randomDuration()),
                     generateDummySentence()
             );
             appointments.add(appointmentService.createAppointment(serviceProvider, serviceRequest, model));
         } catch (ConflictingAppointmentException ignored) {
         }
 
-        LocalDate end = yearMonth.atEndOfMonth();
+        Instant endOfMonth = ZonedDateTime.of(yearMonth.atEndOfMonth(), LocalTime.MAX, zoneId).toInstant();
         try {
             CreateAppointmentModel model = new CreateAppointmentModel(
-                    end,
+                    endOfMonth.minus(randomDuration()),
+                    endOfMonth,
                     generateDummySentence()
             );
             appointments.add(appointmentService.createAppointment(serviceProvider, serviceRequest, model));
@@ -118,13 +119,14 @@ public class DummyDataComponent {
         }
 
         for (int i = 0; i < count; i++) {
-            // Try 10 times to generate a non conflicting date
+            // Try 10 times to generate a non-conflicting time period
             for (int j = 0; j < 10; j++) {
-                int day = random.nextInt(1, end.getDayOfMonth() + 1);
-                LocalDate date = yearMonth.atDay(day);
                 try {
+                    Duration duration = randomDuration();
+                    Instant start = randomInstantWithin(startOfMonth, endOfMonth.minus(duration));
                     CreateAppointmentModel model = new CreateAppointmentModel(
-                            date,
+                            start,
+                            start.plus(duration),
                             generateDummySentence()
                     );
                     appointments.add(appointmentService.createAppointment(serviceProvider, serviceRequest, model));
@@ -138,6 +140,14 @@ public class DummyDataComponent {
 
     private <T> T randomFrom(List<T> list) {
         return list.get(random.nextInt(0, list.size()));
+    }
+
+    private Instant randomInstantWithin(Instant start, Instant end) {
+        return Instant.ofEpochSecond(random.nextLong(start.getEpochSecond(), end.getEpochSecond() + 1));
+    }
+
+    private Duration randomDuration() {
+        return Duration.ofMinutes(random.nextInt(5, 180));
     }
 
     public String generateDummySentence() {

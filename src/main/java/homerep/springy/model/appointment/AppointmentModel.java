@@ -8,7 +8,6 @@ import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.Instant;
-import java.time.LocalDate;
 
 
 public record AppointmentModel(
@@ -22,7 +21,8 @@ public record AppointmentModel(
         int serviceRequestId,
         @NotNull Instant creationTimestamp,
         @Nullable Instant updateTimestamp,
-        @NotNull LocalDate date,
+        @NotNull Instant startTime,
+        @NotNull Instant endTime,
         @Nullable AppointmentStatus status,
         @Nullable String message
 ) {
@@ -40,7 +40,8 @@ public record AppointmentModel(
                 appointment.getServiceRequest().getId(),
                 appointment.getCreationTimestamp(),
                 appointment.getUpdateTimestamp(),
-                appointment.getDate(),
+                appointment.getStartTime(),
+                appointment.getEndTime(),
                 appointment.getStatus(),
                 appointment.getMessage()
         );

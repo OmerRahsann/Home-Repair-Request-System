@@ -4,7 +4,6 @@ import homerep.springy.model.appointment.AppointmentStatus;
 import jakarta.persistence.*;
 
 import java.time.Instant;
-import java.time.LocalDate;
 
 @Entity
 public class Appointment {
@@ -25,8 +24,9 @@ public class Appointment {
 
     private Instant updateTimestamp;
 
-    @Temporal(value = TemporalType.DATE)
-    private LocalDate date; // TODO time periods instead of full days
+    private Instant startTime;
+
+    private Instant endTime;
 
     @Enumerated(EnumType.STRING)
     private AppointmentStatus status;
@@ -86,12 +86,20 @@ public class Appointment {
         this.updateTimestamp = updateTimestamp;
     }
 
-    public LocalDate getDate() {
-        return date;
+    public Instant getStartTime() {
+        return startTime;
     }
 
-    public void setDate(LocalDate date) {
-        this.date = date;
+    public void setStartTime(Instant date) {
+        this.startTime = date;
+    }
+
+    public Instant getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(Instant endTime) {
+        this.endTime = endTime;
     }
 
     public AppointmentStatus getStatus() {
@@ -113,8 +121,8 @@ public class Appointment {
 
     @PostLoad
     private void updateStatus() {
-        LocalDate now = LocalDate.now();
-        if (now.isAfter(getDate())) {
+        Instant now = Instant.now();
+        if (now.isAfter(getEndTime())) {
             // Make sure the status is updated in the database on the next save
             status = status.toExpiredStatus();
         }

@@ -10,6 +10,7 @@ import homerep.springy.model.appointment.AppointmentModel;
 import homerep.springy.model.appointment.CreateAppointmentModel;
 
 import java.time.YearMonth;
+import java.time.ZoneId;
 import java.util.List;
 
 public interface AppointmentService {
@@ -21,9 +22,9 @@ public interface AppointmentService {
 
     List<AppointmentModel> getConflictingCustomerAppointments(Appointment appointment);
 
-    List<AppointmentModel> getAppointmentsByMonth(Customer customer, YearMonth yearMonth);
+    List<AppointmentModel> getAppointmentsByMonth(Customer customer, YearMonth yearMonth, ZoneId zoneId);
 
-    List<AppointmentModel> getAppointmentsByMonth(ServiceProvider serviceProvider, YearMonth yearMonth);
+    List<AppointmentModel> getAppointmentsByMonth(ServiceProvider serviceProvider, YearMonth yearMonth, ZoneId zoneId);
 
     List<AppointmentModel> getAppointmentsFor(ServiceRequest serviceRequest);
 

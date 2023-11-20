@@ -22,15 +22,18 @@ import homerep.springy.service.EmailRequestService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.core.userdetails.User;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.YearMonth;
-import java.util.*;
+import java.time.*;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -70,6 +73,8 @@ public class AppointmentTest {
     private static final String SERVICE_PROVIDER_EMAIL = "example@example.com";
     private static final User SERVICE_PROVIDER_USER = new User(SERVICE_PROVIDER_EMAIL, "", List.of(AccountType.SERVICE_PROVIDER, Verified.INSTANCE));
 
+    private static final ZoneId TIME_ZONE = ZoneId.of("America/New_York");
+
     @BeforeEach
     void setup() {
         customer = dummyDataComponent.createCustomer(CUSTOMER_EMAIL);
@@ -77,14 +82,21 @@ public class AppointmentTest {
         serviceProvider = dummyDataComponent.createServiceProvider(SERVICE_PROVIDER_EMAIL);
     }
 
+    private CreateAppointmentModel appointmentAt(LocalTime startTime, Duration duration) {
+        LocalDate date = LocalDate.now().plusDays(2);
+        Instant start = ZonedDateTime.of(date, startTime, TIME_ZONE).toInstant();
+        Instant end = start.plus(duration);
+        return new CreateAppointmentModel(
+                start,
+                end,
+                dummyDataComponent.generateDummySentence()
+        );
+    }
+
     @Test
     void createAppointment() throws ConflictingAppointmentException {
         Instant start = Instant.now();
-        LocalDate date = LocalDate.now().plusDays(2);
-        CreateAppointmentModel model = new CreateAppointmentModel(
-                date,
-                dummyDataComponent.generateDummySentence()
-        );
+        CreateAppointmentModel model = appointmentAt(LocalTime.NOON, Duration.ofHours(2));
         // Create an appointment
         Appointment appointment = appointmentService.createAppointment(serviceProvider, serviceRequest, model);
         assertNotNull(appointment);
@@ -98,25 +110,28 @@ public class AppointmentTest {
         assertTrue(appointment.getCreationTimestamp().isAfter(start));
         // updateTimestamp starts out as null
         assertNull(appointment.getUpdateTimestamp());
-        assertEquals(date, appointment.getDate());
+        assertEquals(model.startTime(), appointment.getStartTime());
+        assertEquals(model.endTime(), appointment.getEndTime());
         // Appointment start as UNCONFIRMED
         assertEquals(AppointmentStatus.UNCONFIRMED, appointment.getStatus());
         assertEquals(model.message(), appointment.getMessage());
     }
 
-    @Test
-    void createConflictingAppointment() throws ConflictingAppointmentException, UnconfirmableAppointmentException {
-        LocalDate date = LocalDate.now().plusDays(2);
-        CreateAppointmentModel model = new CreateAppointmentModel(
-                date,
-                dummyDataComponent.generateDummySentence()
-        );
+    private static List<Duration> provideConflictingOffsets() {
+        return List.of(Duration.ofMinutes(0), Duration.ofMinutes(30), Duration.ofHours(2).minusSeconds(1));
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideConflictingOffsets")
+    void createConflictingAppointment(Duration offset) throws ConflictingAppointmentException, UnconfirmableAppointmentException {
+        CreateAppointmentModel model = appointmentAt(LocalTime.NOON, Duration.ofHours(2));
         // Create an appointment
         Appointment appointment = appointmentService.createAppointment(serviceProvider, serviceRequest, model);
         assertNotNull(appointment);
-        // Trying to create an appointment for the same day fails
+        // Trying to create an appointment conflicting with the time period fails
+        CreateAppointmentModel offsetModel = appointmentAt(LocalTime.NOON.plus(offset), Duration.ofHours(2));
         ConflictingAppointmentException exception = assertThrows(ConflictingAppointmentException.class,
-                () -> appointmentService.createAppointment(serviceProvider, serviceRequest, model));
+                () -> appointmentService.createAppointment(serviceProvider, serviceRequest, offsetModel));
         // due to the first appointment
         assertEquals(1, exception.getConflictingAppointments().size());
         assertEquals(appointment.getId(), exception.getConflictingAppointments().get(0).getId());
@@ -125,26 +140,22 @@ public class AppointmentTest {
 
         // Accept the appointment
         appointmentService.confirmAppointment(appointment);
-        // Trying to create an appointment for the same day still fails
-        exception = assertThrows(ConflictingAppointmentException.class, () -> appointmentService.createAppointment(serviceProvider, serviceRequest, model));
+        // Trying to create an appointment conflicting with the time period still fails
+        exception = assertThrows(ConflictingAppointmentException.class, () -> appointmentService.createAppointment(serviceProvider, serviceRequest, offsetModel));
         // due to the first appointment
         assertEquals(1, exception.getConflictingAppointments().size());
         assertEquals(appointment.getId(), exception.getConflictingAppointments().get(0).getId());
 
         // Cancel the appointment to free up the time slot
         appointmentService.cancelAppointment(appointment);
-        // Creating the appointment is successful
-        assertDoesNotThrow(() -> appointmentService.createAppointment(serviceProvider, serviceRequest, model));
+        // Creating the other appointment is successful
+        assertDoesNotThrow(() -> appointmentService.createAppointment(serviceProvider, serviceRequest, offsetModel));
         assertEquals(2, appointmentRepository.findAll().size());
     }
 
     @Test
     void createCancelAppointment() throws ConflictingAppointmentException {
-        LocalDate date = LocalDate.now().plusDays(2);
-        CreateAppointmentModel model = new CreateAppointmentModel(
-                date,
-                dummyDataComponent.generateDummySentence()
-        );
+        CreateAppointmentModel model = appointmentAt(LocalTime.NOON, Duration.ofHours(2));
         // Create an appointment
         Appointment appointment = appointmentService.createAppointment(serviceProvider, serviceRequest, model);
         assertNotNull(appointment);
@@ -164,11 +175,7 @@ public class AppointmentTest {
 
     @Test
     void createConfirmAppointment() throws ConflictingAppointmentException, UnconfirmableAppointmentException {
-        LocalDate date = LocalDate.now().plusDays(2);
-        CreateAppointmentModel model = new CreateAppointmentModel(
-                date,
-                dummyDataComponent.generateDummySentence()
-        );
+        CreateAppointmentModel model = appointmentAt(LocalTime.NOON, Duration.ofHours(2));
         // Create an appointment
         Appointment appointment = appointmentService.createAppointment(serviceProvider, serviceRequest, model);
         assertNotNull(appointment);
@@ -188,11 +195,7 @@ public class AppointmentTest {
 
     @Test
     void cancelConfirmedAppointment() throws ConflictingAppointmentException, UnconfirmableAppointmentException {
-        LocalDate date = LocalDate.now().plusDays(2);
-        CreateAppointmentModel model = new CreateAppointmentModel(
-                date,
-                dummyDataComponent.generateDummySentence()
-        );
+        CreateAppointmentModel model = appointmentAt(LocalTime.NOON, Duration.ofHours(2));
         // Create an appointment
         Appointment appointment = appointmentService.createAppointment(serviceProvider, serviceRequest, model);
         assertNotNull(appointment);
@@ -214,11 +217,7 @@ public class AppointmentTest {
 
     @Test
     void confirmInvalidAppointment() throws ConflictingAppointmentException {
-        LocalDate date = LocalDate.now().plusDays(2);
-        CreateAppointmentModel model = new CreateAppointmentModel(
-                date,
-                dummyDataComponent.generateDummySentence()
-        );
+        CreateAppointmentModel model = appointmentAt(LocalTime.NOON, Duration.ofHours(2));
         // Create an appointment
         Appointment appointment = appointmentService.createAppointment(serviceProvider, serviceRequest, model);
         assertNotNull(appointment);
@@ -245,7 +244,7 @@ public class AppointmentTest {
         Map<YearMonth, List<Appointment>> appointmentsByMonth = new HashMap<>();
         for (int i = 0; i <= 12; i++) {
             YearMonth yearMonth = YearMonth.now().plusMonths(i);
-            appointmentsByMonth.put(yearMonth, dummyDataComponent.createAppointmentsFor(serviceProvider, serviceRequest, yearMonth));
+            appointmentsByMonth.put(yearMonth, dummyDataComponent.createAppointmentsFor(serviceProvider, serviceRequest, yearMonth, TIME_ZONE));
         }
         return appointmentsByMonth;
     }
@@ -263,7 +262,7 @@ public class AppointmentTest {
                     .sorted(Comparator.comparing(Appointment::getId)) // Sort by id so that indices can match
                     .map(AppointmentModel::fromEntity)
                     .toList();
-            List<AppointmentModel> actualAppointments = appointmentService.getAppointmentsByMonth(customer, yearMonth);
+            List<AppointmentModel> actualAppointments = appointmentService.getAppointmentsByMonth(customer, yearMonth, TIME_ZONE);
             actualAppointments.sort(Comparator.comparing(AppointmentModel::appointmentId)); // Sort by id so that indices can match
             assertEquals(expectedAppointments, actualAppointments);
         }
@@ -282,7 +281,7 @@ public class AppointmentTest {
                     .sorted(Comparator.comparing(Appointment::getId)) // Sort by id so that indices can match
                     .map(AppointmentModel::fromEntity)
                     .toList();
-            List<AppointmentModel> actualAppointments = appointmentService.getAppointmentsByMonth(serviceProvider, yearMonth);
+            List<AppointmentModel> actualAppointments = appointmentService.getAppointmentsByMonth(serviceProvider, yearMonth, TIME_ZONE);
             actualAppointments.sort(Comparator.comparing(AppointmentModel::appointmentId)); // Sort by id so that indices can match
             assertArrayEquals(expectedAppointments.toArray(), actualAppointments.toArray());
         }
@@ -293,11 +292,11 @@ public class AppointmentTest {
     void customerGetUnconfirmedAppointments() {
         YearMonth nextMonth = YearMonth.now().plusMonths(1);
         // Generate unconfirmed appointments
-        List<Appointment> appointments = dummyDataComponent.createAppointmentsFor(serviceProvider, serviceRequest, nextMonth);
+        List<Appointment> appointments = dummyDataComponent.createAppointmentsFor(serviceProvider, serviceRequest, nextMonth, TIME_ZONE);
         // Generate confirmed and cancelled appointments to make sure they're being filtered out
-        List<Appointment> confirmedAppointments = dummyDataComponent.createAppointmentsFor(serviceProvider, serviceRequest, nextMonth);
+        List<Appointment> confirmedAppointments = dummyDataComponent.createAppointmentsFor(serviceProvider, serviceRequest, nextMonth, TIME_ZONE);
         confirmedAppointments.forEach(x -> assertDoesNotThrow(() -> appointmentService.confirmAppointment(x)));
-        List<Appointment> cancelledAppointments = dummyDataComponent.createAppointmentsFor(serviceProvider, serviceRequest, nextMonth);
+        List<Appointment> cancelledAppointments = dummyDataComponent.createAppointmentsFor(serviceProvider, serviceRequest, nextMonth, TIME_ZONE);
         cancelledAppointments.forEach(appointmentService::cancelAppointment);
 
         AppointmentModel[] expectedModels = appointments.stream()
@@ -314,11 +313,11 @@ public class AppointmentTest {
     void serviceProviderGetUpdatedAppointments() {
         YearMonth nextMonth = YearMonth.now().plusMonths(1);
         // Generate unconfirmed appointments to make sure they're being filtered out
-        dummyDataComponent.createAppointmentsFor(serviceProvider, serviceRequest, nextMonth);
+        dummyDataComponent.createAppointmentsFor(serviceProvider, serviceRequest, nextMonth, TIME_ZONE);
         // Generate confirmed and cancelled appointments
-        List<Appointment> confirmedAppointments = dummyDataComponent.createAppointmentsFor(serviceProvider, serviceRequest, nextMonth);
+        List<Appointment> confirmedAppointments = dummyDataComponent.createAppointmentsFor(serviceProvider, serviceRequest, nextMonth, TIME_ZONE);
         confirmedAppointments.forEach(x -> assertDoesNotThrow(() -> appointmentService.confirmAppointment(x)));
-        List<Appointment> cancelledAppointments = dummyDataComponent.createAppointmentsFor(serviceProvider, serviceRequest, nextMonth);
+        List<Appointment> cancelledAppointments = dummyDataComponent.createAppointmentsFor(serviceProvider, serviceRequest, nextMonth, TIME_ZONE);
         cancelledAppointments.forEach(appointmentService::cancelAppointment);
 
         AppointmentModel[] expectedModels = Stream.concat(confirmedAppointments.stream(), cancelledAppointments.stream())
@@ -334,7 +333,7 @@ public class AppointmentTest {
     @Transactional
     void getAppointmentsForServiceRequest() {
         YearMonth nextMonth = YearMonth.now().plusMonths(1);
-        List<Appointment> appointments = dummyDataComponent.createAppointmentsFor(serviceProvider, serviceRequest, nextMonth);
+        List<Appointment> appointments = dummyDataComponent.createAppointmentsFor(serviceProvider, serviceRequest, nextMonth, TIME_ZONE);
         AppointmentModel[] expectedModels = appointments.stream()
                 .sorted(Comparator.comparing(Appointment::getId)) // Sort by id so that indices can match
                 .map(AppointmentModel::fromEntity)
@@ -351,10 +350,7 @@ public class AppointmentTest {
     void conflictingAppointments() throws ConflictingAppointmentException, UnconfirmableAppointmentException {
         ServiceProvider otherServiceProvider = dummyDataComponent.createServiceProvider("example2@example.com");
 
-        CreateAppointmentModel model = new CreateAppointmentModel(
-                LocalDate.now().plusDays(2),
-                dummyDataComponent.generateDummySentence()
-        );
+        CreateAppointmentModel model = appointmentAt(LocalTime.NOON, Duration.ofHours(2));
         // Create 2 appointments from 2 different service providers on the same day
         Appointment appointmentA = appointmentService.createAppointment(serviceProvider, serviceRequest, model);
         Appointment appointmentB = appointmentService.createAppointment(otherServiceProvider, serviceRequest, model);
@@ -406,10 +402,7 @@ public class AppointmentTest {
     @Test
     @Transactional
     void requireConfirmedEmailRequest() {
-        CreateAppointmentModel model = new CreateAppointmentModel(
-                LocalDate.now().plusDays(2),
-                dummyDataComponent.generateDummySentence()
-        );
+        CreateAppointmentModel model = appointmentAt(LocalTime.NOON, Duration.ofHours(2));
         // Trying to create an appointment for a service request without an accepted email request fails
         ApiException exception = assertThrows(ApiException.class,
                 () -> serviceProviderAppointmentController.createAppointment(serviceRequest.getId(), model, SERVICE_PROVIDER_USER));
@@ -437,10 +430,7 @@ public class AppointmentTest {
 
     @Test
     void customerConfirmCancelledAppointment() throws ConflictingAppointmentException {
-        CreateAppointmentModel model = new CreateAppointmentModel(
-                LocalDate.now().plusDays(2),
-                dummyDataComponent.generateDummySentence()
-        );
+        CreateAppointmentModel model = appointmentAt(LocalTime.NOON, Duration.ofHours(2));
         // Create an UNCONFIRMED appointment
         Appointment appointment = appointmentService.createAppointment(serviceProvider, serviceRequest, model);
         // cancel it

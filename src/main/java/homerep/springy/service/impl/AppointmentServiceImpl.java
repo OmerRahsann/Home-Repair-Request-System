@@ -17,9 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.YearMonth;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,11 +28,11 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public Appointment createAppointment(ServiceProvider serviceProvider, ServiceRequest serviceRequest, CreateAppointmentModel createAppointmentModel) throws ConflictingAppointmentException {
-        List<Appointment> conflicting = appointmentRepository.findAllByServiceProviderAndStatusInAndDate(
+    public Appointment createAppointment(ServiceProvider serviceProvider, ServiceRequest serviceRequest, CreateAppointmentModel model) throws ConflictingAppointmentException {
+        List<Appointment> conflicting = appointmentRepository.findAllByServiceProviderAndStatusInAndPeriodIn(
                 serviceProvider,
                 List.of(AppointmentStatus.UNCONFIRMED, AppointmentStatus.CONFIRMED),
-                createAppointmentModel.date()
+                model.startTime(), model.endTime()
         );
         if (!conflicting.isEmpty()) {
             throw new ConflictingAppointmentException(conflicting);
@@ -45,9 +43,10 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointment.setServiceRequest(serviceRequest);
         appointment.setCustomer(serviceRequest.getCustomer());
         appointment.setCreationTimestamp(Instant.now());
-        appointment.setDate(createAppointmentModel.date());
+        appointment.setStartTime(model.startTime());
+        appointment.setEndTime(model.endTime());
         appointment.setStatus(AppointmentStatus.UNCONFIRMED);
-        appointment.setMessage(createAppointmentModel.message());
+        appointment.setMessage(model.message());
         appointment = appointmentRepository.save(appointment);
 
         serviceRequest.getAppointments().add(appointment);
@@ -75,10 +74,10 @@ public class AppointmentServiceImpl implements AppointmentService {
         if (appointment.getStatus() != AppointmentStatus.UNCONFIRMED) {
             throw new UnconfirmableAppointmentException();
         }
-        List<Appointment> conflicting = appointmentRepository.findAllByCustomerAndStatusAndDate(
+        List<Appointment> conflicting = appointmentRepository.findAllByCustomerAndStatusAndPeriodIn(
                 appointment.getCustomer(),
                 AppointmentStatus.CONFIRMED,
-                appointment.getDate()
+                appointment.getStartTime(), appointment.getEndTime()
         );
         if (!conflicting.isEmpty()) {
             throw new ConflictingAppointmentException(conflicting);
@@ -95,30 +94,27 @@ public class AppointmentServiceImpl implements AppointmentService {
         if (appointment.getStatus() == AppointmentStatus.CONFIRMED) {
             return List.of(); // Already confirmed, there shouldn't be any conflicts
         }
-        List<Appointment> conflicting = appointmentRepository.findAllByCustomerAndStatusAndDate(
+        List<Appointment> conflicting = appointmentRepository.findAllByCustomerAndStatusAndPeriodIn(
                 appointment.getCustomer(),
                 AppointmentStatus.CONFIRMED,
-                appointment.getDate()
+                appointment.getStartTime(), appointment.getEndTime()
         );
-        conflicting.removeIf(x -> x.getId() == appointment.getId()); // Can't conflict with itself
         return toModels(conflicting);
     }
 
     @Override
-    public List<AppointmentModel> getAppointmentsByMonth(Customer customer, YearMonth yearMonth) {
-        LocalDate start = yearMonth.atDay(1);
-        LocalDate end = yearMonth.atEndOfMonth();
-        // TODO include time, need timezones
-        List<Appointment> appointments = appointmentRepository.findAllByCustomerAndDateBetween(customer, start, end);
+    public List<AppointmentModel> getAppointmentsByMonth(Customer customer, YearMonth yearMonth, ZoneId zoneId) {
+        Instant startOfMonth = yearMonth.atDay(1).atStartOfDay(zoneId).toInstant();
+        Instant endOfMonth = ZonedDateTime.of(yearMonth.atEndOfMonth(), LocalTime.MAX, zoneId).toInstant();
+        List<Appointment> appointments = appointmentRepository.findAllByCustomerAndPeriodIn(customer, startOfMonth, endOfMonth);
         return toModels(appointments);
     }
 
     @Override
-    public List<AppointmentModel> getAppointmentsByMonth(ServiceProvider serviceProvider, YearMonth yearMonth) {
-        LocalDate start = yearMonth.atDay(1);
-        LocalDate end = yearMonth.atEndOfMonth();
-        // TODO include time, need timezones
-        List<Appointment> appointments = appointmentRepository.findAllByServiceProviderAndDateBetween(serviceProvider, start, end);
+    public List<AppointmentModel> getAppointmentsByMonth(ServiceProvider serviceProvider, YearMonth yearMonth, ZoneId zoneId) {
+        Instant startOfMonth = yearMonth.atDay(1).atStartOfDay(zoneId).toInstant();
+        Instant endOfMonth = ZonedDateTime.of(yearMonth.atEndOfMonth(), LocalTime.MAX, zoneId).toInstant();
+        List<Appointment> appointments = appointmentRepository.findAllByServiceProviderAndPeriodIn(serviceProvider, startOfMonth, endOfMonth);
         return toModels(appointments);
     }
 
@@ -151,9 +147,9 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     private void cleanUpOldAppointments() {
         // TODO this feels like a hack, just filter from relevant queries?
-        List<Appointment> appointments = appointmentRepository.findAllByStatusInAndDateBefore(
+        List<Appointment> appointments = appointmentRepository.findAllByStatusInAndEndTimeBefore(
                 List.of(AppointmentStatus.CONFIRMED, AppointmentStatus.CANCELLED, AppointmentStatus.UNCONFIRMED),
-                LocalDate.now()
+                Instant.now()
         );
         appointmentRepository.saveAll(appointments);
     }

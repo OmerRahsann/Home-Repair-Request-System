@@ -3,7 +3,10 @@ package homerep.springy.controller.customer;
 import homerep.springy.entity.Appointment;
 import homerep.springy.entity.Customer;
 import homerep.springy.entity.ServiceRequest;
-import homerep.springy.exception.*;
+import homerep.springy.exception.ConflictingAppointmentException;
+import homerep.springy.exception.NonExistentAppointmentException;
+import homerep.springy.exception.NonExistentPostException;
+import homerep.springy.exception.UnconfirmableAppointmentException;
 import homerep.springy.model.appointment.AppointmentModel;
 import homerep.springy.repository.AppointmentRepository;
 import homerep.springy.repository.CustomerRepository;
@@ -15,6 +18,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.YearMonth;
+import java.time.ZoneId;
 import java.util.List;
 
 @RestController
@@ -36,10 +40,11 @@ public class CustomerAppointmentController {
     public List<AppointmentModel> getAppointments(
             @RequestParam(value = "year") int year,
             @RequestParam(value = "month") int month,
+            @RequestParam(value = "zone_id") ZoneId zoneId,
             @AuthenticationPrincipal User user) {
         YearMonth yearMonth = YearMonth.of(year, month);
         Customer customer = customerRepository.findByAccountEmail(user.getUsername());
-        return appointmentService.getAppointmentsByMonth(customer, yearMonth);
+        return appointmentService.getAppointmentsByMonth(customer, yearMonth, zoneId);
     }
 
     @GetMapping("/appointments/{id}")
