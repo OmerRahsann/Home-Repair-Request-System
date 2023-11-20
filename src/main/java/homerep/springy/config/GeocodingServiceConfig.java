@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "homerep.geocoding")
 public class GeocodingServiceConfig {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FallbackMailConfig.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GeocodingServiceConfig.class);
 
     private String googleMapsApiKey;
 
@@ -27,7 +27,7 @@ public class GeocodingServiceConfig {
             LOGGER.info("Google Maps Api key was supplied. Google geocoder will be used.");
             return new GoogleGeocodingService(googleMapsApiKey);
         } else if (nominatimUrl != null) {
-            LOGGER.info("Nomination Url was supplied. Nominatim geocoder will be used.");
+            LOGGER.info("Nominatim Url was supplied. Nominatim geocoder will be used.");
             return new NominatimGeocodingService(nominatimUrl, mapper);
         } else {
             LOGGER.warn("No geocoding service was configured. Noop geocoder will be used.");

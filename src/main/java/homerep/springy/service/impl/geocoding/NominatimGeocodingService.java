@@ -6,7 +6,6 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import homerep.springy.exception.GeocodingException;
 import homerep.springy.service.GeocodingService;
-import homerep.springy.service.impl.ImageStorageServiceImpl;
 import homerep.springy.type.LatLong;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -22,7 +21,7 @@ import java.net.URL;
 import java.time.Duration;
 
 public class NominatimGeocodingService implements GeocodingService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ImageStorageServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(NominatimGeocodingService.class);
 
     private final UriBuilderFactory nominatimUriBuilder;
 
