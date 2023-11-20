@@ -14,10 +14,10 @@ import '@smastrom/react-rating/style.css'
 
 export const MyQuotes = () => {
   const [serviceRequests, setServiceRequests] = useState([])
-  const [emailRequests, setEmailRequests] = useState([]);
+  const [emailRequests, setEmailRequests] = useState([])
   const [loggedIn, setLoggedIn] = useState(false) // Initialize loggedIn with a default value
   const [showModal, setShowModal] = useState(false)
-  const iconSize = window.innerWidth > 768 ? 60 : 30
+  const [action, setAction] = useState(false);
 
   const getServiceRequests = async () => {
     try {
@@ -35,52 +35,77 @@ export const MyQuotes = () => {
   const getPendingEmailRequests = async () => {
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/provider/email_requests`,
+        `${process.env.REACT_APP_API_URL}/api/customer/email_requests`,
         {
           withCredentials: true,
-        }
-      );
+        },
+      )
       setEmailRequests(response.data)
-      console.log(response.data);
+      console.log(response.data)
       // Set the data to your state or do further processing as needed
     } catch (error) {
-      console.error('Error fetching pending email requests:', error);
+      console.error('Error fetching pending email requests:', error)
     }
-  };
+  }
 
   const acceptEmailRequest = async (emailRequestId) => {
     try {
       await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/provider/email_requests/${emailRequestId}/accept`,
+        `${process.env.REACT_APP_API_URL}/api/customer/email_requests/${emailRequestId}/accept`,
         {},
         {
           withCredentials: true,
-        }
-      );
-  
+        },
+      )
+      setAction(true);
+
       // Handle success, update state, or navigate to another page as needed
     } catch (error) {
-      console.error('Error accepting email request:', error);
+      console.error('Error accepting email request:', error)
     }
-  };
+  }
 
   const rejectEmailRequest = async (emailRequestId) => {
     try {
       await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/provider/email_requests/${emailRequestId}/reject`,
-        {},
+        `${process.env.REACT_APP_API_URL}/api/customer/email_requests/${emailRequestId}/reject`,
+        null,
         {
           withCredentials: true,
-        }
-      );
-  
+        },
+      )
+      setAction(true);
+
       // Handle success, update state, or navigate to another page as needed
     } catch (error) {
-      console.error('Error rejecting email request:', error);
+      console.error('Error rejecting email request:', error)
     }
-  };  
+  }
+
+  const [iconSize, setIconSize] = useState(20);
 
   useEffect(() => {
+    const handleResize = () => {
+      // Adjust the icon size based on the screen width
+      const newSize = window.innerWidth < 768 ? 25 : 40; // Adjust this condition as needed
+      setIconSize(newSize);
+    };
+
+    // Set initial size
+    handleResize();
+
+    // Add event listener for window resize
+    window.addEventListener('resize', handleResize);
+
+    // Clean up the event listener when the component unmounts
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []); // Empty dependency array ensures the effect runs only once
+
+
+  useEffect(() => {
+    setAction(false)
     const fetchData = async () => {
       try {
         const isLoggedIn = await checkIsCustomerLoggedIn()
@@ -104,59 +129,67 @@ export const MyQuotes = () => {
     console.log(serviceRequests)
 
     // Define the checkIsCustomerLoggedIn function here or import it from where it's defined
-  }, [])
+  }, [action])
 
   return (
     <div>
       <div>
         <NavBar isLoggedIn={loggedIn} />
       </div>
-     
-        <div className="p-1 flex flex-row">
-          <div className="h-[90vh] grid grid-cols-1 gap-8 p-2 sm:p-4 md:p-6 lg:p-8 xl:p-10 w-2/3 border-r border-gray-300 overflow-y-auto custom-scrollbar">
-            {serviceRequests.length !==0 ? (
-                serviceRequests.map((request) => (
-                    <div key={request.id}>
-                      {/* Use the RequestDetails component to display request details */}
-                      <QuoteDetails quote={request} />
-                    </div>
-                  )))
-                  : (<h1>You do not have any quotes yet.</h1>)
-                }
-          </div>
-         
-     
-  
-        {emailRequests.length !== 0 ? (
-          <div className="w-1/3 h-[90vh] overflow-y-auto">
-            <p className="text-center pb-2">
+
+      <div className="p-1 flex flex-row">
+        <div className="h-[90vh] grid grid-cols-1 gap-8 p-2 sm:p-4 md:p-6 lg:p-8 xl:p-10 w-2/3 border-r border-gray-300 overflow-y-auto custom-scrollbar">
+          {serviceRequests.length !== 0 ? (
+            serviceRequests.map((request) => (
+              <div key={request.id}>
+                {/* Use the RequestDetails component to display request details */}
+                <QuoteDetails quote={request} />
+              </div>
+            ))
+          ) : (
+            <h1>You do not have any quotes yet.</h1>
+          )}
+        </div>
+        <p className="text-center pb-2">
               <strong>Email Permission Requests: </strong>
             </p>
+        {emailRequests.length !== 0 ? (
+          <div className="w-1/3 h-[90vh] overflow-y-auto">
+            
             {emailRequests.map((emailRequest, i) => (
-              <div className="rounded-sm border border-gray-400 ">
-                <div className="text-center font-bold">
-                  <a href="#">{/*quote.provider*/}Ben's Roofing</a>
+              <div className="rounded-sm border border-gray-400 text-[2vh]">
+                <div className="md:pl-14 font-bold sm:pl-2">
+                  <a href="#">{/*quote.provider*/}{emailRequest.serviceProvider.name}</a>
                 </div>
                 <div>
                   <div className="flex flex-row justify-between">
-                    <UserCircleIcon width={iconSize} />
-                    <div className="flex flex-col justify-center items-center">
-                      <p className="text-gray-400">certified plumbing</p>
+                    <div className="flex flex-row ">
+                      {iconSize>25 ? (
+                    <UserCircleIcon width={iconSize} />) : null}
+                    <div className="flex flex-col justify-center text-gray-400 text-[1.2vh] md:pl-4">
+                      <p>{emailRequest.serviceProvider.contactEmailAddress}</p>
+                      <p>{emailRequest.serviceProvider.phoneNumber}</p>
                       <Rating value={5} style={{ maxWidth: 75 }} />
                     </div>
+                    </div>
+                    
+                    
                     <div className="flex flex-row">
-                      <XCircleIcon color="maroon" width={30} />
-                      <CheckCircleIcon color="green" width={30} />
+                      <XCircleIcon color="maroon" width={iconSize}  onClick={()=>rejectEmailRequest(emailRequest.id)}/>
+                      <CheckCircleIcon color="green" width={iconSize} onClick={() => acceptEmailRequest(emailRequest.id)}/>
                     </div>
                   </div>
-                  <p className="text-center">{new Date().toISOString()}</p>
+                 
+                 
+
+                  <p className="text-[1vh]">{new Date(emailRequest.requestTimestamp).toLocaleString()}</p>
                 </div>
-                <div className="flex flex-row"></div>
-              </div>))}
+               
+              </div>
+            ))}
           </div>
         ) : null}
-       
-    </div>
+      </div>
     </div>
   )
 }

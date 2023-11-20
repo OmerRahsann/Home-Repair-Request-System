@@ -26,9 +26,9 @@ const ProviderCalendar = ({ customerView }) => {
   const [events, setEvents] = useState(initialEvents)
   const [showEvent, setShowEvent] = useState(false)
   const [eventContent, setEventContent] = useState([])
-  const [appointments, setAppointments] = useState([]);
-  const [year, setYear] = useState(2023);
-  const [month, setMonth] = useState(1);
+  const [appointments, setAppointments] = useState([])
+  const [year, setYear] = useState(2023)
+  const [month, setMonth] = useState(1)
 
   const clickRef = useRef(null)
 
@@ -56,22 +56,22 @@ const ProviderCalendar = ({ customerView }) => {
   }
 
   const getAppointments = async () => {
-        try {
-          const response = await axios.get(
-            `${process.env.REACT_APP_API_URL}/api/provider/appointments`,
-             { 
-                params: {
-                    year: year,
-                    month: month
-
-                }, 
-                withCredentials: true },
-          )
-          setAppointments(response.data)
-          console.log(response.data)
-        } catch (error) {
-          console.error('Error fetching service requests:', error)
-        }
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/provider/appointments`,
+        {
+          params: {
+            year: year,
+            month: month,
+          },
+          withCredentials: true,
+        },
+      )
+      setAppointments(response.data)
+      console.log(response.data)
+    } catch (error) {
+      console.error('Error fetching service requests:', error)
+    }
   }
 
   const onSelectSlot = useCallback((calEvent) => {
@@ -142,9 +142,7 @@ const ProviderCalendar = ({ customerView }) => {
     }
   }, [])
 
-  useEffect(() => {
-
-  })
+  useEffect(() => {})
 
   return (
     <div>
