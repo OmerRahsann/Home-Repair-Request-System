@@ -11,7 +11,7 @@ import axios from 'axios'
 
 function RequestDetailsProvider({ request }) {
   const [showSecondStep, setShowSecondStep] = useState(false)
-  const [email, setEmail] = useState("")
+  const [email, setEmail] = useState('')
   const handleClick = async () => {
     setShowSecondStep(true)
   }
@@ -34,8 +34,8 @@ function RequestDetailsProvider({ request }) {
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_API_URL}/api/provider/service_requests/${request.id}/email/request`,
-        null
-        , { withCredentials: true }
+        null,
+        { withCredentials: true },
       )
 
       const data = response.data
@@ -47,11 +47,10 @@ function RequestDetailsProvider({ request }) {
   }
 
   const getCustomerEmail = async () => {
-    
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/provider/service_requests/${request.id}/email`
-        , { withCredentials: true }
+        `${process.env.REACT_APP_API_URL}/api/provider/service_requests/${request.id}/email`,
+        { withCredentials: true },
       )
       setEmail(response.data.email)
 
@@ -65,15 +64,12 @@ function RequestDetailsProvider({ request }) {
 
   useEffect(() => {
     getCustomerEmail()
-
-  }, []) 
+  }, [])
 
   return (
     <Fragment>
       <div>
-        <div
-          className="shadow-md border-2 border-gray-400 rounded-md"
-        >
+        <div className="shadow-md border-2 border-gray-400 rounded-md">
           <ImageSlider images={request.pictures} />
           <div className="bg-custom-grain p-2 flex flex-col">
             <div className="flex flex-row justify-between">
@@ -82,25 +78,26 @@ function RequestDetailsProvider({ request }) {
               </h1>
 
               {!email ? (
-              <button
-                onClick={requestCustomerEmail}
-                className="text-white bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-              >
-                Request Email
-              </button>) : (
-                <div className='flex flex-row'>
-              <button 
-              onClick={handleClick}
-              className='text-white bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800'>
-                Send Quote
-              </button>
-              <break className="pl-2"></break>
-              <button className='text-white bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800'>
-              <a  href={`mailto:${email}`}>Send Email</a>
-              </button>
-              </div>
+                <button
+                  onClick={requestCustomerEmail}
+                  className="text-white bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+                >
+                  Request Email
+                </button>
+              ) : (
+                <div className="flex flex-row">
+                  <button
+                    onClick={handleClick}
+                    className="text-white bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+                  >
+                    Send Quote
+                  </button>
+                  <break className="pl-2"></break>
+                  <button className="text-white bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
+                    <a href={`mailto:${email}`}>Send Email</a>
+                  </button>
+                </div>
               )}
-              
             </div>
             <h2>
               <strong>Description: </strong>

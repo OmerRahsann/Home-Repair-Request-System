@@ -17,7 +17,7 @@ export const MyQuotes = () => {
   const [emailRequests, setEmailRequests] = useState([])
   const [loggedIn, setLoggedIn] = useState(false) // Initialize loggedIn with a default value
   const [showModal, setShowModal] = useState(false)
-  const [action, setAction] = useState(false);
+  const [action, setAction] = useState(false)
 
   const getServiceRequests = async () => {
     try {
@@ -57,7 +57,7 @@ export const MyQuotes = () => {
           withCredentials: true,
         },
       )
-      setAction(true);
+      setAction(true)
 
       // Handle success, update state, or navigate to another page as needed
     } catch (error) {
@@ -74,7 +74,7 @@ export const MyQuotes = () => {
           withCredentials: true,
         },
       )
-      setAction(true);
+      setAction(true)
 
       // Handle success, update state, or navigate to another page as needed
     } catch (error) {
@@ -82,27 +82,26 @@ export const MyQuotes = () => {
     }
   }
 
-  const [iconSize, setIconSize] = useState(20);
+  const [iconSize, setIconSize] = useState(20)
 
   useEffect(() => {
     const handleResize = () => {
       // Adjust the icon size based on the screen width
-      const newSize = window.innerWidth < 768 ? 25 : 40; // Adjust this condition as needed
-      setIconSize(newSize);
-    };
+      const newSize = window.innerWidth < 768 ? 25 : 40 // Adjust this condition as needed
+      setIconSize(newSize)
+    }
 
     // Set initial size
-    handleResize();
+    handleResize()
 
     // Add event listener for window resize
-    window.addEventListener('resize', handleResize);
+    window.addEventListener('resize', handleResize)
 
     // Clean up the event listener when the component unmounts
     return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []); // Empty dependency array ensures the effect runs only once
-
+      window.removeEventListener('resize', handleResize)
+    }
+  }, []) // Empty dependency array ensures the effect runs only once
 
   useEffect(() => {
     setAction(false)
@@ -151,40 +150,51 @@ export const MyQuotes = () => {
           )}
         </div>
         <p className="text-center pb-2">
-              <strong>Email Permission Requests: </strong>
-            </p>
+          <strong>Email Permission Requests: </strong>
+        </p>
         {emailRequests.length !== 0 ? (
           <div className="w-1/3 h-[90vh] overflow-y-auto">
-            
             {emailRequests.map((emailRequest, i) => (
               <div className="rounded-sm border border-gray-400 text-[2vh]">
                 <div className="md:pl-14 font-bold sm:pl-2">
-                  <a href="#">{/*quote.provider*/}{emailRequest.serviceProvider.name}</a>
+                  <a href="#">
+                    {/*quote.provider*/}
+                    {emailRequest.serviceProvider.name}
+                  </a>
                 </div>
                 <div>
                   <div className="flex flex-row justify-between">
                     <div className="flex flex-row ">
-                      {iconSize>25 ? (
-                    <UserCircleIcon width={iconSize} />) : null}
-                    <div className="flex flex-col justify-center text-gray-400 text-[1.2vh] md:pl-4">
-                      <p>{emailRequest.serviceProvider.contactEmailAddress}</p>
-                      <p>{emailRequest.serviceProvider.phoneNumber}</p>
-                      <Rating value={5} style={{ maxWidth: 75 }} />
+                      {iconSize > 25 ? (
+                        <UserCircleIcon width={iconSize} />
+                      ) : null}
+                      <div className="flex flex-col justify-center text-gray-400 text-[1.2vh] md:pl-4">
+                        <p>
+                          {emailRequest.serviceProvider.contactEmailAddress}
+                        </p>
+                        <p>{emailRequest.serviceProvider.phoneNumber}</p>
+                        <Rating value={5} style={{ maxWidth: 75 }} />
+                      </div>
                     </div>
-                    </div>
-                    
-                    
+
                     <div className="flex flex-row">
-                      <XCircleIcon color="maroon" width={iconSize}  onClick={()=>rejectEmailRequest(emailRequest.id)}/>
-                      <CheckCircleIcon color="green" width={iconSize} onClick={() => acceptEmailRequest(emailRequest.id)}/>
+                      <XCircleIcon
+                        color="maroon"
+                        width={iconSize}
+                        onClick={() => rejectEmailRequest(emailRequest.id)}
+                      />
+                      <CheckCircleIcon
+                        color="green"
+                        width={iconSize}
+                        onClick={() => acceptEmailRequest(emailRequest.id)}
+                      />
                     </div>
                   </div>
-                 
-                 
 
-                  <p className="text-[1vh]">{new Date(emailRequest.requestTimestamp).toLocaleString()}</p>
+                  <p className="text-[1vh]">
+                    {new Date(emailRequest.requestTimestamp).toLocaleString()}
+                  </p>
                 </div>
-               
               </div>
             ))}
           </div>
