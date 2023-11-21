@@ -20,6 +20,10 @@ import homerep.springy.repository.ServiceRequestRepository;
 import homerep.springy.service.AppointmentService;
 import homerep.springy.service.EmailRequestService;
 import jakarta.transaction.Transactional;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -30,10 +34,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.security.core.userdetails.User;
 
 import java.time.*;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -438,5 +439,36 @@ public class AppointmentTest {
         // When the customer tries to confirm it, it fails
         assertThrows(UnconfirmableAppointmentException.class,
                 () -> customerAppointmentController.confirmAppointment(serviceRequest.getId(), CUSTOMER_USER));
+    }
+
+    @Test
+    void createAppointmentValidation() {
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
+
+        // endTime > startTime, startTime is in the past, endTime is in the past
+        CreateAppointmentModel model = new CreateAppointmentModel(
+                Instant.now().minusSeconds(30),
+                Instant.now().minusSeconds(60),
+                null
+        );
+        Set<ConstraintViolation<CreateAppointmentModel>> violations = validator.validate(model);
+        assertEquals(3, violations.size());
+        // startTime is in the past, endTime is in the past
+        model = new CreateAppointmentModel(
+                Instant.now().minusSeconds(60),
+                Instant.now().minusSeconds(30),
+                null
+        );
+        violations = validator.validate(model);
+        assertEquals(2, violations.size());
+        // Valid
+        model = new CreateAppointmentModel(
+                Instant.now().plusSeconds(60),
+                Instant.now().plusSeconds(120),
+                null
+        );
+        violations = validator.validate(model);
+        assertTrue(violations.isEmpty());
     }
 }
