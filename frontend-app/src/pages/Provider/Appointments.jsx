@@ -25,7 +25,7 @@ export default function Appointments() {
   const navigate = useNavigate()
 
   function checkUnauthorized(error) {
-    if (error.status == 403) {
+    if (error.response.status == 403) {
       navigate('/provider/login')
     } else {
       throw error
