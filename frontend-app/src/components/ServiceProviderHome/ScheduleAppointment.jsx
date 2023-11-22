@@ -37,23 +37,28 @@ export const CreateQuote = (request) => {
   }
 
   const sendQuote = () => {
-    console.log(appointmentModel)
-    try{
-
-    
-    const response = axios.post(
+    console.log(appointmentModel);
+  
+    axios.post(
       `${process.env.REACT_APP_API_URL}/api/provider/service_requests/${request.request.id}/appointments/create`,
       appointmentModel,
-      { withCredentials: true },
-    )
-    setNotification("Your Appointment was successfuly created and sent to the customer. Please view the MySchedule page to see your updated calendar.")
-    setSubmitted(true)
+      { withCredentials: true }
+    ).then((response) => {
+      setNotification(
+        "Your Appointment was successfully created and sent to the customer. Please view the MySchedule page to see your updated calendar."
+      );
+      setSubmitted(true);
+    }).catch((error) => {
+      if (error.response && error.response.data && error.response.data.type === 'conflicting_appointment') {
+        const conflictingAppointments = error.response.data.conflictingAppointments;
+        // Handle conflicting appointment error here
+        window.alert('Conflicting Appointment Error:');
+      } else {
+        window.alert("There was an error sending this appointment. Please try again.");
+      }
+    });
+  };
   
-  }
-    catch (error){
-      window.alert("There was an error sending this appointment. Please try again.")
-    }
-  }
   return (
 
     

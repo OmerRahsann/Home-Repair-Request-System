@@ -189,7 +189,6 @@ const CustomerCalendar = ({ customerView, request, setDate, isQuote }) => {
     if (range.start == undefined) {
       setMonth((new Date(range[0]).getMonth() % 12) + 1)
     } else {
-      window.alert(buildMessage(range))
       setYear(new Date(range.start).getFullYear())
       const adjustedMonth = new Date(range.start)
       adjustedMonth.setDate(adjustedMonth.getDate() + 6)
