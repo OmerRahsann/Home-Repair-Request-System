@@ -7,29 +7,15 @@ import './ProviderCalendar.scss' // Import your SASS file
 import ServiceRequestModal from 'components/Customer/ServiceRequestModal'
 import TimePickers from 'components/TimePickers'
 
-const initialEvents = [
-  {
-    title: 'Slot 1',
-    start: new Date(2023, 10, 1, 10, 0),
-    end: new Date(2023, 10, 1, 12, 0),
-  },
-  {
-    title: 'Slot 2',
-    start: new Date(2023, 10, 5, 14, 0),
-    end: new Date(2023, 10, 5, 16, 0),
-    id: 1,
-  },
-
-  // Add more events as needed
-]
-
 const ProviderCalendar = ({ customerView, request, setDate, isQuote }) => {
   const localizer = momentLocalizer(moment)
-  const [events, setEvents] = useState(initialEvents)
+  const [events, setEvents] = useState([])
   const [showEvent, setShowEvent] = useState(false)
   const [eventContent, setEventContent] = useState([])
-  const [year, setYear] = useState(2023)
-  const [month, setMonth] = useState(12)
+  const [year, setYear] = useState(new Date().getFullYear())
+  const [view, setView] = useState(Views.WEEK)
+
+  const [month, setMonth] = useState(new Date().getMonth() + 1)
 
   const clickRef = useRef(null)
 
@@ -123,6 +109,8 @@ const ProviderCalendar = ({ customerView, request, setDate, isQuote }) => {
     [setDate],
   )
 
+  const onView = useCallback((newView) => setView(newView), [setView])
+
   const onSelectEvent = useCallback((calEvent) => {
     /**
      * Here we are waiting 250 milliseconds (use what you want) prior to firing
@@ -153,7 +141,7 @@ const ProviderCalendar = ({ customerView, request, setDate, isQuote }) => {
     } else {
       return {
         defaultDate: new Date(),
-        views: [Views.MONTH, Views.DAY, Views.AGENDA, Views.WEEK],
+        views: [Views.WEEK, Views.MONTH, Views.AGENDA],
       }
     }
   }, [])
@@ -194,13 +182,23 @@ const ProviderCalendar = ({ customerView, request, setDate, isQuote }) => {
      *
      */
     getEvents()
+
     return () => {
       window.clearTimeout(clickRef?.current)
     }
-  }, [])
+  }, [month, views])
 
   const onRangeChange = useCallback((range) => {
-    //  window.alert(buildMessage(range))
+    if (range.start == undefined) {
+      window.alert(range[6])
+    } else {
+      window.alert(buildMessage(range))
+      setYear(new Date(range.start).getFullYear())
+      const adjustedMonth = new Date(range.start)
+      adjustedMonth.setDate(adjustedMonth.getDate() + 6)
+      console.log(adjustedMonth)
+      setMonth((adjustedMonth.getMonth() % 12) + 1)
+    }
   }, [])
 
   return (
@@ -215,7 +213,9 @@ const ProviderCalendar = ({ customerView, request, setDate, isQuote }) => {
         style={{ height: 500 }}
         onSelectEvent={onSelectEvent}
         selectable
+        onView={onView}
         views={views}
+        view={view}
         onRangeChange={onRangeChange}
       />
       {showEvent && (

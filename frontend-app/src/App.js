@@ -9,7 +9,7 @@ import RequestPasswordReset from "./pages/Authentication/ResetPassword/RequestPa
 import ResetPassword from "./pages/Authentication/ResetPassword/ResetPassword";
 import RequestView from "./pages/Provider/RequestView"
 import MyRequests from "./pages/Customer/MyRequests";
-import MyJobs from "pages/Provider/MyJobs";
+import MyJobs from "pages/Provider/MySchedule";
 import { CustomerProfile } from "pages/Customer/CustomerProfile";
 import { ProviderProfile } from "pages/Provider/ProviderProfile";
 import Footer from "components/Footer";
@@ -36,7 +36,7 @@ function App() {
             <Route path='/provider/myschedule' element={<MyJobs/>} />
             <Route path='/customer/myprofile' element={<CustomerProfile/>} />
             <Route path='/provider/myprofile' element={<ProviderProfile/>} />
-            <Route path='/customer/myquotes' element={<MyQuotes/>} />
+            <Route path='/customer/myappointments' element={<MyQuotes/>} />
             <Route path='/provider/quotes' element={<Quotes/>} />
             
             

@@ -146,12 +146,14 @@ export const MyQuotes = () => {
               </div>
             ))
           ) : (
-            <h1>You do not have any quotes yet.</h1>
+            <h1>You do not have any appointments yet.</h1>
           )}
         </div>
-        <p className="text-center pb-2">
-          <strong>Email Permission Requests: </strong>
-        </p>
+        <div>
+          <p className="text-center pb-2">
+            <strong>Email Permission Requests: </strong>
+          </p>
+        </div>
         {emailRequests.length !== 0 ? (
           <div className="w-1/3 h-[90vh] overflow-y-auto">
             {emailRequests.map((emailRequest, i) => (

@@ -44,16 +44,13 @@ export const CreateQuote = (request) => {
   }
   return (
     <div className="h-[100vh] p-4">
-      <div className="font-bold text-center text-xl">Send a Quote</div>
+      <div className="font-bold text-center text-xl">Create an Appointment</div>
       <p className="text-lg leading-6  p-2 ">
         <strong className="text-custom-maroon font-extrabold">
           {' '}
-          🛠️ Get started with your quote. To send a quote, follow these steps:
-          🛠️
+          🛠️ Get started with your Appointment. To create and send an
+          appointment, follow these steps: 🛠️
         </strong>
-        <span className="block mt-2 ">
-          ✅ Select your estimated price range for the services.
-        </span>
         <span className="block mt-2 ">
           ✅ Choose a day that best fits your schedule.
         </span>
@@ -102,7 +99,7 @@ export const CreateQuote = (request) => {
         onClick={sendQuote}
         className=" w-full text-white bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
       >
-        Send Quote
+        Schedule Appointment
       </button>
       <div className="pt-4"></div>
     </div>
