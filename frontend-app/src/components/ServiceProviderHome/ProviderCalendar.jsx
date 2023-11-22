@@ -119,13 +119,20 @@ const ProviderCalendar = ({ customerView, request, setDate, isQuote }) => {
      * this, the 'click' handler is overridden by the 'doubleClick'
      * action.
      */
-
     window.clearTimeout(clickRef?.current)
     clickRef.current = window.setTimeout(() => {
-      setShowEvent(true)
-      setEventContent(calEvent)
-    }, 250)
-  }, [])
+      // Filter events based on the selected date and time
+      const selectedEvents = events.filter(
+        (event) =>
+          moment(event.start).isSame(calEvent.start, 'day') &&
+          moment(event.end).isSame(calEvent.end, 'day')
+      );
+  
+      setEventContent(selectedEvents);
+      console.log(selectedEvents)
+      setShowEvent(true);
+    }, 250);
+  }, [events]);
 
   const { defaultDate, views } = useMemo(() => {
     if (customerView) {
@@ -223,24 +230,33 @@ const ProviderCalendar = ({ customerView, request, setDate, isQuote }) => {
           isVisible={showEvent}
           onClose={() => setShowEvent(false)}
         >
-          {events.length !== 0 &&
-            events.map((event) => (
-              <>
-                <p>{event.title}</p>
-                <p>
-                  {console.log(events)}
-                  {new Date(event.start).toLocaleString('en-US', {
-                    month: 'long',
-                  })}{' '}
-                  {new Date(event.start).getDate()},{' '}
-                  {new Date(event.start).getFullYear()}
-                </p>
-                <p>
-                  {formatDateIn12HourFormat(new Date(event.start))} -{' '}
-                  {formatDateIn12HourFormat(new Date(event.end))}
-                </p>
-              </>
-            ))}
+          {eventContent.length !== 0 && (
+  <>
+    {eventContent.map((event, index) => (
+      <div key={index} className="border p-4 mb-4 rounded-md bg-white shadow-md">
+        <p className="text-xl font-bold mb-2">{event.title}</p>
+        
+        <div className="flex flex-row mb-2">
+         📞
+         
+          <p className="text-gray-700">{event.customerInfoModel.phoneNumber}</p>
+        </div>
+        
+        <p className="text-gray-700 mb-2">
+          {new Date(event.start).toLocaleString('en-US', {
+            month: 'long',
+          })}{' '}
+          {new Date(event.start).getDate()},{' '}
+          {new Date(event.start).getFullYear()}
+        </p>
+        <p className="text-gray-700">
+          {formatDateIn12HourFormat(new Date(event.start))} -{' '}
+          {formatDateIn12HourFormat(new Date(event.end))}
+        </p>
+      </div>
+    ))}
+  </>
+)}
         </ServiceRequestModal>
       )}
     </div>

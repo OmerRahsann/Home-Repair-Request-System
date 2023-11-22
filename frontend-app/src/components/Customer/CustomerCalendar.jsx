@@ -5,6 +5,7 @@ import moment from 'moment'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 import '../ServiceProviderHome/ProviderCalendar.scss' // Import your SASS file
 import ServiceRequestModal from '../Customer/ServiceRequestModal'
+import { PhoneIcon } from '@heroicons/react/24/outline'
 
 const CustomerCalendar = ({ customerView, request, setDate, isQuote }) => {
   const localizer = momentLocalizer(moment)
@@ -109,6 +110,7 @@ const CustomerCalendar = ({ customerView, request, setDate, isQuote }) => {
 
   //const onView = useCallback((newView) => setView(newView), [setView])
 
+  
   const onSelectEvent = useCallback((calEvent) => {
     /**
      * Here we are waiting 250 milliseconds (use what you want) prior to firing
@@ -117,14 +119,21 @@ const CustomerCalendar = ({ customerView, request, setDate, isQuote }) => {
      * this, the 'click' handler is overridden by the 'doubleClick'
      * action.
      */
-
     window.clearTimeout(clickRef?.current)
     clickRef.current = window.setTimeout(() => {
-      setShowEvent(true)
-      setEventContent(calEvent)
-    }, 250)
-  }, [])
-
+      // Filter events based on the selected date and time
+      const selectedEvents = events.filter(
+        (event) =>
+          moment(event.start).isSame(calEvent.start, 'day') &&
+          moment(event.end).isSame(calEvent.end, 'day')
+      );
+  
+      setEventContent(selectedEvents);
+      console.log(selectedEvents)
+      setShowEvent(true);
+    }, 250);
+  }, [events]);
+  
   const { defaultDate, views } = useMemo(() => {
 
       return {
@@ -208,30 +217,48 @@ const CustomerCalendar = ({ customerView, request, setDate, isQuote }) => {
         // onRangeChange={onRangeChange}
       />
       {showEvent && (
-        <ServiceRequestModal
-          isVisible={showEvent}
-          onClose={() => setShowEvent(false)}
-        >
-          {events.length !== 0 &&
-            events.map((event) => (
-              <>
-                <p>{event.title}</p>
-                <p>
-                  
-                  {new Date(event.start).toLocaleString('en-US', {
-                    month: 'long',
-                  })}{' '}
-                  {new Date(event.start).getDate()},{' '}
-                  {new Date(event.start).getFullYear()}
-                </p>
-                <p>
-                  {formatDateIn12HourFormat(new Date(event.start))} -{' '}
-                  {formatDateIn12HourFormat(new Date(event.end))}
-                </p>
-              </>
-            ))}
-        </ServiceRequestModal>
-      )}
+  <ServiceRequestModal
+    isVisible={showEvent}
+    onClose={() => setShowEvent(false)}
+  >
+   {eventContent.length !== 0 && (
+  <>
+    {eventContent.map((event, index) => (
+      <div key={index} className="border p-4 mb-4 rounded-md bg-white shadow-md">
+        <p className="text-xl font-bold mb-2">{event.title}</p>
+        <div className="flex flex-row mb-2">
+          <p className="text-gray-700 mr-2 ">Message:</p>
+          <p className="text-gray-700">{event.message}</p>
+          
+        </div>
+        <div className="flex flex-row mb-2">
+         📞
+         
+          <p className="text-gray-700">{event.serviceProviderInfoModel.phoneNumber}</p>
+        </div>
+        <div className="flex flex-row mb-2">
+           📧
+          
+          <a className="text-gray-700 text-blue-500" href={`mailto:${event.serviceProviderInfoModel.contactEmailAddress}`}>{event.serviceProviderInfoModel.contactEmailAddress}</a>
+        </div>
+        <p className="text-gray-700 mb-2">
+          {new Date(event.start).toLocaleString('en-US', {
+            month: 'long',
+          })}{' '}
+          {new Date(event.start).getDate()},{' '}
+          {new Date(event.start).getFullYear()}
+        </p>
+        <p className="text-gray-700">
+          {formatDateIn12HourFormat(new Date(event.start))} -{' '}
+          {formatDateIn12HourFormat(new Date(event.end))}
+        </p>
+      </div>
+    ))}
+  </>
+)}
+  </ServiceRequestModal>
+)}
+
     </div>
   )
 }
