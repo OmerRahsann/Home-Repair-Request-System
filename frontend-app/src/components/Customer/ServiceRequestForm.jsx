@@ -97,7 +97,7 @@ function ServiceRequestForm() {
         // Make a POST request to attach the image to the service request
         await axios
           .post(
-            `${process.env.REACT_APP_API_URL}/${newServiceRequestId}/attach`,
+            `${process.env.REACT_APP_API_URL}/api/customer/service_request/${newServiceRequestId}/attach`,
             imageFormData,
             { withCredentials: true },
           )
@@ -280,6 +280,7 @@ function ServiceRequestForm() {
 
             <button
               type="submit"
+          
               className="text-white w-full bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:bg-gray-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
               disabled={!complete}
             >
