@@ -14,7 +14,7 @@ import { CustomerProfile } from "pages/Customer/CustomerProfile";
 import { ProviderProfile } from "pages/Provider/ProviderProfile";
 import Footer from "components/Footer";
 import { MyQuotes } from "pages/Customer/MyQuotes";
-import { Quotes } from "pages/Provider/Quotes";
+import Appointments from "pages/Provider/Appointments";
 
 function App() {
   return (
@@ -37,7 +37,7 @@ function App() {
             <Route path='/customer/myprofile' element={<CustomerProfile/>} />
             <Route path='/provider/myprofile' element={<ProviderProfile/>} />
             <Route path='/customer/myappointments' element={<MyQuotes/>} />
-            <Route path='/provider/quotes' element={<Quotes/>} />
+            <Route path='/provider/updates' element={<Appointments/>} />
             
             
           </Routes>
