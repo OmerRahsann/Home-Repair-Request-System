@@ -11,6 +11,7 @@ import {
 } from '@heroicons/react/24/outline'
 
 import '@smastrom/react-rating/style.css'
+import CustomerCalendar from '../../components/Customer/CustomerCalendar'
 
 export const MyQuotes = () => {
   const [serviceRequests, setServiceRequests] = useState([])
@@ -18,19 +19,6 @@ export const MyQuotes = () => {
   const [loggedIn, setLoggedIn] = useState(false) // Initialize loggedIn with a default value
   const [showModal, setShowModal] = useState(false)
   const [action, setAction] = useState(false)
-
-  const getServiceRequests = async () => {
-    try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/customer/service_request`,
-        { withCredentials: true },
-      )
-      setServiceRequests(response.data)
-      console.log(response.data)
-    } catch (error) {
-      console.error('Error fetching service requests:', error)
-    }
-  }
 
   const getPendingEmailRequests = async () => {
     try {
@@ -123,7 +111,6 @@ export const MyQuotes = () => {
     }
 
     fetchData() // Call the function when the component mounts
-    getServiceRequests()
     getPendingEmailRequests()
     console.log(serviceRequests)
 
@@ -135,27 +122,25 @@ export const MyQuotes = () => {
       <div>
         <NavBar isLoggedIn={loggedIn} />
       </div>
+      
 
       <div className="p-1 flex flex-row">
-        <div className="h-[90vh] grid grid-cols-1 gap-8 p-2 sm:p-4 md:p-6 lg:p-8 xl:p-10 w-2/3 border-r border-gray-300 overflow-y-auto custom-scrollbar">
-          {serviceRequests.length !== 0 ? (
-            serviceRequests.map((request) => (
-              <div key={request.id}>
-                {/* Use the RequestDetails component to display request details */}
-                <QuoteDetails quote={request} />
-              </div>
-            ))
-          ) : (
-            <h1>You do not have any appointments yet.</h1>
-          )}
-        </div>
-        <div>
-          <p className="text-center pb-2">
-            <strong>Email Permission Requests: </strong>
-          </p>
-        </div>
+    <div className='w-2/3'>
+      <CustomerCalendar />
+    </div>
+
+    <div className='p-2'></div>
+    <div className="w-1/3  pl-2 border-l ">
+      <p className="pb-2 text-center">
+        <strong>Email Permission Requests: </strong>
+      </p>
+      {/* Add more content for the right side as needed */}
+
+      
+       
+        
         {emailRequests.length !== 0 ? (
-          <div className="w-1/3 h-[90vh] overflow-y-auto">
+          <div className=" h-[90vh] overflow-y-auto flex-col">
             {emailRequests.map((emailRequest, i) => (
               <div className="rounded-sm border border-gray-400 text-[2vh]">
                 <div className="md:pl-14 font-bold sm:pl-2">
@@ -202,6 +187,7 @@ export const MyQuotes = () => {
           </div>
         ) : null}
       </div>
+    </div>
     </div>
   )
 }
