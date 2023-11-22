@@ -33,7 +33,7 @@ function App() {
             <Route path="/provider/viewrequests" element={<RequestView/>} />
             <Route path="/reset_password" element={<RequestPasswordReset/>} />
             <Route path="/reset_password/form" element={<ResetPassword/>} />
-            <Route path='/provider/myschedule' element={<MyJobs/>} />
+            <Route path='/provider/myappointments' element={<MyJobs/>} />
             <Route path='/customer/myprofile' element={<CustomerProfile/>} />
             <Route path='/provider/myprofile' element={<ProviderProfile/>} />
             <Route path='/customer/myappointments' element={<MyQuotes/>} />
