@@ -12,6 +12,8 @@ import axios from 'axios'
 function RequestDetailsProvider({ request }) {
   const [showSecondStep, setShowSecondStep] = useState(false)
   const [email, setEmail] = useState('')
+  const [submitted, setFormSubmitted] = useState(false)
+  const [notification, setNotification] = useState('')
   const handleClick = async () => {
     setShowSecondStep(true)
   }
@@ -39,7 +41,9 @@ function RequestDetailsProvider({ request }) {
       )
 
       const data = response.data
-      console.log(data)
+      setNotification("Request was Successfully Sent!")
+      setFormSubmitted(true)
+      
     } catch (error) {
       alert('There was an error sending your email request. Please try again.')
       console.error('Erro Sending Email Request:', error)
@@ -56,6 +60,7 @@ function RequestDetailsProvider({ request }) {
 
       const data = response.data
       console.log(data)
+      
     } catch (error) {
       alert('There was an error sending your email request. Please try again.')
       console.error('Erro Sending Email Request:', error)
@@ -68,72 +73,77 @@ function RequestDetailsProvider({ request }) {
 
   return (
     <Fragment>
-      <div>
-        <div className="shadow-md border-2 border-gray-400 rounded-md">
-          <ImageSlider images={request.pictures} />
-          <div className="bg-custom-grain p-2 flex flex-col">
-            <div className="flex flex-row justify-between">
-              <h1 className="text-[2.5vh] font-bold text-custom-maroon">
-                {request.title}
-              </h1>
+     
+      <>
+      {submitted ? (<div className="text-green-600 font-semibold text-center p-4">
+          {notification}
+        </div> ) : (
+        <div>
+            <div className="shadow-md border-2 border-gray-400 rounded-md">
+              <ImageSlider images={request.pictures} />
+              <div className="bg-custom-grain p-2 flex flex-col">
+                <div className="flex flex-row justify-between">
+                  <h1 className="text-[2.5vh] font-bold text-custom-maroon">
+                    {request.title}
+                  </h1>
 
-              {!email ? (
-                <button
-                  onClick={requestCustomerEmail}
-                  className="text-white bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-                >
-                  Request Email
-                </button>
-              ) : (
-                <div className="flex flex-row">
-                  <button
-                    onClick={handleClick}
-                    className="text-white bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-                  >
-                    Create Appointment
-                  </button>
-                  <break className="pl-2"></break>
-                  <button className="text-white bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
-                    <a href={`mailto:${email}`}>Send Email</a>
-                  </button>
+                  {!email ? (
+                    <button
+                      onClick={requestCustomerEmail}
+                      className="text-white bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+                    >
+                      Request Email
+                    </button>
+                  ) : (
+                    <div className="flex flex-row">
+                      <button
+                        onClick={handleClick}
+                        className="text-white bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+                      >
+                        Create Appointment
+                      </button>
+                      <break className="pl-2"></break>
+                      <button className="text-white bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
+                        <a href={`mailto:${email}`}>Send Email</a>
+                      </button>
+                    </div>
+                  )}
                 </div>
-              )}
+                <h2>
+                  <strong>Description: </strong>
+                  {request.description}
+                </h2>
+                <h2>
+                  <strong>Creation Date: </strong>{' '}
+                  {new Date(request.creationDate).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })}
+                </h2>
+                <h2>
+                  <strong>Service Category: </strong>
+                  {request.service}
+                </h2>
+                <h2>
+                  <strong>Desired Price Range: </strong>$
+                  {createRoundedRange(request.dollars)}
+                </h2>
+                <h2>
+                  <strong>Status: </strong>
+                  {request.status}
+                </h2>
+                <h2>
+                  <strong>Location: </strong>
+                  {extractTownAndStateFromAddress(request.address)}
+                </h2>
+              </div>
+              <div>
+                <Map address={request.address} isProvider={true} />
+              </div>
             </div>
-            <h2>
-              <strong>Description: </strong>
-              {request.description}
-            </h2>
-            <h2>
-              <strong>Creation Date: </strong>{' '}
-              {new Date(request.creationDate).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
-            </h2>
-            <h2>
-              <strong>Service Category: </strong>
-              {request.service}
-            </h2>
-            <h2>
-              <strong>Desired Price Range: </strong>$
-              {createRoundedRange(request.dollars)}
-            </h2>
-            <h2>
-              <strong>Status: </strong>
-              {request.status}
-            </h2>
-            <h2>
-              <strong>Location: </strong>
-              {extractTownAndStateFromAddress(request.address)}
-            </h2>
-          </div>
-          <div>
-            <Map address={request.address} isProvider={true} />
-          </div>
-        </div>
-        {showSecondStep && createQuote()}
-      </div>
+            {showSecondStep && createQuote()}
+          </div>)}</>
     </Fragment>
   )
 }

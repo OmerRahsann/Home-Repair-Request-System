@@ -8,6 +8,8 @@ import TimePickers from 'components/TimePickers'
 export const CreateQuote = (request) => {
   const [appointmentModel, setAppointmentModel] = useState([])
   const [selectedDate, setSelectedDate] = useState(null)
+  const [notification, setNotification] = useState('')
+  const [submitted, setSubmitted] = useState(false)
   useEffect(() => {
     // This effect will run whenever selectedDate changes
 
@@ -36,13 +38,35 @@ export const CreateQuote = (request) => {
 
   const sendQuote = () => {
     console.log(appointmentModel)
+    try{
+
+    
     const response = axios.post(
       `${process.env.REACT_APP_API_URL}/api/provider/service_requests/${request.request.id}/appointments/create`,
       appointmentModel,
       { withCredentials: true },
     )
+    setNotification("Your Appointment was successfuly created and sent to the customer. Please view the MySchedule page to see your updated calendar.")
+    setSubmitted(true)
+  
+  }
+    catch (error){
+      window.alert("There was an error sending this appointment. Please try again.")
+    }
   }
   return (
+
+    
+    <div >
+      {submitted ? (
+        <div className=''>
+
+      <div className="text-green-600 font-semibold text-center p-6">
+      {notification}
+      </div>
+    </div>
+
+    ) : (
     <div className="h-[100vh] p-4">
       <div className="font-bold text-center text-xl">Create an Appointment</div>
       <p className="text-lg leading-6  p-2 ">
@@ -102,6 +126,7 @@ export const CreateQuote = (request) => {
         Schedule Appointment
       </button>
       <div className="pt-4"></div>
+    </div>)}
     </div>
   )
 }
