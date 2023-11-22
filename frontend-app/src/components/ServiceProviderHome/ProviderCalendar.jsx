@@ -224,23 +224,23 @@ const ProviderCalendar = ({ customerView, request, setDate, isQuote }) => {
           onClose={() => setShowEvent(false)}
         >
           {events.length !== 0 &&
-            events.map((event)=> (
-              <><p>{event.title}</p><p>
-                {console.log(events)}
-                {new Date(event.start).toLocaleString('en-US', {
-                  month: 'long',
-                })}{' '}
-                {new Date(event.start).getDate()},{' '}
-                {new Date(event.start).getFullYear()}
-              </p><p>
+            events.map((event) => (
+              <>
+                <p>{event.title}</p>
+                <p>
+                  {console.log(events)}
+                  {new Date(event.start).toLocaleString('en-US', {
+                    month: 'long',
+                  })}{' '}
+                  {new Date(event.start).getDate()},{' '}
+                  {new Date(event.start).getFullYear()}
+                </p>
+                <p>
                   {formatDateIn12HourFormat(new Date(event.start))} -{' '}
                   {formatDateIn12HourFormat(new Date(event.end))}
-                </p></>
-              
-
-            ))
-          }
-          
+                </p>
+              </>
+            ))}
         </ServiceRequestModal>
       )}
     </div>
