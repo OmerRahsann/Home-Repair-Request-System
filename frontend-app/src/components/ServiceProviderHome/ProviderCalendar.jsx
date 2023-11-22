@@ -5,6 +5,7 @@ import moment from 'moment'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 import './ProviderCalendar.scss' // Import your SASS file
 import ServiceRequestModal from 'components/Customer/ServiceRequestModal'
+import TimePickers from 'components/TimePickers'
 
 const initialEvents = [
   {
@@ -18,17 +19,17 @@ const initialEvents = [
     end: new Date(2023, 10, 5, 16, 0),
     id: 1,
   },
+
   // Add more events as needed
 ]
 
-const ProviderCalendar = ({ customerView }) => {
+const ProviderCalendar = ({ customerView, request, setDate, isQuote }) => {
   const localizer = momentLocalizer(moment)
   const [events, setEvents] = useState(initialEvents)
   const [showEvent, setShowEvent] = useState(false)
   const [eventContent, setEventContent] = useState([])
-  const [appointments, setAppointments] = useState([])
   const [year, setYear] = useState(2023)
-  const [month, setMonth] = useState(1)
+  const [month, setMonth] = useState(12)
 
   const clickRef = useRef(null)
 
@@ -55,7 +56,7 @@ const ProviderCalendar = ({ customerView }) => {
     return message
   }
 
-  const getAppointments = async () => {
+  const getEvents = async () => {
     try {
       const response = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/provider/appointments`,
@@ -63,43 +64,64 @@ const ProviderCalendar = ({ customerView }) => {
           params: {
             year: year,
             month: month,
+            zone_id: 'America/New_York',
           },
           withCredentials: true,
         },
       )
-      setAppointments(response.data)
-      console.log(response.data)
+
+      response.data.forEach((x) => {
+        x.title =
+          x.customerInfoModel.firstName + ' ' + x.customerInfoModel.lastName
+        x.start = new Date(x.startTime)
+        x.end = new Date(x.endTime)
+      })
+      setEvents(response.data)
     } catch (error) {
       console.error('Error fetching service requests:', error)
     }
   }
 
-  const onSelectSlot = useCallback((calEvent) => {
-    window.clearTimeout(clickRef?.current)
+  const onSelectSlot = useCallback(
+    (calEvent) => {
+      console.log(buildMessage(calEvent))
+      window.clearTimeout(clickRef?.current)
 
-    // Set a timeout to detect whether it's a single or double click
-    clickRef.current = window.setTimeout(() => {
-      // Single click logic
-      const shouldCreateNewEvent = window.confirm(
-        `Do you want to create a new event at ${calEvent.start}?`,
-      )
+      // Set a timeout to detect whether it's a single or double click
+      clickRef.current = window.setTimeout(() => {
+        // Single click logic
+        const shouldCreateNewEvent = window.confirm(
+          `Do you want to create a new appointment?`,
+        )
 
-      if (shouldCreateNewEvent) {
-        const eventTitle = prompt('Enter the title for the new event:')
-        if (eventTitle) {
-          // If a title is provided, update the events array with the new event
-          const newEvent = {
-            title: eventTitle,
-            start: calEvent.start,
-            end: calEvent.end, // You may want to adjust the end time accordingly
-            id: events.length + 1, // Assign a unique ID, adjust as needed
+        if (shouldCreateNewEvent) {
+          if (isQuote) {
+            const tempEvent = {
+              title: request.request.title,
+              start: calEvent.start, // Adjust the format as needed
+              end: calEvent.end, // Adjust the format as needed
+              // Assign a unique ID, adjust as needed
+            }
+
+            const newEvent = {
+              start: calEvent.start, // Adjust the format as needed
+              end: calEvent.end, // Adjust the format as needed
+              // Assign a unique ID, adjust as needed
+            }
+
+            console.log(newEvent)
+
+            if (setDate != null) setDate(newEvent)
+
+            setEvents((prevEvents) => [...prevEvents, tempEvent])
+          } else {
+            //TODO Here
           }
-
-          setEvents((prevEvents) => [...prevEvents, newEvent])
         }
-      }
-    }, 250)
-  }, [])
+      }, 250)
+    },
+    [setDate],
+  )
 
   const onSelectEvent = useCallback((calEvent) => {
     /**
@@ -120,35 +142,73 @@ const ProviderCalendar = ({ customerView }) => {
   const { defaultDate, views } = useMemo(() => {
     if (customerView) {
       return {
-        defaultDate: new Date(2015, 3, 1),
+        defaultDate: new Date(),
         views: [Views.MONTH],
+      }
+    } else if (isQuote) {
+      return {
+        defaultDate: new Date(),
+        views: [Views.WEEK, Views.MONTH],
       }
     } else {
       return {
-        defaultDate: new Date(2015, 3, 1),
+        defaultDate: new Date(),
         views: [Views.MONTH, Views.DAY, Views.AGENDA, Views.WEEK],
       }
     }
   }, [])
+
+  // const handleTimeSelection = ({ startTime, endTime }) => {
+
+  //   console.log(startTime.toISOString())
+  //   console.log(moment(endTime).format("hh:mm:ss A"));
+  //   const startEnd = moment(month).set("hour", moment(startTime).hour()).set("minutes", moment(startTime).minute())
+  //   const finalEnd = moment(month).set("hour", moment(endTime).hour()).set("minutes", moment(endTime).minute())
+
+  //   console.log(finalEnd)
+
+  // const newEvent = {
+  //   title: request.request.title,
+  //   start: startTime, // Adjust the format as needed
+  //   end: endTime,     // Adjust the format as needed
+  //   // Assign a unique ID, adjust as needed
+  // };
+
+  // console.log(newEvent);
+
+  //   if (setDate != null) setDate(newEvent)
+
+  //   setEvents((prevEvents) => [...prevEvents, newEvent])
+
+  //   // Close the modal when you are done processing
+  //   setShowModal(false)
+  // }
+
+  // ...
 
   useEffect(() => {
     /**
      * What Is This?
      * This is to prevent a memory leak, in the off chance that you
      * teardown your interface prior to the timed method being called.
+     *
      */
+    getEvents()
     return () => {
       window.clearTimeout(clickRef?.current)
     }
   }, [])
 
-  useEffect(() => {})
+  const onRangeChange = useCallback((range) => {
+    //  window.alert(buildMessage(range))
+  }, [])
 
   return (
     <div>
       <Calendar
         localizer={localizer}
-        events={appointments}
+        events={events}
+        defaultDate={defaultDate}
         startAccessor="start"
         endAccessor="end"
         onSelectSlot={onSelectSlot}
@@ -156,25 +216,31 @@ const ProviderCalendar = ({ customerView }) => {
         onSelectEvent={onSelectEvent}
         selectable
         views={views}
+        onRangeChange={onRangeChange}
       />
       {showEvent && (
         <ServiceRequestModal
           isVisible={showEvent}
           onClose={() => setShowEvent(false)}
         >
-          <p>{eventContent.title}</p>
-          <p>
-            {new Date(eventContent.start).toLocaleString('en-US', {
-              month: 'long',
-            })}{' '}
-            {new Date(eventContent.start).getDay()},{' '}
-            {new Date(eventContent.start).getFullYear()}
-          </p>
+          {events.length !== 0 &&
+            events.map((event)=> (
+              <><p>{event.title}</p><p>
+                {console.log(events)}
+                {new Date(event.start).toLocaleString('en-US', {
+                  month: 'long',
+                })}{' '}
+                {new Date(event.start).getDate()},{' '}
+                {new Date(event.start).getFullYear()}
+              </p><p>
+                  {formatDateIn12HourFormat(new Date(event.start))} -{' '}
+                  {formatDateIn12HourFormat(new Date(event.end))}
+                </p></>
+              
 
-          <p>
-            {formatDateIn12HourFormat(new Date(eventContent.start))} -{' '}
-            {formatDateIn12HourFormat(new Date(eventContent.end))}
-          </p>
+            ))
+          }
+          
         </ServiceRequestModal>
       )}
     </div>

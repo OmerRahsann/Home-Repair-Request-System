@@ -28,7 +28,7 @@ function ServiceRequestModal({ isVisible, onClose, children, isFinal, last }) {
           onClick={() => onClose()}
         >
           {last ? (
-            <div className="p-1 mt-[-20px] rounded-md bg-gray-500 font-bold">
+            <div className="p-1 mt-[-20px] rounded-xl bg-custom-tan font-bold opacity-90">
               BACK
             </div>
           ) : (

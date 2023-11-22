@@ -50,17 +50,23 @@ function ServiceRequestForm() {
   }
 
   const [images, setImages] = useState([])
+  
   const onPlaceChanged = () => {
     if (autoComplete) {
-      const place = autoComplete.getPlace()
-      const address = place.formatted_address
-      const lat = place.geometry.location.lat()
-      const lng = place.geometry.location.lng()
+      const place = autoComplete.getPlace();
 
-      setServiceRequestModel((prevModel) => ({
-        ...prevModel,
-        address: address,
-      }))
+      if (place && place.geometry && place.formatted_address) {
+        const address = place.formatted_address;
+        const lat = place.geometry.location.lat();
+        const lng = place.geometry.location.lng();
+  
+        setServiceRequestModel((prevModel) => ({
+          ...prevModel,
+          address: address,
+        }));
+      } else {
+        window.alert("Please enter a valid address.")
+      }
     }
   }
 
@@ -70,7 +76,7 @@ function ServiceRequestForm() {
     event.preventDefault()
     try {
       const response = await axios.post(
-        'http://localhost:8080/api/customer/service_request/create',
+        `${process.env.REACT_APP_API_URL}/api/customer/service_request/create`,
         serviceRequestModel,
         { withCredentials: true },
       )
@@ -226,7 +232,10 @@ function ServiceRequestForm() {
             <label className="font-bold">Project Location</label>
             <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
               <div>
-                <input className="border border-gray-100 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:border-gray-600 dark:placeholder-gray-400" />
+                <input className="border border-gray-100 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:border-gray-600 dark:placeholder-gray-400"
+                required
+                 />
+
               </div>
             </Autocomplete>
             <div>
@@ -238,6 +247,7 @@ function ServiceRequestForm() {
                 onChange={handleCategoryChage}
                 isSearchable={true}
                 styles={{ backgroundColor: 'red' }}
+                required
               />
             </div>
             <div>
