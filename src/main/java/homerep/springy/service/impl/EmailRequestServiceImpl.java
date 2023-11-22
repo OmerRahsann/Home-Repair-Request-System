@@ -4,6 +4,7 @@ import homerep.springy.entity.Customer;
 import homerep.springy.entity.EmailRequest;
 import homerep.springy.entity.ServiceProvider;
 import homerep.springy.entity.ServiceRequest;
+import homerep.springy.model.accountinfo.CustomerInfoModel;
 import homerep.springy.model.accountinfo.ServiceProviderInfoModel;
 import homerep.springy.model.emailrequest.EmailRequestInfoModel;
 import homerep.springy.model.emailrequest.EmailRequestModel;
@@ -105,13 +106,25 @@ public class EmailRequestServiceImpl implements EmailRequestService {
 
     private EmailRequestModel toModel(ServiceRequest serviceRequest, EmailRequest emailRequest) {
         if (emailRequest == null) {
-            return new EmailRequestModel(serviceRequest.getId(), EmailRequestStatus.NOT_REQUESTED);
+            return new EmailRequestModel(serviceRequest, EmailRequestStatus.NOT_REQUESTED);
         }
         if (emailRequest.getStatus() != EmailRequestStatus.ACCEPTED) {
-            return new EmailRequestModel(serviceRequest.getId(), emailRequest.getStatus());
+            return new EmailRequestModel(serviceRequest, emailRequest.getStatus());
         }
         String email = serviceRequest.getCustomer().getAccount().getEmail();
-        return new EmailRequestModel(serviceRequest.getId(), email, EmailRequestStatus.ACCEPTED, emailRequest.getUpdateTimestamp());
+        return new EmailRequestModel(
+                serviceRequest,
+                new CustomerInfoModel(
+                        serviceRequest.getCustomer().getFirstName(),
+                        serviceRequest.getCustomer().getMiddleName(),
+                        serviceRequest.getCustomer().getLastName(),
+                        null,
+                        serviceRequest.getCustomer().getPhoneNumber()
+                ),
+                email,
+                EmailRequestStatus.ACCEPTED,
+                emailRequest.getUpdateTimestamp()
+        );
     }
 
     private List<EmailRequestModel> toModels(List<EmailRequest> emailRequests) {

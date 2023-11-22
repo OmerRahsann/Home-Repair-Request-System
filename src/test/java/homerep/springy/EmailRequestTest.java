@@ -13,6 +13,7 @@ import homerep.springy.entity.ServiceProvider;
 import homerep.springy.entity.ServiceRequest;
 import homerep.springy.exception.ApiException;
 import homerep.springy.exception.NonExistentPostException;
+import homerep.springy.model.ServiceRequestModel;
 import homerep.springy.model.accountinfo.ServiceProviderInfoModel;
 import homerep.springy.model.emailrequest.EmailRequestInfoModel;
 import homerep.springy.model.emailrequest.EmailRequestModel;
@@ -52,6 +53,7 @@ public class EmailRequestTest {
     @Autowired
     private DummyDataComponent dummyDataComponent;
 
+    private Customer customer;
     private ServiceProvider serviceProvider1;
     private ServiceProvider serviceProvider2;
     private ServiceRequest serviceRequest1;
@@ -68,7 +70,7 @@ public class EmailRequestTest {
 
     @BeforeEach
     void setup() {
-        Customer customer = dummyDataComponent.createCustomer(CUSTOMER_EMAIL);
+        customer = dummyDataComponent.createCustomer(CUSTOMER_EMAIL);
         serviceRequest1 = dummyDataComponent.createServiceRequest(customer);
         serviceRequest2 = dummyDataComponent.createServiceRequest(customer);
 
@@ -83,7 +85,9 @@ public class EmailRequestTest {
         // Try to get the email without sending a request
         EmailRequestModel emailRequestModel = emailRequestService.getEmail(serviceRequest1, serviceProvider1);
         assertNotNull(emailRequestModel);
-        assertEquals(serviceRequest1.getId(), emailRequestModel.serviceRequestId());
+        assertEquals(ServiceRequestModel.fromEntity(serviceRequest1), emailRequestModel.serviceRequest());
+        // customer info is not supplied
+        assertNull(emailRequestModel.customer());
         // email is not supplied
         assertNull(emailRequestModel.email());
         assertEquals(EmailRequestStatus.NOT_REQUESTED, emailRequestModel.status());
@@ -106,7 +110,9 @@ public class EmailRequestTest {
         // Try to get the email with a request that has not been accepted or denied
         EmailRequestModel emailRequestModel = emailRequestService.getEmail(serviceRequest1, serviceProvider1);
         assertNotNull(emailRequestModel);
-        assertEquals(serviceRequest1.getId(), emailRequestModel.serviceRequestId());
+        assertEquals(ServiceRequestModel.fromEntity(serviceRequest1), emailRequestModel.serviceRequest());
+        // customer info is not supplied
+        assertNull(emailRequestModel.customer());
         // email is not supplied
         assertNull(emailRequestModel.email());
         assertEquals(EmailRequestStatus.PENDING, emailRequestModel.status());
@@ -125,10 +131,16 @@ public class EmailRequestTest {
         assertEquals(EmailRequestStatus.PENDING, emailRequest.getStatus());
         // Accept the email request
         emailRequestService.acceptEmailRequest(emailRequest);
-        // Email is provided after the request is accepted
+        // Email and customer info is provided after the request is accepted
         EmailRequestModel emailRequestModel = emailRequestService.getEmail(serviceRequest1, serviceProvider1);
         assertNotNull(emailRequestModel);
-        assertEquals(serviceRequest1.getId(), emailRequestModel.serviceRequestId());
+        assertEquals(ServiceRequestModel.fromEntity(serviceRequest1), emailRequestModel.serviceRequest());
+        assertNotNull(emailRequestModel.customer());
+        assertEquals(customer.getFirstName(), emailRequestModel.customer().firstName());
+        assertEquals(customer.getMiddleName(), emailRequestModel.customer().middleName());
+        assertEquals(customer.getLastName(), emailRequestModel.customer().lastName());
+        assertNull(emailRequestModel.customer().address()); // Address is not provided
+        assertEquals(customer.getPhoneNumber(), emailRequestModel.customer().phoneNumber());
         assertEquals(CUSTOMER_EMAIL, emailRequestModel.email());
         assertEquals(EmailRequestStatus.ACCEPTED, emailRequestModel.status());
     }
@@ -149,7 +161,8 @@ public class EmailRequestTest {
         // Email is not provided after the request is rejected
         EmailRequestModel emailRequestModel = emailRequestService.getEmail(serviceRequest1, serviceProvider1);
         assertNotNull(emailRequestModel);
-        assertEquals(serviceRequest1.getId(), emailRequestModel.serviceRequestId());
+        assertEquals(ServiceRequestModel.fromEntity(serviceRequest1), emailRequestModel.serviceRequest());
+        assertNull(emailRequestModel.customer());
         assertNull(emailRequestModel.email());
         assertEquals(EmailRequestStatus.REJECTED, emailRequestModel.status());
     }
