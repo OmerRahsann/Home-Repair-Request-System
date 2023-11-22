@@ -122,72 +122,68 @@ export const MyQuotes = () => {
       <div>
         <NavBar isLoggedIn={loggedIn} />
       </div>
-      
 
       <div className="p-1 flex flex-row">
-    <div className='w-2/3'>
-      <CustomerCalendar />
-    </div>
+        <div className="w-2/3">
+          <CustomerCalendar />
+        </div>
 
-    <div className='p-2'></div>
-    <div className="w-1/3  pl-2 border-l ">
-      <p className="pb-2 text-center">
-        <strong>Email Permission Requests: </strong>
-      </p>
-      {/* Add more content for the right side as needed */}
+        <div className="p-2"></div>
+        <div className="w-1/3  pl-2 border-l ">
+          <p className="pb-2 text-center">
+            <strong>Email Permission Requests: </strong>
+          </p>
+          {/* Add more content for the right side as needed */}
 
-      
-       
-        
-        {emailRequests.length !== 0 ? (
-          <div className=" h-[90vh] overflow-y-auto flex-col">
-            {emailRequests.map((emailRequest, i) => (
-              <div className="rounded-sm border border-gray-400 text-[2vh]">
-                <div className="md:pl-14 font-bold sm:pl-2">
-                  <a href="#">
-                    {/*quote.provider*/}
-                    {emailRequest.serviceProvider.name}
-                  </a>
-                </div>
-                <div>
-                  <div className="flex flex-row justify-between">
-                    <div className="flex flex-row ">
-                      {iconSize > 25 ? (
-                        <UserCircleIcon width={iconSize} />
-                      ) : null}
-                      <div className="flex flex-col justify-center text-gray-400 text-[1.2vh] md:pl-4">
-                        <p>
-                          {emailRequest.serviceProvider.contactEmailAddress}
-                        </p>
-                        <p>{emailRequest.serviceProvider.phoneNumber}</p>
-                        <Rating value={5} style={{ maxWidth: 75 }} />
+          {emailRequests.length !== 0 ? (
+            <div className=" h-[90vh] overflow-y-auto flex-col">
+              {emailRequests.map((emailRequest, i) => (
+                <div className="rounded-sm border border-gray-400 text-[2vh]">
+                  <div className="md:pl-14 font-bold sm:pl-2">
+                    <a href="#">
+                      {/*quote.provider*/}
+                      {emailRequest.serviceProvider.name}
+                    </a>
+                  </div>
+                  <div>
+                    <div className="flex flex-row justify-between">
+                      <div className="flex flex-row ">
+                        {iconSize > 25 ? (
+                          <UserCircleIcon width={iconSize} />
+                        ) : null}
+                        <div className="flex flex-col justify-center text-gray-400 text-[1.2vh] md:pl-4">
+                          <p>
+                            {emailRequest.serviceProvider.contactEmailAddress}
+                          </p>
+                          <p>{emailRequest.serviceProvider.phoneNumber}</p>
+                          <Rating value={5} style={{ maxWidth: 75 }} />
+                        </div>
+                      </div>
+
+                      <div className="flex flex-row">
+                        <XCircleIcon
+                          color="maroon"
+                          width={iconSize}
+                          onClick={() => rejectEmailRequest(emailRequest.id)}
+                        />
+                        <CheckCircleIcon
+                          color="green"
+                          width={iconSize}
+                          onClick={() => acceptEmailRequest(emailRequest.id)}
+                        />
                       </div>
                     </div>
 
-                    <div className="flex flex-row">
-                      <XCircleIcon
-                        color="maroon"
-                        width={iconSize}
-                        onClick={() => rejectEmailRequest(emailRequest.id)}
-                      />
-                      <CheckCircleIcon
-                        color="green"
-                        width={iconSize}
-                        onClick={() => acceptEmailRequest(emailRequest.id)}
-                      />
-                    </div>
+                    <p className="text-[1vh]">
+                      {new Date(emailRequest.requestTimestamp).toLocaleString()}
+                    </p>
                   </div>
-
-                  <p className="text-[1vh]">
-                    {new Date(emailRequest.requestTimestamp).toLocaleString()}
-                  </p>
                 </div>
-              </div>
-            ))}
-          </div>
-        ) : null}
+              ))}
+            </div>
+          ) : null}
+        </div>
       </div>
-    </div>
     </div>
   )
 }

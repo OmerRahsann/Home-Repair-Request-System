@@ -103,14 +103,20 @@ function RequestView() {
   }, [bounds, categoryChange, priceRangeChange])
 
   const onRequestChanged = () => {
-    const place = autocomplete.getPlace()
-    const lat = place.geometry.location.lat()
-    const lng = place.geometry.location.lng()
-
-    setSelectedLocation({ lat, lng })
+    if (autocomplete) {
+      const place = autocomplete.getPlace()
+      if (place && place.geometry && place.formatted_address) {
+        const lat = place.geometry.location.lat()
+        const lng = place.geometry.location.lng()
+        setSelectedLocation({ lat, lng })
+      } else {
+        window.alert('Please Enter a Valid Address.')
+      }
+    }
   }
 
   const onLoad = (autoC) => setAutocomplete(autoC)
+
   return (
     <div>
       <NavBarProvider />

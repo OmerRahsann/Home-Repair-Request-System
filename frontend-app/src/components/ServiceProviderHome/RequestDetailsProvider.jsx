@@ -41,9 +41,8 @@ function RequestDetailsProvider({ request }) {
       )
 
       const data = response.data
-      setNotification("Request was Successfully Sent!")
+      setNotification('Request was Successfully Sent!')
       setFormSubmitted(true)
-      
     } catch (error) {
       alert('There was an error sending your email request. Please try again.')
       console.error('Erro Sending Email Request:', error)
@@ -60,7 +59,6 @@ function RequestDetailsProvider({ request }) {
 
       const data = response.data
       console.log(data)
-      
     } catch (error) {
       alert('There was an error sending your email request. Please try again.')
       console.error('Erro Sending Email Request:', error)
@@ -73,12 +71,13 @@ function RequestDetailsProvider({ request }) {
 
   return (
     <Fragment>
-     
       <>
-      {submitted ? (<div className="text-green-600 font-semibold text-center p-4">
-          {notification}
-        </div> ) : (
-        <div>
+        {submitted ? (
+          <div className="text-green-600 font-semibold text-center p-4">
+            {notification}
+          </div>
+        ) : (
+          <div>
             <div className="shadow-md border-2 border-gray-400 rounded-md">
               <ImageSlider images={request.pictures} />
               <div className="bg-custom-grain p-2 flex flex-col">
@@ -143,7 +142,9 @@ function RequestDetailsProvider({ request }) {
               </div>
             </div>
             {showSecondStep && createQuote()}
-          </div>)}</>
+          </div>
+        )}
+      </>
     </Fragment>
   )
 }
