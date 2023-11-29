@@ -36,6 +36,9 @@ spring:
 homerep:
   email-templates:
     email-verification: file:/abs/path/to/actual-templates/email-verification.eml
+    reset-password: file:/abs/path/to/actual-templates/template.eml
+    email-request: file:/abs/path/to/actual-templates/template.eml
+    email-request-accepted: file:/abs/path/to/actual-templates/template.eml
   image-storage:
     quality: 90.0
     storage-root: ./image-storage-root

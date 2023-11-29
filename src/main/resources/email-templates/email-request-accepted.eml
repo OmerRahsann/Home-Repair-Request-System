@@ -1,0 +1,27 @@
+MIME-Version: 1.0
+Content-Language: en-US
+From: noreply@localhost
+Subject: {{customer-first-name}} {{customer-last-name}} has accepted your email request
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>{{customer-first-name}} {{customer-last-name}} has accepted your email request</title>
+  </head>
+  <body>
+    <p><b>{{customer-first-name}} {{customer-last-name}}</b></p>
+    <p>Email: <a href="mailto:{{customer-email}}">{{customer-email}}</a></p>
+    <p>Phone: {{customer-phone-number}}</p>
+    <p><br></p>
+    <p>Service Request: {{service-request-title}}</p>
+    <p>{{service-request-description}}</p>
+    <p>Visit your appointments page to see your other confirmed email requests.</p>
+    <p>
+      <a href="http://localhost:3000/provider/appointments">http://localhost:3000/provider/appointments</a>
+    </p>
+  </body>
+</html>
+

@@ -6,6 +6,8 @@ import jakarta.mail.internet.ContentType;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Safelist;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -14,6 +16,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -37,6 +40,7 @@ public class EmailServiceImpl implements EmailService {
             Resource templateResource = resourceLoader.getResource(templateLocation);
 
             MimeMessage email = new MimeMessage(session, templateResource.getInputStream());
+            templateVariables = sanitize(templateVariables);
             fillEmail(email, templateVariables);
             email.setRecipient(Message.RecipientType.TO, new InternetAddress(emailAddress));
             email.setRecipient(Message.RecipientType.CC, null);
@@ -45,6 +49,12 @@ public class EmailServiceImpl implements EmailService {
         } catch (MailException | MessagingException | IOException e) {
             throw new RuntimeException(e); // TODO handle MailException gracefully?
         }
+    }
+
+    private Map<String, String> sanitize(Map<String, String> templateVariables) {
+        Map<String, String> result = new HashMap<>();
+        templateVariables.forEach((key, value) -> result.put(key, Jsoup.clean(value, Safelist.none())));
+        return result;
     }
 
     private void fillEmail(MimeMessage template, Map<String, String> templateVariables) throws MessagingException, IOException {

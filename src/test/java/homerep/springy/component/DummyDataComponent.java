@@ -60,7 +60,11 @@ public class DummyDataComponent {
         Account account = createAccount(email, AccountType.CUSTOMER);
         Customer customer = new Customer(account);
         customer.setFirstName(randomFrom(FIRST_NAMES));
+        customer.setMiddleName("");
         customer.setLastName(randomFrom(LAST_NAMES));
+        // TODO random address and phone numbers?
+        customer.setAddress("201 Mullica Hill Rd, Glassboro, NJ 08028");
+        customer.setPhoneNumber("1231231234");
         return customerRepository.save(customer);
     }
 

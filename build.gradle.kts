@@ -32,6 +32,7 @@ dependencies {
 	implementation("com.bucket4j:bucket4j-core:8.5.0") // For rate limiting
 	implementation("com.github.ben-manes.caffeine:caffeine") // For cache data structure
 	implementation("com.google.maps:google-maps-services:2.2.0") // For geocoding addresses with the Google Maps API
+	implementation("org.jsoup:jsoup:1.17.1") // For sanitizing HTML
 
 	runtimeOnly("com.mysql:mysql-connector-j")
 

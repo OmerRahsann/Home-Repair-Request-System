@@ -16,6 +16,8 @@ public class EmailTemplateConfig {
         Map<String, String> map = new HashMap<>();
         map.put("email-verification", "classpath:email-templates/email-verification.eml");
         map.put("reset-password", "classpath:email-templates/reset-password.eml");
+        map.put("email-request", "classpath:email-templates/email-request.eml");
+        map.put("email-request-accepted", "classpath:email-templates/email-request-accepted.eml");
         return map;
     }
 }

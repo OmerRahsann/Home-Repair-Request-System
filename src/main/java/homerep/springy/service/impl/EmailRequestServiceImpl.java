@@ -12,14 +12,18 @@ import homerep.springy.model.emailrequest.EmailRequestStatus;
 import homerep.springy.repository.EmailRequestRepository;
 import homerep.springy.repository.ServiceRequestRepository;
 import homerep.springy.service.EmailRequestService;
+import homerep.springy.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class EmailRequestServiceImpl implements EmailRequestService {
@@ -29,6 +33,9 @@ public class EmailRequestServiceImpl implements EmailRequestService {
 
     @Autowired
     private ServiceRequestRepository serviceRequestRepository;
+
+    @Autowired
+    private EmailService emailService;
 
     @Override
     public EmailRequestModel getEmail(ServiceRequest serviceRequest, ServiceProvider serviceProvider) {
@@ -46,6 +53,7 @@ public class EmailRequestServiceImpl implements EmailRequestService {
     }
 
     @Override
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public boolean sendEmailRequest(ServiceRequest serviceRequest, ServiceProvider serviceProvider) {
         EmailRequest emailRequest = emailRequestRepository.findByServiceProviderAndServiceRequest(serviceProvider, serviceRequest);
         if (emailRequest != null) {
@@ -55,7 +63,19 @@ public class EmailRequestServiceImpl implements EmailRequestService {
         emailRequest = emailRequestRepository.save(emailRequest);
         serviceRequest.getEmailRequests().add(emailRequest);
         serviceRequest = serviceRequestRepository.save(serviceRequest);
-        // TODO notification of some sort?
+
+        emailService.sendEmail(
+                serviceRequest.getCustomer().getAccount().getEmail(),
+                "email-request",
+                Map.of(
+                        "service-provider-name", serviceProvider.getName(),
+                        "service-provider-description", serviceProvider.getDescription(),
+                        "service-provider-address", serviceProvider.getAddress(),
+                        "service-provider-contact-email", serviceProvider.getContactEmailAddress(),
+                        "service-provider-phone-number", serviceProvider.getPhoneNumber(),
+                        "service-request-title", serviceRequest.getTitle()
+                )
+        );
         return true;
     }
 
@@ -93,7 +113,20 @@ public class EmailRequestServiceImpl implements EmailRequestService {
         emailRequest.setStatus(EmailRequestStatus.ACCEPTED);
         emailRequest.setUpdateTimestamp(Instant.now());
         emailRequestRepository.save(emailRequest);
-        // TODO notification of some sort?
+
+        Customer customer = emailRequest.getServiceRequest().getCustomer();
+        emailService.sendEmail(
+                emailRequest.getServiceProvider().getAccount().getEmail(),
+                "email-request-accepted",
+                Map.of(
+                        "customer-first-name", customer.getFirstName(),
+                        "customer-last-name", customer.getLastName(),
+                        "customer-email", customer.getAccount().getEmail(),
+                        "customer-phone-number", customer.getPhoneNumber(),
+                        "service-request-title", emailRequest.getServiceRequest().getTitle(),
+                        "service-request-description", emailRequest.getServiceRequest().getDescription()
+                )
+        );
         return true;
     }
 

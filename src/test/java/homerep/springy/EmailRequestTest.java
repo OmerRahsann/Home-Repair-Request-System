@@ -1,9 +1,12 @@
 package homerep.springy;
 
+import com.icegreen.greenmail.spring.GreenMailBean;
+import com.icegreen.greenmail.store.FolderException;
 import homerep.springy.authorities.AccountType;
 import homerep.springy.authorities.Verified;
 import homerep.springy.component.DummyDataComponent;
 import homerep.springy.config.TestDatabaseConfig;
+import homerep.springy.config.TestMailConfig;
 import homerep.springy.config.TestStorageConfig;
 import homerep.springy.controller.customer.CustomerEmailRequestController;
 import homerep.springy.controller.provider.ServiceProviderEmailRequestController;
@@ -20,6 +23,7 @@ import homerep.springy.model.emailrequest.EmailRequestModel;
 import homerep.springy.model.emailrequest.EmailRequestStatus;
 import homerep.springy.repository.EmailRequestRepository;
 import homerep.springy.service.EmailRequestService;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestDatabaseConfig
-@Import(TestStorageConfig.class)
+@Import({TestMailConfig.class, TestStorageConfig.class})
 public class EmailRequestTest {
 
     @Autowired
@@ -53,6 +57,9 @@ public class EmailRequestTest {
     @Autowired
     private DummyDataComponent dummyDataComponent;
 
+    @Autowired
+    private GreenMailBean greenMailBean;
+
     private Customer customer;
     private ServiceProvider serviceProvider1;
     private ServiceProvider serviceProvider2;
@@ -69,7 +76,7 @@ public class EmailRequestTest {
     private static final User SERVICE_PROVIDER_2_USER = new User(SERVICE_PROVIDER_2_EMAIL, "", List.of(AccountType.SERVICE_PROVIDER, Verified.INSTANCE));
 
     @BeforeEach
-    void setup() {
+    void setup() throws FolderException {
         customer = dummyDataComponent.createCustomer(CUSTOMER_EMAIL);
         serviceRequest1 = dummyDataComponent.createServiceRequest(customer);
         serviceRequest2 = dummyDataComponent.createServiceRequest(customer);
@@ -119,6 +126,7 @@ public class EmailRequestTest {
     }
 
     @Test
+    @Transactional
     void getEmailAfterAccepted() {
         // No email requests
         assertTrue(emailRequestRepository.findAll().isEmpty());
@@ -301,5 +309,61 @@ public class EmailRequestTest {
         Instant request0Timestamp = models.get(0).updateTimestamp();
         Instant request1Timestamp = models.get(1).updateTimestamp();
         assertTrue(request0Timestamp.isAfter(request1Timestamp));
+    }
+
+    @Test
+    void emailNotificationForRequest() throws Exception {
+        greenMailBean.getGreenMail().purgeEmailFromAllMailboxes();
+        assertEquals(0, greenMailBean.getReceivedMessages().length);
+
+        // After sending an email request
+        assertTrue(emailRequestService.sendEmailRequest(serviceRequest1, serviceProvider1));
+
+        // A notification email is sent to the customer
+        assertEquals(1, greenMailBean.getReceivedMessages().length);
+        MimeMessage message = greenMailBean.getReceivedMessages()[0];
+        // only to their registered email
+        assertEquals(1, message.getAllRecipients().length);
+        assertEquals(CUSTOMER_EMAIL, message.getAllRecipients()[0].toString());
+        // with the service provider's information
+        assertTrue(message.getContent() instanceof String);
+        String content = (String) message.getContent();
+        assertTrue(content.contains(serviceProvider1.getName()));
+        assertTrue(content.contains(serviceProvider1.getDescription()));
+        assertTrue(content.contains(serviceProvider1.getAddress()));
+        assertTrue(content.contains(serviceProvider1.getContactEmailAddress()));
+        assertTrue(content.contains(serviceProvider1.getPhoneNumber()));
+        // and the title of the service request
+        assertTrue(content.contains(serviceRequest1.getTitle()));
+    }
+
+    @Test
+    @Transactional
+    void emailNotificationForAccepting() throws Exception {
+        // Send an email request
+        assertTrue(emailRequestService.sendEmailRequest(serviceRequest1, serviceProvider1));
+        assertEquals(1, emailRequestRepository.findAll().size());
+        EmailRequest emailRequest = emailRequestRepository.findAll().get(0);
+        // Ignore irrelevant emails
+        greenMailBean.getGreenMail().purgeEmailFromAllMailboxes();
+        assertEquals(0, greenMailBean.getReceivedMessages().length);
+        // Accept the email request
+        emailRequestService.acceptEmailRequest(emailRequest);
+        // A notification email is sent to the service provider
+        assertEquals(1, greenMailBean.getReceivedMessages().length);
+        MimeMessage message = greenMailBean.getReceivedMessages()[0];
+        // only to their registered email
+        assertEquals(1, message.getAllRecipients().length);
+        assertEquals(SERVICE_PROVIDER_1_EMAIL, message.getAllRecipients()[0].toString());
+        // with the customer's information
+        assertTrue(message.getContent() instanceof String);
+        String content = (String) message.getContent();
+        assertTrue(content.contains(customer.getFirstName()));
+        assertTrue(content.contains(customer.getLastName()));
+        assertTrue(content.contains(CUSTOMER_EMAIL));
+        assertTrue(content.contains(customer.getPhoneNumber()));
+        // and the title and description of the service request
+        assertTrue(content.contains(serviceRequest1.getTitle()));
+        assertTrue(content.contains(serviceRequest1.getDescription()));
     }
 }

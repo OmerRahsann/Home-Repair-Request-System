@@ -8,7 +8,6 @@ import java.time.Instant;
 import java.util.Objects;
 
 @Entity
-// TODO unique constraint?
 public class EmailRequest {
     @Id
     @GeneratedValue

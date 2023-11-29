@@ -1,0 +1,29 @@
+MIME-Version: 1.0
+Content-Language: en-US
+From: noreply@localhost
+Subject: {{service-provider-name}} has requested your email.
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>{{service-provider-name}} has requested your email</title>
+  </head>
+  <body>
+    <p><b>{{service-provider-name}}</b> wants your email to discuss your service request: {{service-request-title}}<br>
+    </p>
+    <p>About the service provider:</p>
+    <p>{{service-provider-description}}</p>
+    <p>Address: {{service-provider-address}}</p>
+    <p>Email: <a href="mailto:{{service-provider-contact-email}}">{{service-provider-contact-email}}</a></p>
+    <p>Phone: {{service-provider-phone-number}}</p>
+    <p><br></p>
+    <p>Visit your appointments page to see your pending email permission requests.</p>
+    <p>
+      <a href="http://localhost:3000/customer/myappointments">http://localhost:3000/customer/myappointments</a>
+    </p>
+  </body>
+</html>
+

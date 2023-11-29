@@ -4,6 +4,7 @@ import com.icegreen.greenmail.spring.GreenMailBean;
 import com.icegreen.greenmail.store.FolderException;
 import homerep.springy.config.TestMailConfig;
 import homerep.springy.service.EmailService;
+import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 
+import java.io.IOException;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -60,5 +62,27 @@ public class EmailServiceTest {
         assertFalse(content.contains("{{body}}"));
         assertTrue(content.contains("body"));
         assertTrue(content.contains("{{unspecified-var}}"));
+    }
+
+    @Test
+    void sanitizeVariablesTest() throws MessagingException, IOException {
+        assertEquals(0, greenMailBean.getReceivedMessages().length);
+        String testHtml = "<p><script>wow</script><a href='https://example.com'>Sanitized</p>";
+        emailService.sendEmail(TEST_EMAIL, "test-single-html", Map.of(
+                "subject-var", testHtml,
+                "body", testHtml
+        ));
+        // Email was sent
+        assertEquals(1, greenMailBean.getReceivedMessages().length);
+        MimeMessage message = greenMailBean.getReceivedMessages()[0];
+        assertEquals("text/html; charset=UTF-8", message.getContentType());
+        assertTrue(message.getContent() instanceof String);
+        String content = (String) message.getContent();
+        // Variables are replaced with sanitized values
+        assertEquals("Start Sanitized End", message.getSubject());
+        assertTrue(content.contains("Sanitized"));
+        assertFalse(content.contains(testHtml));
+        assertFalse(content.contains("{{subject-var}}}"));
+        assertFalse(content.contains("{{body}}}"));
     }
 }
