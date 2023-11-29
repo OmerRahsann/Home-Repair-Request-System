@@ -46,11 +46,15 @@ public class ServiceProviderAppointmentController {
     public List<AppointmentModel> getAppointments(
             @RequestParam(value = "year") int year,
             @RequestParam(value = "month") int month,
+            @RequestParam(value = "week_ends", required = false) Boolean weekEnds,
             @RequestParam(value = "zone_id") ZoneId zoneId,
             @AuthenticationPrincipal User user) {
+        if (weekEnds == null) {
+            weekEnds = false;
+        }
         YearMonth yearMonth = YearMonth.of(year, month);
         ServiceProvider serviceProvider = serviceProviderRepository.findByAccountEmail(user.getUsername());
-        return appointmentService.getAppointmentsByMonth(serviceProvider, yearMonth, zoneId);
+        return appointmentService.getAppointmentsByMonth(serviceProvider, yearMonth, weekEnds, zoneId);
     }
 
     @GetMapping("/appointments/{id}")

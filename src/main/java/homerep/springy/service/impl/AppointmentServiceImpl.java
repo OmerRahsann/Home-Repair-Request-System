@@ -103,18 +103,16 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public List<AppointmentModel> getAppointmentsByMonth(Customer customer, YearMonth yearMonth, ZoneId zoneId) {
-        Instant startOfMonth = yearMonth.atDay(1).atStartOfDay(zoneId).toInstant();
-        Instant endOfMonth = ZonedDateTime.of(yearMonth.atEndOfMonth(), LocalTime.MAX, zoneId).toInstant();
-        List<Appointment> appointments = appointmentRepository.findAllByCustomerAndPeriodIn(customer, startOfMonth, endOfMonth);
+    public List<AppointmentModel> getAppointmentsByMonth(Customer customer, YearMonth yearMonth, boolean weekEnds, ZoneId zoneId) {
+        InstantPeriod period = getMonthPeriod(yearMonth, weekEnds, zoneId);
+        List<Appointment> appointments = appointmentRepository.findAllByCustomerAndPeriodIn(customer, period.start, period.end);
         return toModels(appointments);
     }
 
     @Override
-    public List<AppointmentModel> getAppointmentsByMonth(ServiceProvider serviceProvider, YearMonth yearMonth, ZoneId zoneId) {
-        Instant startOfMonth = yearMonth.atDay(1).atStartOfDay(zoneId).toInstant();
-        Instant endOfMonth = ZonedDateTime.of(yearMonth.atEndOfMonth(), LocalTime.MAX, zoneId).toInstant();
-        List<Appointment> appointments = appointmentRepository.findAllByServiceProviderAndPeriodIn(serviceProvider, startOfMonth, endOfMonth);
+    public List<AppointmentModel> getAppointmentsByMonth(ServiceProvider serviceProvider, YearMonth yearMonth, boolean weekEnds, ZoneId zoneId) {
+        InstantPeriod period = getMonthPeriod(yearMonth, weekEnds, zoneId);
+        List<Appointment> appointments = appointmentRepository.findAllByServiceProviderAndPeriodIn(serviceProvider, period.start, period.end);
         return toModels(appointments);
     }
 
@@ -160,5 +158,25 @@ public class AppointmentServiceImpl implements AppointmentService {
             appointmentModels.add(AppointmentModel.fromEntity(appointment));
         }
         return appointmentModels;
+    }
+
+    private record InstantPeriod(
+            Instant start,
+            Instant end
+    ) {
+    }
+
+    private InstantPeriod getMonthPeriod(YearMonth yearMonth, boolean weekEnds, ZoneId zoneId) {
+        LocalDate start = yearMonth.atDay(1);
+        LocalDate end = yearMonth.atEndOfMonth();
+        if (weekEnds) {
+            // Add a week of padding to the start and end
+            start = start.minusDays(7);
+            end = end.plusDays(7);
+        }
+        return new InstantPeriod(
+                start.atStartOfDay(zoneId).toInstant(),
+                ZonedDateTime.of(end, LocalTime.MAX, zoneId).toInstant()
+        );
     }
 }

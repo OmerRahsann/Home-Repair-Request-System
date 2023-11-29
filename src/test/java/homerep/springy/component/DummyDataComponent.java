@@ -41,9 +41,6 @@ public class DummyDataComponent {
     private ServiceRequestRepository serviceRequestRepository;
 
     @Autowired
-    private AppointmentRepository appointmentRepository;
-
-    @Autowired
     private AppointmentService appointmentService;
 
     private final Random random = new Random(0);
@@ -150,7 +147,7 @@ public class DummyDataComponent {
         return Instant.ofEpochSecond(random.nextLong(start.getEpochSecond(), end.getEpochSecond() + 1));
     }
 
-    private Duration randomDuration() {
+    public Duration randomDuration() {
         return Duration.ofMinutes(random.nextInt(5, 180));
     }
 

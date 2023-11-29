@@ -22,9 +22,9 @@ public interface AppointmentService {
 
     List<AppointmentModel> getConflictingCustomerAppointments(Appointment appointment);
 
-    List<AppointmentModel> getAppointmentsByMonth(Customer customer, YearMonth yearMonth, ZoneId zoneId);
+    List<AppointmentModel> getAppointmentsByMonth(Customer customer, YearMonth yearMonth, boolean weekEnds, ZoneId zoneId);
 
-    List<AppointmentModel> getAppointmentsByMonth(ServiceProvider serviceProvider, YearMonth yearMonth, ZoneId zoneId);
+    List<AppointmentModel> getAppointmentsByMonth(ServiceProvider serviceProvider, YearMonth yearMonth, boolean weekEnds, ZoneId zoneId);
 
     List<AppointmentModel> getAppointmentsFor(ServiceRequest serviceRequest);
 

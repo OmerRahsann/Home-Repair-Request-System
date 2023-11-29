@@ -40,11 +40,15 @@ public class CustomerAppointmentController {
     public List<AppointmentModel> getAppointments(
             @RequestParam(value = "year") int year,
             @RequestParam(value = "month") int month,
+            @RequestParam(value = "week_ends", required = false) Boolean weekEnds,
             @RequestParam(value = "zone_id") ZoneId zoneId,
             @AuthenticationPrincipal User user) {
+        if (weekEnds == null) {
+            weekEnds = false;
+        }
         YearMonth yearMonth = YearMonth.of(year, month);
         Customer customer = customerRepository.findByAccountEmail(user.getUsername());
-        return appointmentService.getAppointmentsByMonth(customer, yearMonth, zoneId);
+        return appointmentService.getAppointmentsByMonth(customer, yearMonth, weekEnds, zoneId);
     }
 
     @GetMapping("/appointments/{id}")

@@ -263,7 +263,7 @@ public class AppointmentTest {
                     .sorted(Comparator.comparing(Appointment::getId)) // Sort by id so that indices can match
                     .map(AppointmentModel::fromEntity)
                     .toList();
-            List<AppointmentModel> actualAppointments = appointmentService.getAppointmentsByMonth(customer, yearMonth, TIME_ZONE);
+            List<AppointmentModel> actualAppointments = appointmentService.getAppointmentsByMonth(customer, yearMonth, false, TIME_ZONE);
             actualAppointments.sort(Comparator.comparing(AppointmentModel::appointmentId)); // Sort by id so that indices can match
             assertEquals(expectedAppointments, actualAppointments);
         }
@@ -282,10 +282,45 @@ public class AppointmentTest {
                     .sorted(Comparator.comparing(Appointment::getId)) // Sort by id so that indices can match
                     .map(AppointmentModel::fromEntity)
                     .toList();
-            List<AppointmentModel> actualAppointments = appointmentService.getAppointmentsByMonth(serviceProvider, yearMonth, TIME_ZONE);
+            List<AppointmentModel> actualAppointments = appointmentService.getAppointmentsByMonth(serviceProvider, yearMonth, false, TIME_ZONE);
             actualAppointments.sort(Comparator.comparing(AppointmentModel::appointmentId)); // Sort by id so that indices can match
             assertArrayEquals(expectedAppointments.toArray(), actualAppointments.toArray());
         }
+    }
+
+    @Test
+    @Transactional
+    void getAppointmentsWithPadding() {
+        YearMonth yearMonth = YearMonth.now().plusMonths(4);
+
+        Instant periodStart = yearMonth.atDay(1).minusDays(7).atStartOfDay(TIME_ZONE).toInstant();
+        CreateAppointmentModel startModel = new CreateAppointmentModel(
+                periodStart,
+                periodStart.plus(dummyDataComponent.randomDuration()),
+                dummyDataComponent.generateDummySentence()
+        );
+        assertDoesNotThrow(() -> appointmentService.createAppointment(serviceProvider, serviceRequest, startModel));
+
+        Instant periodEnd = ZonedDateTime.of(yearMonth.atEndOfMonth().plusDays(7), LocalTime.MAX, TIME_ZONE).toInstant();
+        CreateAppointmentModel endModel = new CreateAppointmentModel(
+                periodEnd.minus(dummyDataComponent.randomDuration()),
+                periodEnd,
+                dummyDataComponent.generateDummySentence()
+        );
+        assertDoesNotThrow(() -> appointmentService.createAppointment(serviceProvider, serviceRequest, endModel));
+
+        // Appointments are not included if we don't include week ends for the customer
+        List<AppointmentModel> appointments = appointmentService.getAppointmentsByMonth(customer, yearMonth, false, TIME_ZONE);
+        assertTrue(appointments.isEmpty());
+        // and the service provider
+        appointments = appointmentService.getAppointmentsByMonth(serviceProvider, yearMonth, false, TIME_ZONE);
+        assertTrue(appointments.isEmpty());
+        // Appointments in the week before and after a month are included if we include week ends
+        appointments = appointmentService.getAppointmentsByMonth(customer, yearMonth, true, TIME_ZONE);
+        assertEquals(2, appointments.size());
+        // and the service provider
+        appointments = appointmentService.getAppointmentsByMonth(serviceProvider, yearMonth, true, TIME_ZONE);
+        assertEquals(2, appointments.size());
     }
 
     @Test
