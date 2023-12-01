@@ -57,24 +57,31 @@ const ProviderCalendar = ({ customerView, request, setDate, isQuote }) => {
       )
 
       response.data.forEach((x) => {
-        if(x.status==='UNCONFIRMED'){
-          x.title = '🆕' + ' ' + x.customerInfoModel.firstName + ' ' + x.customerInfoModel.lastName
+        if (x.status === 'UNCONFIRMED') {
+          x.title =
+            '🆕' +
+            ' ' +
+            x.customerInfoModel.firstName +
+            ' ' +
+            x.customerInfoModel.lastName
           x.start = new Date(x.startTime)
           x.end = new Date(x.endTime)
-        }
-
-
-        else if (x.status==='CONFIRMED'){
-          x.title =  '✅ ' +  x.customerInfoModel.firstName + ' ' + x.customerInfoModel.lastName
+        } else if (x.status === 'CONFIRMED') {
+          x.title =
+            '✅ ' +
+            x.customerInfoModel.firstName +
+            ' ' +
+            x.customerInfoModel.lastName
           x.start = new Date(x.startTime)
           x.end = new Date(x.endTime)
-
-        }
-        else{
-          x.title =  '❌ ' +  x.customerInfoModel.firstName + ' ' + x.customerInfoModel.lastName
+        } else {
+          x.title =
+            '❌ ' +
+            x.customerInfoModel.firstName +
+            ' ' +
+            x.customerInfoModel.lastName
           x.start = new Date(x.startTime)
           x.end = new Date(x.endTime)
-
         }
       })
       setEvents(response.data)

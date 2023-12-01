@@ -5,7 +5,11 @@ import moment from 'moment'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 import '../ServiceProviderHome/ProviderCalendar.scss' // Import your SASS file
 import ServiceRequestModal from '../Customer/ServiceRequestModal'
-import { CheckCircleIcon, PhoneIcon, XCircleIcon } from '@heroicons/react/24/outline'
+import {
+  CheckCircleIcon,
+  PhoneIcon,
+  XCircleIcon,
+} from '@heroicons/react/24/outline'
 
 const CustomerCalendar = ({ customerView, request, setDate, isQuote }) => {
   const localizer = momentLocalizer(moment)
@@ -13,7 +17,7 @@ const CustomerCalendar = ({ customerView, request, setDate, isQuote }) => {
   const [showEvent, setShowEvent] = useState(false)
   const [eventContent, setEventContent] = useState([])
   const [year, setYear] = useState(new Date().getFullYear())
-  const [isConfirmed, setIsConfirmed] = useState(false);
+  const [isConfirmed, setIsConfirmed] = useState(false)
 
   const [month, setMonth] = useState(new Date().getMonth() + 1)
 
@@ -59,20 +63,15 @@ const CustomerCalendar = ({ customerView, request, setDate, isQuote }) => {
       console.log(response.data)
 
       response.data.forEach((x) => {
-        if(x.status==='UNCONFIRMED'){
-          x.title = '🆕' + ' ' + x.serviceProviderInfoModel.name 
+        if (x.status === 'UNCONFIRMED') {
+          x.title = '🆕' + ' ' + x.serviceProviderInfoModel.name
+          x.start = new Date(x.startTime)
+          x.end = new Date(x.endTime)
+        } else if (x.status === 'CONFIRMED') {
+          x.title = '✅ ' + x.serviceProviderInfoModel.name
           x.start = new Date(x.startTime)
           x.end = new Date(x.endTime)
         }
-
-
-        else if (x.status==='CONFIRMED'){
-          x.title =  '✅ ' + x.serviceProviderInfoModel.name 
-          x.start = new Date(x.startTime)
-          x.end = new Date(x.endTime)
-
-        }
-       
       })
       setEvents(response.data)
     } catch (error) {
@@ -87,21 +86,21 @@ const CustomerCalendar = ({ customerView, request, setDate, isQuote }) => {
         {},
         {
           withCredentials: true,
-        }
-      );
+        },
+      )
       getEvents()
-      setIsConfirmed(true);
+      setIsConfirmed(true)
       window.location.reload()
-  
+
       // Handle successful confirmation
-      console.log('Appointment confirmed successfully:', response.data);
+      console.log('Appointment confirmed successfully:', response.data)
       // You can update state or perform any other actions based on the successful confirmation
     } catch (error) {
       // Handle error
-      window.alert('Error confirming appointment:');
+      window.alert('Error confirming appointment:')
       // You can handle the error, display a message, or perform other actions
     }
-  };
+  }
 
   const cancelAppointment = async (id) => {
     try {
@@ -110,21 +109,21 @@ const CustomerCalendar = ({ customerView, request, setDate, isQuote }) => {
         {},
         {
           withCredentials: true,
-        }
-      );
+        },
+      )
       getEvents()
-      setIsConfirmed(true);
+      setIsConfirmed(true)
       window.location.reload()
-  
+
       // Handle successful cancellation
-      console.log('Appointment canceled successfully:', response.data);
+      console.log('Appointment canceled successfully:', response.data)
       // You can update state or perform any other actions based on the successful cancellation
     } catch (error) {
       // Handle error
-      window.alert('Error canceling appointment');
+      window.alert('Error canceling appointment')
       // You can handle the error, display a message, or perform other actions
     }
-  };  
+  }
 
   //   const onSelectSlot = useCallback(
   //     (calEvent) => {
@@ -284,19 +283,26 @@ const CustomerCalendar = ({ customerView, request, setDate, isQuote }) => {
                   key={index}
                   className="border p-4 mb-4 rounded-md bg-white shadow-md"
                 >
-                  <div className='flex flex-row justify-between'>
-                  <p className="text-xl font-bold mb-2">{event.title}</p>
-                  {event.status==='UNCONFIRMED' && !isConfirmed ? (
-                    <div className='flex flex-row'>
-                    <XCircleIcon width={30} color='maroon' onClick={()=>cancelAppointment(event.appointmentId)}/>
-                    <CheckCircleIcon width={30} color='green' onClick={()=>confirmAppointment(event.appointmentId)}/>
+                  <div className="flex flex-row justify-between">
+                    <p className="text-xl font-bold mb-2">{event.title}</p>
+                    {event.status === 'UNCONFIRMED' && !isConfirmed ? (
+                      <div className="flex flex-row">
+                        <XCircleIcon
+                          width={30}
+                          color="maroon"
+                          onClick={() => cancelAppointment(event.appointmentId)}
+                        />
+                        <CheckCircleIcon
+                          width={30}
+                          color="green"
+                          onClick={() =>
+                            confirmAppointment(event.appointmentId)
+                          }
+                        />
+                      </div>
+                    ) : null}
                   </div>
 
-                  ) : null}
-                  
-
-                  </div>
-                  
                   <div className="flex flex-row mb-2">
                     <p className="text-gray-700 mr-2 ">Message:</p>
                     <p className="text-gray-700">{event.message}</p>
