@@ -114,76 +114,28 @@ export const ProviderProfile = () => {
     <div className="bg-custom-gray">
       <NavBarProvider />
       <div className="flex flex-col items-center  mx-auto pt-2  ">
-        <section style={{ backgroundColor: '#eee', padding: '20px' }}>
-          <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                marginTop: '20px',
-              }}
-            >
-              {/* Left Column */}
-              <div style={{ flex: '1', marginRight: '20px' }}>
-                <div style={{ marginBottom: '20px', textAlign: 'center' }}>
-                  <img
-                    src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3.webp"
-                    alt="avatar"
-                    style={{ width: '150px', borderRadius: '50%' }}
-                  />
-                  <p className="text-muted mb-1">Full Stack Developer</p>
-                  <p className="text-muted mb-4">Bay Area, San Francisco, CA</p>
-                  <div style={{ display: 'flex', justifyContent: 'center' }}>
-                   
-                    <button
-                      style={{
-                        backgroundColor: 'white',
-                        padding: '10px',
-                        borderRadius: '5px',
-                        border: '1px solid #007BFF',
-                      }}
-                    >
-                      Message
-                    </button>
-                  </div>
-                </div>
-
-               
-              </div>
-              {/* Right Column */}
-              <div style={{ flex: '2' }}>
-                <div style={{ marginBottom: '20px' }}>
-                  <h4>Full Name</h4>
-                  <p className="text-muted">Johnatan Smith</p>
-                </div>
-                <hr />
-
-                <div style={{ marginBottom: '20px' }}>
-                  <h4>Email</h4>
-                  <p className="text-muted">example@example.com</p>
-                </div>
-                <hr />
-
-                <div style={{ marginBottom: '20px' }}>
-                  <h4>Phone</h4>
-                  <p className="text-muted">(097) 234-5678</p>
-                </div>
-                <hr />
-
-                <div style={{ marginBottom: '20px' }}>
-                  <h4>Mobile</h4>
-                  <p className="text-muted">(098) 765-4321</p>
-                </div>
-                <hr />
-
-                <div>
-                  <h4>Address</h4>
-                  <p className="text-muted">Bay Area, San Francisco, CA</p>
-                </div>
-              </div>
-            </div>
+        <div className='w-2/5 bg-white shadow-lg rounded-md p-2'>
+          
+          <h1 className='font-bold text-[3vh] text-center'>Name Goes here</h1>
+          <div className='flex flex-col items-center justify-between'>
+            <p>📧 email goes here</p>
+            <p>📞 phone goes here</p>
           </div>
-        </section>
+          <div className='text-center'>
+            provider description goes here
+          </div>
+          <div className=' flex flex-row items-center justify-center'>
+           
+            <Select/>
+          </div>
+          <div className='flex flex-row justify-between p-2'>
+            <button className='text-white  bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"'>Edit Account</button>
+            <div className='p-2'></div>
+            <button className='text-white bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"'>Reset Password</button>
+
+          </div>
+        
+        </div>
         <div className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 p">
           <ServiceRequestModal isVisible={edit} onClose={() => setEdit(false)}>
             <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
