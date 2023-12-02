@@ -114,27 +114,25 @@ export const ProviderProfile = () => {
     <div className="bg-custom-gray">
       <NavBarProvider />
       <div className="flex flex-col items-center  mx-auto pt-2  ">
-        <div className='w-2/5 bg-white shadow-lg rounded-md p-2'>
-          
-          <h1 className='font-bold text-[3vh] text-center'>Name Goes here</h1>
-          <div className='flex flex-col items-center justify-between'>
+        <div className="w-2/5 bg-white shadow-lg rounded-md p-2">
+          <h1 className="font-bold text-[3vh] text-center">Name Goes here</h1>
+          <div className="flex flex-col items-center justify-between">
             <p>📧 email goes here</p>
             <p>📞 phone goes here</p>
           </div>
-          <div className='text-center'>
-            provider description goes here
+          <div className="text-center">provider description goes here</div>
+          <div className=" flex flex-row items-center justify-center">
+            <Select />
           </div>
-          <div className=' flex flex-row items-center justify-center'>
-           
-            <Select/>
+          <div className="flex flex-row justify-between p-2">
+            <button className='text-white  bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"'>
+              Edit Account
+            </button>
+            <div className="p-2"></div>
+            <button className='text-white bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"'>
+              Reset Password
+            </button>
           </div>
-          <div className='flex flex-row justify-between p-2'>
-            <button className='text-white  bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"'>Edit Account</button>
-            <div className='p-2'></div>
-            <button className='text-white bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"'>Reset Password</button>
-
-          </div>
-        
         </div>
         <div className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 p">
           <ServiceRequestModal isVisible={edit} onClose={() => setEdit(false)}>
