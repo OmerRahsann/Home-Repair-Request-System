@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.authorization.AuthorityAuthorizationManager;
 import org.springframework.security.authorization.AuthorizationManagers;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -34,6 +33,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
 import java.util.Objects;
+
+import static org.springframework.security.authorization.AuthorityAuthorizationManager.hasAuthority;
 
 @Configuration
 @EnableWebSecurity
@@ -62,16 +63,18 @@ public class SecurityConfig {
                         .requestMatchers(mvc.pattern("/api/services")).permitAll() // Used during service provider registration
                         .requestMatchers(mvc.pattern("/api/customer/**")).access(
                                 AuthorizationManagers.allOf(
-                                        AuthorityAuthorizationManager.hasAuthority(AccountType.CUSTOMER.getAuthority()),
-                                        AuthorityAuthorizationManager.hasAuthority(Verified.INSTANCE.getAuthority())
+                                        hasAuthority(AccountType.CUSTOMER.getAuthority()),
+                                        hasAuthority(Verified.INSTANCE.getAuthority())
                                 )        
                         ) // Argh, this is not nice
                         .requestMatchers(mvc.pattern("/api/provider/**")).access(
                                 AuthorizationManagers.allOf(
-                                        AuthorityAuthorizationManager.hasAuthority(AccountType.SERVICE_PROVIDER.getAuthority()),
-                                        AuthorityAuthorizationManager.hasAuthority(Verified.INSTANCE.getAuthority())
+                                        hasAuthority(AccountType.SERVICE_PROVIDER.getAuthority()),
+                                        hasAuthority(Verified.INSTANCE.getAuthority())
                                 )
                         )
+                        .requestMatchers(mvc.pattern("/api/account/customer/**")).access(hasAuthority(AccountType.CUSTOMER.getAuthority()))
+                        .requestMatchers(mvc.pattern("/api/account/provider/**")).access(hasAuthority(AccountType.SERVICE_PROVIDER.getAuthority()))
                         .requestMatchers(mvc.pattern("/actuator/**")).permitAll() // Only accessible through the management port
                         .anyRequest().authenticated()
         );

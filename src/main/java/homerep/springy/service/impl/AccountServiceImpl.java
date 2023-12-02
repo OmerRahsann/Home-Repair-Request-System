@@ -103,23 +103,10 @@ public class AccountServiceImpl implements AccountService, UserDetailsService {
         // registerModel should be valid, just check the instance type
         if (registerModel.accountInfo() instanceof ServiceProviderInfoModel infoModel) {
             ServiceProvider serviceProvider = new ServiceProvider(account);
-            serviceProvider.setName(infoModel.name());
-            serviceProvider.setDescription(infoModel.description());
-            serviceProvider.setServices(infoModel.services());
-            serviceProvider.setPhoneNumber(infoModel.phoneNumber());
-            serviceProvider.setAddress(infoModel.address());
-            serviceProvider.setContactEmailAddress(infoModel.contactEmailAddress());
-
-            serviceProvider = serviceProviderRepository.save(serviceProvider);
+            updateServiceProviderInfo(serviceProvider, infoModel);
         } else if (registerModel.accountInfo() instanceof CustomerInfoModel infoModel) {
             Customer customer = new Customer(account);
-            customer.setFirstName(infoModel.firstName());
-            customer.setMiddleName(infoModel.middleName());
-            customer.setLastName(infoModel.lastName());
-            customer.setAddress(infoModel.address());
-            customer.setPhoneNumber(infoModel.phoneNumber());
-
-            customer = customerRepository.save(customer);
+            updateCustomerInfo(customer, infoModel);
         }
 
         sendEmailVerification(account);
@@ -208,5 +195,26 @@ public class AccountServiceImpl implements AccountService, UserDetailsService {
             authorities.add(Verified.INSTANCE);
         }
         return new User(account.getEmail(), account.getPassword(), authorities);
+    }
+
+    @Override
+    public void updateCustomerInfo(Customer customer, CustomerInfoModel infoModel) {
+        customer.setFirstName(infoModel.firstName());
+        customer.setMiddleName(infoModel.middleName());
+        customer.setLastName(infoModel.lastName());
+        customer.setAddress(infoModel.address());
+        customer.setPhoneNumber(infoModel.phoneNumber());
+        customerRepository.save(customer);
+    }
+
+    @Override
+    public void updateServiceProviderInfo(ServiceProvider serviceProvider, ServiceProviderInfoModel infoModel) {
+        serviceProvider.setName(infoModel.name());
+        serviceProvider.setDescription(infoModel.description());
+        serviceProvider.setServices(new ArrayList<>(infoModel.services()));
+        serviceProvider.setPhoneNumber(infoModel.phoneNumber());
+        serviceProvider.setAddress(infoModel.address());
+        serviceProvider.setContactEmailAddress(infoModel.contactEmailAddress());
+        serviceProviderRepository.save(serviceProvider);
     }
 }
