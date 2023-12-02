@@ -1,5 +1,6 @@
 package homerep.springy.service.impl;
 
+import homerep.springy.authorities.AccountType;
 import homerep.springy.entity.Appointment;
 import homerep.springy.entity.Customer;
 import homerep.springy.entity.ServiceProvider;
@@ -11,6 +12,7 @@ import homerep.springy.model.appointment.AppointmentStatus;
 import homerep.springy.model.appointment.CreateAppointmentModel;
 import homerep.springy.repository.AppointmentRepository;
 import homerep.springy.service.AppointmentService;
+import homerep.springy.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -20,11 +22,17 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class AppointmentServiceImpl implements AppointmentService {
     @Autowired
     private AppointmentRepository appointmentRepository;
+
+    @Autowired
+    private EmailService emailService;
+
+    private static final ZoneId TIME_ZONE = ZoneId.of("America/New_York"); // TODO this should not be a constant
 
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
@@ -50,17 +58,54 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointment = appointmentRepository.save(appointment);
 
         serviceRequest.getAppointments().add(appointment);
-        // TODO send notification/email
+
+        String period = formatAppointmentPeriod(appointment, TIME_ZONE); // TODO base on provider timezone
+        String message = appointment.getMessage() == null ? "" : appointment.getMessage();
+        emailService.sendEmail(
+                serviceRequest.getCustomer().getAccount().getEmail(),
+                "appointment-created",
+                Map.of(
+                        "service-provider-name", serviceProvider.getName(),
+                        "service-request-title", serviceRequest.getTitle(),
+                        "appointment-period", period,
+                        "appointment-message", message
+                )
+        );
         return appointment;
     }
 
     @Override
-    public void cancelAppointment(Appointment appointment) {
+    public void cancelAppointment(Appointment appointment, AccountType canceller) {
         if (appointment.getStatus() == AppointmentStatus.UNCONFIRMED || appointment.getStatus() == AppointmentStatus.CONFIRMED) {
             appointment.setStatus(AppointmentStatus.CANCELLED);
             appointment.setUpdateTimestamp(Instant.now());
             appointment = appointmentRepository.save(appointment);
-            // TODO send notification/email
+
+            String period = formatAppointmentPeriod(appointment, TIME_ZONE); // TODO base on customer/provider timezone
+            String message = appointment.getMessage() == null ? "" : appointment.getMessage();
+            switch (canceller) {
+                case CUSTOMER -> emailService.sendEmail(
+                        appointment.getServiceProvider().getAccount().getEmail(),
+                        "appointment-cancelled-by-customer",
+                        Map.of(
+                                "customer-first-name", appointment.getCustomer().getFirstName(),
+                                "customer-last-name", appointment.getCustomer().getLastName(),
+                                "service-request-title", appointment.getServiceRequest().getTitle(),
+                                "appointment-period", period,
+                                "appointment-message", message
+                        )
+                );
+                case SERVICE_PROVIDER -> emailService.sendEmail(
+                        appointment.getCustomer().getAccount().getEmail(),
+                        "appointment-cancelled-by-provider",
+                        Map.of(
+                                "service-provider-name", appointment.getServiceProvider().getName(),
+                                "service-request-title", appointment.getServiceRequest().getTitle(),
+                                "appointment-period", period,
+                                "appointment-message", message
+                        )
+                );
+            }
         }
     }
 
@@ -86,7 +131,20 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointment.setStatus(AppointmentStatus.CONFIRMED);
         appointment.setUpdateTimestamp(Instant.now());
         appointment = appointmentRepository.save(appointment);
-        // TODO send notification/email
+
+        String period = formatAppointmentPeriod(appointment, TIME_ZONE); // TODO base on customer timezone
+        String message = appointment.getMessage() == null ? "" : appointment.getMessage();
+        emailService.sendEmail(
+                appointment.getServiceProvider().getAccount().getEmail(),
+                "appointment-confirmed",
+                Map.of(
+                        "customer-first-name", appointment.getServiceRequest().getCustomer().getFirstName(),
+                        "customer-last-name", appointment.getServiceRequest().getCustomer().getLastName(),
+                        "service-request-title", appointment.getServiceRequest().getTitle(),
+                        "appointment-period", period,
+                        "appointment-message", message
+                )
+        );
     }
 
     @Override
@@ -178,5 +236,17 @@ public class AppointmentServiceImpl implements AppointmentService {
                 start.atStartOfDay(zoneId).toInstant(),
                 ZonedDateTime.of(end, LocalTime.MAX, zoneId).toInstant()
         );
+    }
+
+    private String formatAppointmentPeriod(Appointment appointment, ZoneId zoneId) {
+        // TODO somehow account for locale in this?
+        LocalDateTime start = LocalDateTime.ofInstant(appointment.getStartTime(), zoneId);
+        LocalDateTime end = LocalDateTime.ofInstant(appointment.getEndTime(), zoneId);
+        if (start.toLocalDate().equals(end.toLocalDate())) {
+            // Same day
+            return start.toLocalDate() + " ⋅ " + start.toLocalTime() + " - " + end.toLocalTime();
+        } else {
+            return start.toLocalDate() + " " + start.toLocalTime() + " - " + end.toLocalDate() + " " + end.toLocalTime();
+        }
     }
 }

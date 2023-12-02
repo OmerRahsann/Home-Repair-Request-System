@@ -1,5 +1,6 @@
 package homerep.springy.service;
 
+import homerep.springy.authorities.AccountType;
 import homerep.springy.entity.Appointment;
 import homerep.springy.entity.Customer;
 import homerep.springy.entity.ServiceProvider;
@@ -16,7 +17,7 @@ import java.util.List;
 public interface AppointmentService {
     Appointment createAppointment(ServiceProvider serviceProvider, ServiceRequest serviceRequest, CreateAppointmentModel createAppointmentModel) throws ConflictingAppointmentException;
 
-    void cancelAppointment(Appointment appointment); // TODO need cancellation message?
+    void cancelAppointment(Appointment appointment, AccountType canceller); // TODO need cancellation message?
 
     void confirmAppointment(Appointment appointment) throws ConflictingAppointmentException, UnconfirmableAppointmentException;
 

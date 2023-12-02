@@ -1,5 +1,6 @@
 package homerep.springy.controller.customer;
 
+import homerep.springy.authorities.AccountType;
 import homerep.springy.entity.Appointment;
 import homerep.springy.entity.Customer;
 import homerep.springy.entity.ServiceRequest;
@@ -101,6 +102,6 @@ public class CustomerAppointmentController {
         if (appointment == null) {
             throw new NonExistentAppointmentException();
         }
-        appointmentService.cancelAppointment(appointment);
+        appointmentService.cancelAppointment(appointment, AccountType.CUSTOMER);
     }
 }

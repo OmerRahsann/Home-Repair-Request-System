@@ -39,6 +39,10 @@ homerep:
     reset-password: file:/abs/path/to/actual-templates/template.eml
     email-request: file:/abs/path/to/actual-templates/template.eml
     email-request-accepted: file:/abs/path/to/actual-templates/template.eml
+    appointment-created: file:/abs/path/to/actual-templates/template.eml
+    appointment-confirmed: file:/abs/path/to/actual-templates/template.eml
+    appointment-cancelled-by-customer: file:/abs/path/to/actual-templates/template.eml
+    appointment-cancelled-by-provider: file:/abs/path/to/actual-templates/template.eml
   image-storage:
     quality: 90.0
     storage-root: ./image-storage-root

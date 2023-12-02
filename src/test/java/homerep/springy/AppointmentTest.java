@@ -1,9 +1,12 @@
 package homerep.springy;
 
+import com.icegreen.greenmail.spring.GreenMailBean;
+import com.icegreen.greenmail.store.FolderException;
 import homerep.springy.authorities.AccountType;
 import homerep.springy.authorities.Verified;
 import homerep.springy.component.DummyDataComponent;
 import homerep.springy.config.TestDatabaseConfig;
+import homerep.springy.config.TestMailConfig;
 import homerep.springy.config.TestStorageConfig;
 import homerep.springy.controller.customer.CustomerAppointmentController;
 import homerep.springy.controller.provider.ServiceProviderAppointmentController;
@@ -19,6 +22,7 @@ import homerep.springy.repository.AppointmentRepository;
 import homerep.springy.repository.ServiceRequestRepository;
 import homerep.springy.service.AppointmentService;
 import homerep.springy.service.EmailRequestService;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
@@ -27,6 +31,7 @@ import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -41,7 +46,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @TestDatabaseConfig
-@Import(TestStorageConfig.class)
+@Import({TestMailConfig.class, TestStorageConfig.class})
 public class AppointmentTest {
     @Autowired
     private DummyDataComponent dummyDataComponent;
@@ -64,6 +69,9 @@ public class AppointmentTest {
     @Autowired
     private ServiceRequestRepository serviceRequestRepository;
 
+    @Autowired
+    private GreenMailBean greenMailBean;
+
     private Customer customer;
     private ServiceProvider serviceProvider;
     private ServiceRequest serviceRequest;
@@ -77,7 +85,9 @@ public class AppointmentTest {
     private static final ZoneId TIME_ZONE = ZoneId.of("America/New_York");
 
     @BeforeEach
-    void setup() {
+    void setup() throws FolderException {
+        greenMailBean.getGreenMail().purgeEmailFromAllMailboxes();
+
         customer = dummyDataComponent.createCustomer(CUSTOMER_EMAIL);
         serviceRequest = dummyDataComponent.createServiceRequest(customer);
         serviceProvider = dummyDataComponent.createServiceProvider(SERVICE_PROVIDER_EMAIL);
@@ -148,7 +158,7 @@ public class AppointmentTest {
         assertEquals(appointment.getId(), exception.getConflictingAppointments().get(0).getId());
 
         // Cancel the appointment to free up the time slot
-        appointmentService.cancelAppointment(appointment);
+        appointmentService.cancelAppointment(appointment, AccountType.SERVICE_PROVIDER);
         // Creating the other appointment is successful
         assertDoesNotThrow(() -> appointmentService.createAppointment(serviceProvider, serviceRequest, offsetModel));
         assertEquals(2, appointmentRepository.findAll().size());
@@ -161,15 +171,19 @@ public class AppointmentTest {
         Appointment appointment = appointmentService.createAppointment(serviceProvider, serviceRequest, model);
         assertNotNull(appointment);
         // Cancel the appointment
-        appointmentService.cancelAppointment(appointment);
+        appointmentService.cancelAppointment(appointment, AccountType.SERVICE_PROVIDER);
         // Status is updated
         assertEquals(AppointmentStatus.CANCELLED, appointment.getStatus());
         // updateTimestamp is populated with the current time
         Instant updateTimestamp = appointment.getUpdateTimestamp();
         assertNotNull(updateTimestamp);
         assertTrue(updateTimestamp.isAfter(appointment.getCreationTimestamp()));
-        // Cancelling a second time does nothing
-        appointmentService.cancelAppointment(appointment);
+        // Cancelling a second time does nothing for the service provider
+        appointmentService.cancelAppointment(appointment, AccountType.SERVICE_PROVIDER);
+        assertEquals(AppointmentStatus.CANCELLED, appointment.getStatus());
+        assertEquals(updateTimestamp, appointment.getUpdateTimestamp());
+        // cancelling a second time does nothing for the customer
+        appointmentService.cancelAppointment(appointment, AccountType.CUSTOMER);
         assertEquals(AppointmentStatus.CANCELLED, appointment.getStatus());
         assertEquals(updateTimestamp, appointment.getUpdateTimestamp());
     }
@@ -210,7 +224,7 @@ public class AppointmentTest {
         assertTrue(updateTimestamp.isAfter(appointment.getCreationTimestamp()));
 
         // Cancelling the appointment works
-        appointmentService.cancelAppointment(appointment);
+        appointmentService.cancelAppointment(appointment, AccountType.CUSTOMER);
         assertEquals(AppointmentStatus.CANCELLED, appointment.getStatus());
         // updateTimestamp is updated again
         assertTrue(appointment.getUpdateTimestamp().isAfter(updateTimestamp));
@@ -223,7 +237,7 @@ public class AppointmentTest {
         Appointment appointment = appointmentService.createAppointment(serviceProvider, serviceRequest, model);
         assertNotNull(appointment);
         // Cancel the appointment
-        appointmentService.cancelAppointment(appointment);
+        appointmentService.cancelAppointment(appointment, AccountType.SERVICE_PROVIDER);
         // updateTimestamp is populated
         Instant updateTimestamp = appointment.getUpdateTimestamp();
         assertNotNull(updateTimestamp);
@@ -333,7 +347,7 @@ public class AppointmentTest {
         List<Appointment> confirmedAppointments = dummyDataComponent.createAppointmentsFor(serviceProvider, serviceRequest, nextMonth, TIME_ZONE);
         confirmedAppointments.forEach(x -> assertDoesNotThrow(() -> appointmentService.confirmAppointment(x)));
         List<Appointment> cancelledAppointments = dummyDataComponent.createAppointmentsFor(serviceProvider, serviceRequest, nextMonth, TIME_ZONE);
-        cancelledAppointments.forEach(appointmentService::cancelAppointment);
+        cancelledAppointments.forEach(appointment -> appointmentService.cancelAppointment(appointment, AccountType.SERVICE_PROVIDER));
 
         AppointmentModel[] expectedModels = appointments.stream()
                 // Make sure unconfirmed appointments are sorted by creationTimestamp descending
@@ -354,7 +368,7 @@ public class AppointmentTest {
         List<Appointment> confirmedAppointments = dummyDataComponent.createAppointmentsFor(serviceProvider, serviceRequest, nextMonth, TIME_ZONE);
         confirmedAppointments.forEach(x -> assertDoesNotThrow(() -> appointmentService.confirmAppointment(x)));
         List<Appointment> cancelledAppointments = dummyDataComponent.createAppointmentsFor(serviceProvider, serviceRequest, nextMonth, TIME_ZONE);
-        cancelledAppointments.forEach(appointmentService::cancelAppointment);
+        cancelledAppointments.forEach(appointment -> appointmentService.cancelAppointment(appointment, AccountType.SERVICE_PROVIDER));
 
         AppointmentModel[] expectedModels = Stream.concat(confirmedAppointments.stream(), cancelledAppointments.stream())
                 // Make sure confirmed & cancelled appointments are sorted by updateTimestamp descending
@@ -470,7 +484,7 @@ public class AppointmentTest {
         // Create an UNCONFIRMED appointment
         Appointment appointment = appointmentService.createAppointment(serviceProvider, serviceRequest, model);
         // cancel it
-        appointmentService.cancelAppointment(appointment);
+        appointmentService.cancelAppointment(appointment, AccountType.SERVICE_PROVIDER);
         // When the customer tries to confirm it, it fails
         assertThrows(UnconfirmableAppointmentException.class,
                 () -> customerAppointmentController.confirmAppointment(serviceRequest.getId(), CUSTOMER_USER));
@@ -505,5 +519,107 @@ public class AppointmentTest {
         );
         violations = validator.validate(model);
         assertTrue(violations.isEmpty());
+    }
+
+    @Test
+    void createAppointmentEmailNotification() throws Exception {
+        assertEquals(0, greenMailBean.getReceivedMessages().length);
+        CreateAppointmentModel model = appointmentAt(LocalTime.NOON, Duration.ofHours(2));
+        // Create an appointment
+        Appointment appointment = appointmentService.createAppointment(serviceProvider, serviceRequest, model);
+        assertNotNull(appointment);
+        // an email notification is sent to the customer
+        assertEquals(1, greenMailBean.getReceivedMessages().length);
+        MimeMessage message = greenMailBean.getReceivedMessages()[0];
+        // to their registered email
+        assertEquals(1, message.getAllRecipients().length);
+        assertEquals(CUSTOMER_EMAIL, message.getAllRecipients()[0].toString());
+        assertTrue(message.getContent() instanceof String);
+        String content = (String) message.getContent();
+        // with the service provider's name
+        assertTrue(content.contains(serviceProvider.getName()));
+        // the title of the service request
+        assertTrue(content.contains(serviceRequest.getTitle()));
+        // the period
+        LocalDateTime start = LocalDateTime.ofInstant(model.startTime(), TIME_ZONE);
+        LocalDateTime end = LocalDateTime.ofInstant(model.endTime(), TIME_ZONE);
+        assertEquals(start.toLocalDate(), end.toLocalDate());
+        assertTrue(content.contains(start.toLocalDate() + " ⋅ " + start.toLocalTime() + " - " + end.toLocalTime()));
+        // and appointment message
+        assertTrue(content.contains(appointment.getMessage()));
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = AccountType.class)
+    void cancelAppointmentEmailNotifications(AccountType canceller) throws Exception {
+        CreateAppointmentModel model = appointmentAt(LocalTime.NOON, Duration.ofHours(2));
+        // Create an appointment
+        Appointment appointment = appointmentService.createAppointment(serviceProvider, serviceRequest, model);
+        assertNotNull(appointment);
+        // Ignore unrelated emails
+        greenMailBean.getGreenMail().purgeEmailFromAllMailboxes();
+        assertEquals(0, greenMailBean.getReceivedMessages().length);
+        // cancel the appointment
+        appointmentService.cancelAppointment(appointment, canceller);
+        // an email notification is sent to the other party
+        String receiver = canceller == AccountType.CUSTOMER ? SERVICE_PROVIDER_EMAIL : CUSTOMER_EMAIL;
+        assertEquals(1, greenMailBean.getReceivedMessages().length);
+        MimeMessage message = greenMailBean.getReceivedMessages()[0];
+        // to their registered email
+        assertEquals(1, message.getAllRecipients().length);
+        assertEquals(receiver, message.getAllRecipients()[0].toString());
+        assertTrue(message.getContent() instanceof String);
+        String content = (String) message.getContent();
+        // with the title of the service request
+        assertTrue(content.contains(serviceRequest.getTitle()));
+        // the period
+        LocalDateTime start = LocalDateTime.ofInstant(model.startTime(), TIME_ZONE);
+        LocalDateTime end = LocalDateTime.ofInstant(model.endTime(), TIME_ZONE);
+        assertEquals(start.toLocalDate(), end.toLocalDate());
+        assertTrue(content.contains(start.toLocalDate() + " ⋅ " + start.toLocalTime() + " - " + end.toLocalTime()));
+        // and appointment message
+        assertTrue(content.contains(appointment.getMessage()));
+
+        if (canceller == AccountType.CUSTOMER) {
+            // when cancelled by the customer it has the customer's name
+            assertTrue(content.contains(customer.getFirstName()));
+            assertTrue(content.contains(customer.getLastName()));
+        } else {
+            // when cancelled by the service provider it has the service provider's name
+            assertTrue(content.contains(serviceProvider.getName()));
+        }
+    }
+
+    @Test
+    void confirmAppointmentEmailNotification() throws Exception {
+        CreateAppointmentModel model = appointmentAt(LocalTime.NOON, Duration.ofHours(2));
+        // Create an appointment
+        Appointment appointment = appointmentService.createAppointment(serviceProvider, serviceRequest, model);
+        assertNotNull(appointment);
+        // Ignore other emails
+        greenMailBean.getGreenMail().purgeEmailFromAllMailboxes();
+        assertEquals(0, greenMailBean.getReceivedMessages().length);
+        // Confirm the appointment
+        appointmentService.confirmAppointment(appointment);
+        // an email notification is sent to the service provider
+        assertEquals(1, greenMailBean.getReceivedMessages().length);
+        MimeMessage message = greenMailBean.getReceivedMessages()[0];
+        // to their registered email
+        assertEquals(1, message.getAllRecipients().length);
+        assertEquals(SERVICE_PROVIDER_EMAIL, message.getAllRecipients()[0].toString());
+        assertTrue(message.getContent() instanceof String);
+        String content = (String) message.getContent();
+        // with the customer's name
+        assertTrue(content.contains(customer.getFirstName()));
+        assertTrue(content.contains(customer.getLastName()));
+        // the title of the service request
+        assertTrue(content.contains(serviceRequest.getTitle()));
+        // the period
+        LocalDateTime start = LocalDateTime.ofInstant(model.startTime(), TIME_ZONE);
+        LocalDateTime end = LocalDateTime.ofInstant(model.endTime(), TIME_ZONE);
+        assertEquals(start.toLocalDate(), end.toLocalDate());
+        assertTrue(content.contains(start.toLocalDate() + " ⋅ " + start.toLocalTime() + " - " + end.toLocalTime()));
+        // and appointment message
+        assertTrue(content.contains(appointment.getMessage()));
     }
 }

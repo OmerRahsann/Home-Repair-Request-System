@@ -1,0 +1,26 @@
+MIME-Version: 1.0
+Content-Language: en-US
+From: noreply@localhost
+Subject: Confirm your appointment with {{service-provider-name}}
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>Confirm your appointment with {{service-provider-name}}</title>
+  </head>
+  <body>
+    <p><b>New Appointment</b></p>
+    <p>Service Provider: {{service-provider-name}}</p>
+    <p>Service Request: {{service-request-title}}</p>
+    <p>Period: {{appointment-period}}</p>
+    <p>{{appointment-message}}</p>
+    <p><br></p>
+    <p>Go to your appointments page to confirm your appointment.<br></p>
+    <p>
+      <a href="http://localhost:3000/customer/myappointments">http://localhost:3000/customer/myappointments</a>
+    </p>
+  </body>
+</html>
