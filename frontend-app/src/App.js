@@ -47,7 +47,7 @@ function App() {
       
     </div>
     <Footer/>
-    <CustomerNotification/>
+    {/*<CustomerNotification/>  Testing with notification **/}
     </div>
   );
 }
