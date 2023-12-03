@@ -139,7 +139,7 @@ public class DummyDataComponent {
         return appointments;
     }
 
-    private <T> T randomFrom(List<T> list) {
+    public <T> T randomFrom(List<T> list) {
         return list.get(random.nextInt(0, list.size()));
     }
 

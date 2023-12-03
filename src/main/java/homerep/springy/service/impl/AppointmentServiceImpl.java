@@ -10,9 +10,11 @@ import homerep.springy.exception.UnconfirmableAppointmentException;
 import homerep.springy.model.appointment.AppointmentModel;
 import homerep.springy.model.appointment.AppointmentStatus;
 import homerep.springy.model.appointment.CreateAppointmentModel;
+import homerep.springy.model.notification.NotificationType;
 import homerep.springy.repository.AppointmentRepository;
 import homerep.springy.service.AppointmentService;
 import homerep.springy.service.EmailService;
+import homerep.springy.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -31,6 +33,9 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private NotificationService notificationService;
 
     private static final ZoneId TIME_ZONE = ZoneId.of("America/New_York"); // TODO this should not be a constant
 
@@ -71,6 +76,12 @@ public class AppointmentServiceImpl implements AppointmentService {
                         "appointment-message", message
                 )
         );
+        notificationService.sendNotification(
+                serviceRequest.getCustomer().getAccount(),
+                serviceProvider.getName() + " created an appointment",
+                "For service request: " + serviceRequest.getTitle() + "\n Period: " + period,
+                NotificationType.NEW_APPOINTMENT
+        );
         return appointment;
     }
 
@@ -84,27 +95,44 @@ public class AppointmentServiceImpl implements AppointmentService {
             String period = formatAppointmentPeriod(appointment, TIME_ZONE); // TODO base on customer/provider timezone
             String message = appointment.getMessage() == null ? "" : appointment.getMessage();
             switch (canceller) {
-                case CUSTOMER -> emailService.sendEmail(
-                        appointment.getServiceProvider().getAccount().getEmail(),
-                        "appointment-cancelled-by-customer",
-                        Map.of(
-                                "customer-first-name", appointment.getCustomer().getFirstName(),
-                                "customer-last-name", appointment.getCustomer().getLastName(),
-                                "service-request-title", appointment.getServiceRequest().getTitle(),
-                                "appointment-period", period,
-                                "appointment-message", message
-                        )
-                );
-                case SERVICE_PROVIDER -> emailService.sendEmail(
-                        appointment.getCustomer().getAccount().getEmail(),
-                        "appointment-cancelled-by-provider",
-                        Map.of(
-                                "service-provider-name", appointment.getServiceProvider().getName(),
-                                "service-request-title", appointment.getServiceRequest().getTitle(),
-                                "appointment-period", period,
-                                "appointment-message", message
-                        )
-                );
+                case CUSTOMER -> {
+                    Customer customer = appointment.getCustomer();
+                    emailService.sendEmail(
+                            appointment.getServiceProvider().getAccount().getEmail(),
+                            "appointment-cancelled-by-customer",
+                            Map.of(
+                                    "customer-first-name", customer.getFirstName(),
+                                    "customer-last-name", customer.getLastName(),
+                                    "service-request-title", appointment.getServiceRequest().getTitle(),
+                                    "appointment-period", period,
+                                    "appointment-message", message
+                            )
+                    );
+                    notificationService.sendNotification(
+                            appointment.getServiceProvider().getAccount(),
+                            customer.getFirstName() + " " + customer.getLastName() + " cancelled an appointment",
+                            "For service request: " + appointment.getServiceRequest().getTitle() + "\n Period: " + period,
+                            NotificationType.CANCELLED_APPOINTMENT
+                    );
+                }
+                case SERVICE_PROVIDER -> {
+                    emailService.sendEmail(
+                            appointment.getCustomer().getAccount().getEmail(),
+                            "appointment-cancelled-by-provider",
+                            Map.of(
+                                    "service-provider-name", appointment.getServiceProvider().getName(),
+                                    "service-request-title", appointment.getServiceRequest().getTitle(),
+                                    "appointment-period", period,
+                                    "appointment-message", message
+                            )
+                    );
+                    notificationService.sendNotification(
+                            appointment.getCustomer().getAccount(),
+                            appointment.getServiceProvider().getName() + " cancelled an appointment",
+                            "For service request: " + appointment.getServiceRequest().getTitle() + "\n Period: " + period,
+                            NotificationType.CANCELLED_APPOINTMENT
+                    );
+                }
             }
         }
     }
@@ -134,16 +162,23 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         String period = formatAppointmentPeriod(appointment, TIME_ZONE); // TODO base on customer timezone
         String message = appointment.getMessage() == null ? "" : appointment.getMessage();
+        Customer customer = appointment.getCustomer();
         emailService.sendEmail(
                 appointment.getServiceProvider().getAccount().getEmail(),
                 "appointment-confirmed",
                 Map.of(
-                        "customer-first-name", appointment.getServiceRequest().getCustomer().getFirstName(),
-                        "customer-last-name", appointment.getServiceRequest().getCustomer().getLastName(),
+                        "customer-first-name", customer.getFirstName(),
+                        "customer-last-name", customer.getLastName(),
                         "service-request-title", appointment.getServiceRequest().getTitle(),
                         "appointment-period", period,
                         "appointment-message", message
                 )
+        );
+        notificationService.sendNotification(
+                appointment.getServiceProvider().getAccount(),
+                customer.getFirstName() + " " + customer.getLastName() + " cancelled an appointment",
+                "For service request: " + appointment.getServiceRequest().getTitle() + "\n Period: " + period,
+                NotificationType.CONFIRMED_APPOINTMENT
         );
     }
 

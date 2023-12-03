@@ -14,7 +14,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 @SpringBootTest
-
 public class GeocodingServiceTest {
     @Autowired
     private GeocodingService geocodingService;
