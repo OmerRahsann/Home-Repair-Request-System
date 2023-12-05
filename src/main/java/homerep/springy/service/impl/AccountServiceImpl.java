@@ -9,6 +9,7 @@ import homerep.springy.entity.ServiceProvider;
 import homerep.springy.entity.type.Token;
 import homerep.springy.model.AccountModel;
 import homerep.springy.model.RegisterModel;
+import homerep.springy.model.ChangePasswordModel;
 import homerep.springy.model.accountinfo.CustomerInfoModel;
 import homerep.springy.model.accountinfo.ServiceProviderInfoModel;
 import homerep.springy.model.resetpassword.ResetPasswordModel;
@@ -175,11 +176,18 @@ public class AccountServiceImpl implements AccountService, UserDetailsService {
         account.setResetPasswordToken(null);
         account.setPassword(passwordEncoder.encode(resetPasswordModel.password()));
         account = accountRepository.save(account);
-        // Logout all sessions for this account
-        for (SessionInformation session : sessionRegistry.getAllSessions(account.getEmail(), false)) {
-            session.expireNow();
-            sessionRepository.deleteById(session.getSessionId());
+        logoutSessions(account);
+        return true;
+    }
+
+    @Override
+    public boolean changePassword(Account account, ChangePasswordModel model) {
+        if (!passwordEncoder.matches(model.currentPassword(), account.getPassword())) {
+            return false;
         }
+        account.setPassword(passwordEncoder.encode(model.newPassword()));
+        account = accountRepository.save(account);
+        logoutSessions(account);
         return true;
     }
 
@@ -216,5 +224,13 @@ public class AccountServiceImpl implements AccountService, UserDetailsService {
         serviceProvider.setAddress(infoModel.address());
         serviceProvider.setContactEmailAddress(infoModel.contactEmailAddress());
         serviceProviderRepository.save(serviceProvider);
+    }
+
+    @Override
+    public void logoutSessions(Account account) {
+        for (SessionInformation session : sessionRegistry.getAllSessions(account.getEmail(), false)) {
+            session.expireNow();
+            sessionRepository.deleteById(session.getSessionId());
+        }
     }
 }

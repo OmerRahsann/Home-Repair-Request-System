@@ -4,6 +4,8 @@ import homerep.springy.authorities.AccountType;
 import homerep.springy.entity.Account;
 import homerep.springy.entity.Customer;
 import homerep.springy.entity.ServiceProvider;
+import homerep.springy.exception.ApiException;
+import homerep.springy.model.ChangePasswordModel;
 import homerep.springy.model.accountinfo.CustomerInfoModel;
 import homerep.springy.model.accountinfo.ServiceProviderInfoModel;
 import homerep.springy.repository.AccountRepository;
@@ -66,5 +68,13 @@ public class AccountController {
     public ServiceProviderInfoModel getServiceProviderInfo(@AuthenticationPrincipal User user) {
         ServiceProvider serviceProvider = serviceProviderRepository.findByAccountEmail(user.getUsername());
         return ServiceProviderInfoModel.fromEntity(serviceProvider);
+    }
+
+    @PostMapping("/change_password")
+    public void changePassword(@RequestBody @Validated ChangePasswordModel model, @AuthenticationPrincipal User user) {
+        Account account = accountRepository.findByEmail(user.getUsername());
+        if (!accountService.changePassword(account, model)) {
+            throw new ApiException("incorrect_password", "Current password does not match.");
+        }
     }
 }

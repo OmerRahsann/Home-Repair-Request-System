@@ -6,8 +6,11 @@ import homerep.springy.component.DummyDataComponent;
 import homerep.springy.config.TestDatabaseConfig;
 import homerep.springy.config.TestMailConfig;
 import homerep.springy.controller.AccountController;
+import homerep.springy.entity.Account;
 import homerep.springy.entity.Customer;
 import homerep.springy.entity.ServiceProvider;
+import homerep.springy.exception.ApiException;
+import homerep.springy.model.ChangePasswordModel;
 import homerep.springy.model.accountinfo.CustomerInfoModel;
 import homerep.springy.model.accountinfo.ServiceProviderInfoModel;
 import homerep.springy.repository.AccountRepository;
@@ -22,16 +25,17 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
@@ -53,6 +57,9 @@ public class AccountInfoTests {
     @Autowired
     private DummyDataComponent dummyDataComponent;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     private Customer customer;
 
     private ServiceProvider serviceProvider;
@@ -64,6 +71,10 @@ public class AccountInfoTests {
     private static final User SERVICE_PROVIDER_USER = new User(SERVICE_PROVIDER_EMAIL, "", List.of(AccountType.SERVICE_PROVIDER, Verified.INSTANCE));
     private static final String UNVERIFIED_EMAIL = "unverified@localhost";
     private static final User UNVERIFIED_USER = new User(UNVERIFIED_EMAIL, "", List.of(AccountType.SERVICE_PROVIDER));
+
+    private static final String INITIAL_PASSWORD = "TestPassword1";
+    private static final String INCORRECT_PASSWORD = "Hunter42";
+    private static final String NEW_PASSWORD = "TheNewPassword!";
 
     @BeforeEach
     void reset() {
@@ -134,6 +145,58 @@ public class AccountInfoTests {
     }
 
     @Test
+    @Transactional
+    void changePassword() {
+        // Add the initial password to the account
+        Account account = customer.getAccount();
+        account.setPassword(passwordEncoder.encode(INITIAL_PASSWORD));
+        account = accountRepository.save(account);
+        assertTrue(passwordEncoder.matches(INITIAL_PASSWORD, account.getPassword()));
+        // Attempting to update the password with an incorrect current password does not work
+        assertFalse(accountService.changePassword(account, new ChangePasswordModel(
+                INCORRECT_PASSWORD,
+                NEW_PASSWORD
+        )));
+        assertTrue(passwordEncoder.matches(INITIAL_PASSWORD, account.getPassword()));
+        assertFalse(passwordEncoder.matches(INCORRECT_PASSWORD, account.getPassword()));
+        assertFalse(passwordEncoder.matches(NEW_PASSWORD, account.getPassword()));
+        // Updating the password with the correct current password works
+        assertTrue(accountService.changePassword(account, new ChangePasswordModel(
+                INITIAL_PASSWORD,
+                NEW_PASSWORD
+        )));
+        assertFalse(passwordEncoder.matches(INITIAL_PASSWORD, account.getPassword()));
+        assertTrue(passwordEncoder.matches(NEW_PASSWORD, account.getPassword()));
+    }
+
+    @Test
+    @Transactional
+    void changePasswordController() {
+        // Add the initial password to the account
+        Account account = customer.getAccount();
+        account.setPassword(passwordEncoder.encode(INITIAL_PASSWORD));
+        account = accountRepository.save(account);
+        assertTrue(passwordEncoder.matches(INITIAL_PASSWORD, account.getPassword()));
+        // Attempting to update the password with an incorrect current password throws an ApiException
+        ApiException exception = assertThrows(ApiException.class, () -> accountController.changePassword(new ChangePasswordModel(
+                INCORRECT_PASSWORD,
+                NEW_PASSWORD
+        ), CUSTOMER_USER));
+        assertEquals("incorrect_password", exception.getType());
+        // and does not change the password
+        assertTrue(passwordEncoder.matches(INITIAL_PASSWORD, account.getPassword()));
+        assertFalse(passwordEncoder.matches(INCORRECT_PASSWORD, account.getPassword()));
+        assertFalse(passwordEncoder.matches(NEW_PASSWORD, account.getPassword()));
+        // Updating the password with the correct current password works
+        assertDoesNotThrow(() -> accountController.changePassword(new ChangePasswordModel(
+                INITIAL_PASSWORD,
+                NEW_PASSWORD
+        ), CUSTOMER_USER));
+        assertFalse(passwordEncoder.matches(INITIAL_PASSWORD, account.getPassword()));
+        assertTrue(passwordEncoder.matches(NEW_PASSWORD, account.getPassword()));
+    }
+
+    @Test
     void notLoggedIn() throws Exception {
         this.mvc.perform(get("/api/account/type"))
                 .andExpect(status().isForbidden());
@@ -148,6 +211,9 @@ public class AccountInfoTests {
         this.mvc.perform(get("/api/account/provider"))
                 .andExpect(status().isForbidden());
         this.mvc.perform(post("/api/account/provider/update"))
+                .andExpect(status().isForbidden());
+
+        this.mvc.perform(post("/api/account/change_password"))
                 .andExpect(status().isForbidden());
     }
 }
