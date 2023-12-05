@@ -79,7 +79,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         notificationService.sendNotification(
                 serviceRequest.getCustomer().getAccount(),
                 serviceProvider.getName() + " created an appointment",
-                "For service request: " + serviceRequest.getTitle() + "\n Period: " + period,
+                "For service request: " + serviceRequest.getTitle() + "\nPeriod: " + period,
                 NotificationType.NEW_APPOINTMENT
         );
         return appointment;
@@ -111,7 +111,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                     notificationService.sendNotification(
                             appointment.getServiceProvider().getAccount(),
                             customer.getFirstName() + " " + customer.getLastName() + " cancelled an appointment",
-                            "For service request: " + appointment.getServiceRequest().getTitle() + "\n Period: " + period,
+                            "For service request: " + appointment.getServiceRequest().getTitle() + "\nPeriod: " + period,
                             NotificationType.CANCELLED_APPOINTMENT
                     );
                 }
@@ -129,7 +129,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                     notificationService.sendNotification(
                             appointment.getCustomer().getAccount(),
                             appointment.getServiceProvider().getName() + " cancelled an appointment",
-                            "For service request: " + appointment.getServiceRequest().getTitle() + "\n Period: " + period,
+                            "For service request: " + appointment.getServiceRequest().getTitle() + "\nPeriod: " + period,
                             NotificationType.CANCELLED_APPOINTMENT
                     );
                 }
@@ -176,8 +176,8 @@ public class AppointmentServiceImpl implements AppointmentService {
         );
         notificationService.sendNotification(
                 appointment.getServiceProvider().getAccount(),
-                customer.getFirstName() + " " + customer.getLastName() + " cancelled an appointment",
-                "For service request: " + appointment.getServiceRequest().getTitle() + "\n Period: " + period,
+                customer.getFirstName() + " " + customer.getLastName() + " confirmed an appointment",
+                "For service request: " + appointment.getServiceRequest().getTitle() + "\nPeriod: " + period,
                 NotificationType.CONFIRMED_APPOINTMENT
         );
     }

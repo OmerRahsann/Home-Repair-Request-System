@@ -142,7 +142,7 @@ public class EmailRequestServiceImpl implements EmailRequestService {
                 emailRequest.getServiceProvider().getAccount(),
                 customer.getFirstName() + " " + customer.getLastName() + " accepted your email request",
                 "For service request: " + emailRequest.getServiceRequest().getTitle(),
-                NotificationType.CONFIRMED_EMAIL_REQUEST
+                NotificationType.ACCEPTED_EMAIL_REQUEST
         );
         return true;
     }

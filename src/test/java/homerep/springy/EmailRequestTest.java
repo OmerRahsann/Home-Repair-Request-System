@@ -1,7 +1,6 @@
 package homerep.springy;
 
 import com.icegreen.greenmail.spring.GreenMailBean;
-import com.icegreen.greenmail.store.FolderException;
 import homerep.springy.authorities.AccountType;
 import homerep.springy.authorities.Verified;
 import homerep.springy.component.DummyDataComponent;
@@ -21,8 +20,11 @@ import homerep.springy.model.accountinfo.ServiceProviderInfoModel;
 import homerep.springy.model.emailrequest.EmailRequestInfoModel;
 import homerep.springy.model.emailrequest.EmailRequestModel;
 import homerep.springy.model.emailrequest.EmailRequestStatus;
+import homerep.springy.model.notification.NotificationModel;
+import homerep.springy.model.notification.NotificationType;
 import homerep.springy.repository.EmailRequestRepository;
 import homerep.springy.service.EmailRequestService;
+import homerep.springy.service.impl.NotificationServiceImpl;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
@@ -58,6 +60,9 @@ public class EmailRequestTest {
     private DummyDataComponent dummyDataComponent;
 
     @Autowired
+    private NotificationServiceImpl notificationService;
+
+    @Autowired
     private GreenMailBean greenMailBean;
 
     private Customer customer;
@@ -76,7 +81,7 @@ public class EmailRequestTest {
     private static final User SERVICE_PROVIDER_2_USER = new User(SERVICE_PROVIDER_2_EMAIL, "", List.of(AccountType.SERVICE_PROVIDER, Verified.INSTANCE));
 
     @BeforeEach
-    void setup() throws FolderException {
+    void setup() {
         customer = dummyDataComponent.createCustomer(CUSTOMER_EMAIL);
         serviceRequest1 = dummyDataComponent.createServiceRequest(customer);
         serviceRequest2 = dummyDataComponent.createServiceRequest(customer);
@@ -338,6 +343,24 @@ public class EmailRequestTest {
     }
 
     @Test
+    void webNotificationForRequest() {
+        // After sending an email request
+        assertTrue(emailRequestService.sendEmailRequest(serviceRequest1, serviceProvider1));
+        // A web notification is sent to the customer
+        List<NotificationModel> notifications = notificationService.getNotifications(customer.getAccount());
+        assertEquals(1, notifications.size());
+        NotificationModel notification = notifications.get(0);
+        // the title has the service provider's name
+        assertTrue(notification.title().contains(serviceProvider1.getName()));
+        // title specifies that it is a request
+        assertTrue(notification.title().contains("requested"));
+        // and the message has the title of the service request
+        assertTrue(notification.message().contains(serviceRequest1.getTitle()));
+        // type is NEW_EMAIL_REQUEST
+        assertEquals(NotificationType.NEW_EMAIL_REQUEST, notification.type());
+    }
+
+    @Test
     @Transactional
     void emailNotificationForAccepting() throws Exception {
         // Send an email request
@@ -365,5 +388,31 @@ public class EmailRequestTest {
         // and the title and description of the service request
         assertTrue(content.contains(serviceRequest1.getTitle()));
         assertTrue(content.contains(serviceRequest1.getDescription()));
+    }
+
+    @Test
+    @Transactional
+    void webNotificationForAccepting() {
+        // Send an email request
+        assertTrue(emailRequestService.sendEmailRequest(serviceRequest1, serviceProvider1));
+        assertEquals(1, emailRequestRepository.findAll().size());
+        EmailRequest emailRequest = emailRequestRepository.findAll().get(0);
+        // Ignore other notifications
+        notificationService.clearNotifications(serviceProvider1.getAccount());
+        // Accept the email request
+        emailRequestService.acceptEmailRequest(emailRequest);
+        // A web notification is sent to the service provider
+        List<NotificationModel> notifications = notificationService.getNotifications(serviceProvider1.getAccount());
+        assertEquals(1, notifications.size());
+        NotificationModel notification = notifications.get(0);
+        // the title has the customer's name
+        assertTrue(notification.title().contains(customer.getFirstName()));
+        assertTrue(notification.title().contains(customer.getLastName()));
+        // title specifies that the request was accepted
+        assertTrue(notification.title().contains("accepted"));
+        // the message has the title of the service request
+        assertTrue(notification.message().contains(serviceRequest1.getTitle()));
+        // type is ACCEPTED_EMAIL_REQUEST
+        assertEquals(NotificationType.ACCEPTED_EMAIL_REQUEST, notification.type());
     }
 }

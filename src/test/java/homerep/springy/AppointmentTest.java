@@ -10,18 +10,18 @@ import homerep.springy.config.TestMailConfig;
 import homerep.springy.config.TestStorageConfig;
 import homerep.springy.controller.customer.CustomerAppointmentController;
 import homerep.springy.controller.provider.ServiceProviderAppointmentController;
-import homerep.springy.entity.Appointment;
-import homerep.springy.entity.Customer;
-import homerep.springy.entity.ServiceProvider;
-import homerep.springy.entity.ServiceRequest;
+import homerep.springy.entity.*;
 import homerep.springy.exception.*;
 import homerep.springy.model.appointment.AppointmentModel;
 import homerep.springy.model.appointment.AppointmentStatus;
 import homerep.springy.model.appointment.CreateAppointmentModel;
+import homerep.springy.model.notification.NotificationModel;
+import homerep.springy.model.notification.NotificationType;
 import homerep.springy.repository.AppointmentRepository;
 import homerep.springy.repository.ServiceRequestRepository;
 import homerep.springy.service.AppointmentService;
 import homerep.springy.service.EmailRequestService;
+import homerep.springy.service.NotificationService;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolation;
@@ -68,6 +68,9 @@ public class AppointmentTest {
 
     @Autowired
     private ServiceRequestRepository serviceRequestRepository;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @Autowired
     private GreenMailBean greenMailBean;
@@ -521,6 +524,16 @@ public class AppointmentTest {
         assertTrue(violations.isEmpty());
     }
 
+    private String getAppointmentPeriod(Instant start, Instant end) {
+        LocalDateTime localStart = LocalDateTime.ofInstant(start, TIME_ZONE);
+        LocalDateTime localEnd = LocalDateTime.ofInstant(end, TIME_ZONE);
+        if (localStart.toLocalDate().equals(localEnd.toLocalDate())) {
+            return localStart.toLocalDate() + " ⋅ " + localStart.toLocalTime() + " - " + localEnd.toLocalTime();
+        } else {
+            return localStart.toLocalDate() + " " + localStart.toLocalTime() + " - " + localEnd.toLocalDate() + " " + localEnd.toLocalTime();
+        }
+    }
+
     @Test
     void createAppointmentEmailNotification() throws Exception {
         assertEquals(0, greenMailBean.getReceivedMessages().length);
@@ -541,12 +554,32 @@ public class AppointmentTest {
         // the title of the service request
         assertTrue(content.contains(serviceRequest.getTitle()));
         // the period
-        LocalDateTime start = LocalDateTime.ofInstant(model.startTime(), TIME_ZONE);
-        LocalDateTime end = LocalDateTime.ofInstant(model.endTime(), TIME_ZONE);
-        assertEquals(start.toLocalDate(), end.toLocalDate());
-        assertTrue(content.contains(start.toLocalDate() + " ⋅ " + start.toLocalTime() + " - " + end.toLocalTime()));
+        assertTrue(content.contains(getAppointmentPeriod(appointment.getStartTime(), appointment.getEndTime())));
         // and appointment message
         assertTrue(content.contains(appointment.getMessage()));
+    }
+
+    @Test
+    void createAppointmentWebNotification() throws Exception {
+        assertTrue(notificationService.getNotifications(customer.getAccount()).isEmpty());
+        CreateAppointmentModel model = appointmentAt(LocalTime.NOON, Duration.ofHours(2));
+        // Create an appointment
+        Appointment appointment = appointmentService.createAppointment(serviceProvider, serviceRequest, model);
+        assertNotNull(appointment);
+        // a web notification is sent to the customer
+        List<NotificationModel> notifications = notificationService.getNotifications(customer.getAccount());
+        assertEquals(1, notifications.size());
+        NotificationModel notification = notifications.get(0);
+        // title has the service provider's name
+        assertTrue(notification.title().contains(serviceProvider.getName()));
+        // title specifies that a new appointment was created
+        assertTrue(notification.title().contains("created"));
+        // the message has the title of the service request
+        assertTrue(notification.message().contains(serviceRequest.getTitle()));
+        // and the period
+        assertTrue(notification.message().contains(getAppointmentPeriod(appointment.getStartTime(), appointment.getEndTime())));
+        // type is NEW_APPOINTMENT
+        assertEquals(NotificationType.NEW_APPOINTMENT, notification.type());
     }
 
     @ParameterizedTest
@@ -573,10 +606,7 @@ public class AppointmentTest {
         // with the title of the service request
         assertTrue(content.contains(serviceRequest.getTitle()));
         // the period
-        LocalDateTime start = LocalDateTime.ofInstant(model.startTime(), TIME_ZONE);
-        LocalDateTime end = LocalDateTime.ofInstant(model.endTime(), TIME_ZONE);
-        assertEquals(start.toLocalDate(), end.toLocalDate());
-        assertTrue(content.contains(start.toLocalDate() + " ⋅ " + start.toLocalTime() + " - " + end.toLocalTime()));
+        assertTrue(content.contains(getAppointmentPeriod(appointment.getStartTime(), appointment.getEndTime())));
         // and appointment message
         assertTrue(content.contains(appointment.getMessage()));
 
@@ -588,6 +618,41 @@ public class AppointmentTest {
             // when cancelled by the service provider it has the service provider's name
             assertTrue(content.contains(serviceProvider.getName()));
         }
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = AccountType.class)
+    @Transactional
+    void cancelAppointmentWebNotifications(AccountType canceller) throws Exception {
+        CreateAppointmentModel model = appointmentAt(LocalTime.NOON, Duration.ofHours(2));
+        // Create an appointment
+        Appointment appointment = appointmentService.createAppointment(serviceProvider, serviceRequest, model);
+        assertNotNull(appointment);
+        // Ignore other notifications
+        notificationService.clearNotifications(customer.getAccount());
+        notificationService.clearNotifications(serviceProvider.getAccount());
+        // cancel the appointment
+        appointmentService.cancelAppointment(appointment, canceller);
+        // a web notification is sent to the other party
+        Account receiver = canceller == AccountType.CUSTOMER ? serviceProvider.getAccount() : customer.getAccount();
+        List<NotificationModel> notifications = notificationService.getNotifications(receiver);
+        assertEquals(1, notifications.size());
+        NotificationModel notification = notifications.get(0);
+        // The title has the name of the canceller
+        if (canceller == AccountType.CUSTOMER) {
+            assertTrue(notification.title().contains(customer.getFirstName()));
+            assertTrue(notification.title().contains(customer.getLastName()));
+        } else {
+            assertTrue(notification.title().contains(serviceProvider.getName()));
+        }
+        // title specifies an appointment was cancelled
+        assertTrue(notification.title().contains("cancelled"));
+        // message contains the title of the service request
+        assertTrue(notification.message().contains(serviceRequest.getTitle()));
+        // and the period
+        assertTrue(notification.message().contains(getAppointmentPeriod(appointment.getStartTime(), appointment.getEndTime())));
+        // type is CANCELLED_APPOINTMENT
+        assertEquals(NotificationType.CANCELLED_APPOINTMENT, notification.type());
     }
 
     @Test
@@ -615,11 +680,35 @@ public class AppointmentTest {
         // the title of the service request
         assertTrue(content.contains(serviceRequest.getTitle()));
         // the period
-        LocalDateTime start = LocalDateTime.ofInstant(model.startTime(), TIME_ZONE);
-        LocalDateTime end = LocalDateTime.ofInstant(model.endTime(), TIME_ZONE);
-        assertEquals(start.toLocalDate(), end.toLocalDate());
-        assertTrue(content.contains(start.toLocalDate() + " ⋅ " + start.toLocalTime() + " - " + end.toLocalTime()));
+        assertTrue(content.contains(getAppointmentPeriod(appointment.getStartTime(), appointment.getEndTime())));
         // and appointment message
         assertTrue(content.contains(appointment.getMessage()));
+    }
+
+    @Test
+    void confirmAppointmentWebNotification() throws Exception {
+        CreateAppointmentModel model = appointmentAt(LocalTime.NOON, Duration.ofHours(2));
+        // Create an appointment
+        Appointment appointment = appointmentService.createAppointment(serviceProvider, serviceRequest, model);
+        assertNotNull(appointment);
+        // Ignore other notifications
+        notificationService.clearNotifications(serviceProvider.getAccount());
+        // Confirm the appointment
+        appointmentService.confirmAppointment(appointment);
+        // a web notification is sent to the service provider
+        List<NotificationModel> notifications = notificationService.getNotifications(serviceProvider.getAccount());
+        assertEquals(1, notifications.size());
+        NotificationModel notification = notifications.get(0);
+        // the title has the customer's name
+        assertTrue(notification.title().contains(customer.getFirstName()));
+        assertTrue(notification.title().contains(customer.getLastName()));
+        // title specifies an appointment was confirmed
+        assertTrue(notification.title().contains("confirmed"));
+        // the message has the title of the service request
+        assertTrue(notification.message().contains(serviceRequest.getTitle()));
+        // and the period
+        assertTrue(notification.message().contains(getAppointmentPeriod(appointment.getStartTime(), appointment.getEndTime())));
+        // type is CONFIRMED_APPOINTMENT
+        assertEquals(NotificationType.CONFIRMED_APPOINTMENT, notification.type());
     }
 }
