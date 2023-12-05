@@ -1,10 +1,11 @@
-import { Fragment } from 'react'
+import { Fragment, useState } from 'react'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
+import { Bars3Icon, XMarkIcon, BellIcon } from '@heroicons/react/24/outline'
 import { UserCircleIcon } from '@heroicons/react/24/outline'
 import { useNavigate, useLocation } from 'react-router-dom'
 import logo from '../../Logos/mainLogo.png'
 import { logout } from '../../AuthContext'
+import Notifications from '../Notifications/Notifications'
 
 const navigation = [
   { name: 'Home', href: '/', current: true },
@@ -18,6 +19,11 @@ function classNames(...classes) {
 
 export default function NavBar({ isLoggedIn }) {
   const location = useLocation()
+  const [notifications, setNotifications] = useState(false)
+
+  const closeNotifications = () => {
+    setNotifications(false)
+  }
 
   // Update the current property in the navigation array based on the current location.
   navigation.forEach((item) => {
@@ -90,19 +96,20 @@ export default function NavBar({ isLoggedIn }) {
                   </>
                 ) : null}
 
-                {/* <button
-                  type="button"
-                  className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
-                >
-                  <span className="absolute -inset-1.5" />
-                  <span className="sr-only">View notifications</span>
-                  <BellIcon className="h-6 w-6" aria-hidden="true" />
-                </button> */}
-
                 {/* Profile dropdown */}
                 {isLoggedIn ? (
                   <Menu as="div" className="relative ml-3">
-                    <div>
+                    <div className="flex flex-row">
+                      <button
+                        onClick={() => setNotifications(!notifications)}
+                        type="button"
+                        className="relative rounded-full p-1 text-custom-maroon  focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                      >
+                        <span className="absolute -inset-1.5" />
+                        <span className="sr-only">View notifications</span>
+                        <BellIcon className="h-6 w-6" aria-hidden="true" />
+                      </button>
+                      <div className="p-2"></div>
                       <Menu.Button className="bg-custom-maroon text-sm p-2 focus:outline-none focus:ring-1 focus:ring-white focus:ring-offset-1 focus:ring-offset-gray-800">
                         <UserCircleIcon className="h-6 w-6 rounded-full bg-white text-custom-maroon" />
                       </Menu.Button>
@@ -164,6 +171,17 @@ export default function NavBar({ isLoggedIn }) {
               </div>
             </div>
           </div>
+          {notifications && (
+            <div
+              className={`fixed top-5 right-5 bg-custom-grain p-4 rounded-md z-20 ${
+                notifications
+                  ? 'opacity-100 transform translate-x-0'
+                  : 'opacity-0 transform translate-x-full'
+              } transition-all duration-500 ease-in-out`}
+            >
+              <Notifications onClose={closeNotifications} customer={true} />
+            </div>
+          )}
 
           <Disclosure.Panel className="sm:hidden">
             <div className="space-y-1 px-2 pb-3 pt-2">

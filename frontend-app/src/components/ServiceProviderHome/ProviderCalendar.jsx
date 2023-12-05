@@ -6,6 +6,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css'
 import './ProviderCalendar.scss' // Import your SASS file
 import ServiceRequestModal from 'components/Customer/ServiceRequestModal'
 import TimePickers from 'components/TimePickers'
+import { XCircleIcon } from '@heroicons/react/24/outline'
 
 const ProviderCalendar = ({ customerView, request, setDate, isQuote }) => {
   const localizer = momentLocalizer(moment)
@@ -14,6 +15,7 @@ const ProviderCalendar = ({ customerView, request, setDate, isQuote }) => {
   const [eventContent, setEventContent] = useState([])
   const [year, setYear] = useState(new Date().getFullYear())
   const [view, setView] = useState(Views.WEEK)
+  const [isConfirmed, setIsConfirmed] = useState(false)
 
   const [month, setMonth] = useState(new Date().getMonth() + 1)
 
@@ -87,6 +89,40 @@ const ProviderCalendar = ({ customerView, request, setDate, isQuote }) => {
       setEvents(response.data)
     } catch (error) {
       console.error('Error fetching service requests:', error)
+    }
+  }
+
+  const cancelAppointment = async (id) => {
+    // Display a confirmation dialog
+    const userConfirmed = window.confirm(
+      'Are you sure you want to cancel this appointment?',
+    )
+
+    if (!userConfirmed) {
+      // User canceled the action
+      return
+    }
+
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/provider/appointments/${id}/cancel`,
+        {},
+        {
+          withCredentials: true,
+        },
+      )
+
+      getEvents()
+      setIsConfirmed(true)
+      window.location.reload()
+
+      // Handle successful cancellation
+      console.log('Appointment canceled successfully:', response.data)
+      // You can update state or perform any other actions based on the successful cancellation
+    } catch (error) {
+      // Handle error
+      window.alert('Error canceling appointment')
+      // You can handle the error, display a message, or perform other actions
     }
   }
 
@@ -261,7 +297,14 @@ const ProviderCalendar = ({ customerView, request, setDate, isQuote }) => {
                   key={index}
                   className="border p-4 mb-4 rounded-md bg-white shadow-md"
                 >
-                  <p className="text-xl font-bold mb-2">{event.title}</p>
+                  <div className="flex flex-row justify-between">
+                    <p className="text-xl font-bold mb-2">{event.title}</p>
+                    <XCircleIcon
+                      width={30}
+                      color="maroon"
+                      onClick={() => cancelAppointment(event.appointmentId)}
+                    />
+                  </div>
 
                   <div className="flex flex-row mb-2">
                     📞

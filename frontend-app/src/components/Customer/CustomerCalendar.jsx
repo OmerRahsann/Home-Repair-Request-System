@@ -103,6 +103,16 @@ const CustomerCalendar = ({ customerView, request, setDate, isQuote }) => {
   }
 
   const cancelAppointment = async (id) => {
+    // Display a confirmation dialog
+    const userConfirmed = window.confirm(
+      'Are you sure you want to cancel this appointment?',
+    )
+
+    if (!userConfirmed) {
+      // User canceled the action
+      return
+    }
+
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_API_URL}/api/customer/appointments/${id}/cancel`,
@@ -111,6 +121,7 @@ const CustomerCalendar = ({ customerView, request, setDate, isQuote }) => {
           withCredentials: true,
         },
       )
+
       getEvents()
       setIsConfirmed(true)
       window.location.reload()
@@ -285,6 +296,11 @@ const CustomerCalendar = ({ customerView, request, setDate, isQuote }) => {
                 >
                   <div className="flex flex-row justify-between">
                     <p className="text-xl font-bold mb-2">{event.title}</p>
+                    <XCircleIcon
+                      width={30}
+                      color="maroon"
+                      onClick={() => cancelAppointment(event.appointmentId)}
+                    />
                     {event.status === 'UNCONFIRMED' && !isConfirmed ? (
                       <div className="flex flex-row">
                         <XCircleIcon

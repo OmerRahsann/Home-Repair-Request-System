@@ -15,7 +15,7 @@ import { ProviderProfile } from "pages/Provider/ProviderProfile";
 import Footer from "components/Footer";
 import { MyQuotes } from "pages/Customer/MyQuotes";
 import Appointments from "pages/Provider/Appointments";
-import CustomerNotification from "./components/Notifications/CustomerNotification";
+import CustomerNotification from "./components/Notifications/Notifications";
 
 function App() {
   return (
@@ -47,7 +47,7 @@ function App() {
       
     </div>
     <Footer/>
-    {/*<CustomerNotification/>  Testing with notification **/}
+   
     </div>
   );
 }

@@ -38,6 +38,48 @@ export async function getServices() {
   }
 }
 
+export async function getNotifications() {
+  try {
+    const response = await axios.get(
+      `${process.env.REACT_APP_API_URL}/api/notifications`,
+      {
+        withCredentials: true,
+      },
+    )
+    return response.data
+  } catch (error) {
+    console.error('Error', error)
+  }
+}
+
+export async function markReadNotifications() {
+  try {
+    const response = await axios.post(
+      `${process.env.REACT_APP_API_URL}/api/notifications/mark_read`,
+      {
+        withCredentials: true,
+      },
+    )
+    return response.data
+  } catch (error) {
+    console.error('Error', error)
+  }
+}
+
+export async function clearNotifications() {
+  try {
+    const response = await axios.post(
+      `${process.env.REACT_APP_API_URL}/api/notifications/clear`,
+      {
+        withCredentials: true,
+      },
+    )
+    return response.data
+  } catch (error) {
+    console.error('Error', error)
+  }
+}
+
 // helpers.jsx
 
 export function extractTownAndStateFromAddress(address) {
