@@ -296,11 +296,7 @@ const CustomerCalendar = ({ customerView, request, setDate, isQuote }) => {
                 >
                   <div className="flex flex-row justify-between">
                     <p className="text-xl font-bold mb-2">{event.title}</p>
-                    <XCircleIcon
-                      width={30}
-                      color="maroon"
-                      onClick={() => cancelAppointment(event.appointmentId)}
-                    />
+
                     {event.status === 'UNCONFIRMED' && !isConfirmed ? (
                       <div className="flex flex-row">
                         <XCircleIcon
@@ -316,7 +312,13 @@ const CustomerCalendar = ({ customerView, request, setDate, isQuote }) => {
                           }
                         />
                       </div>
-                    ) : null}
+                    ) : (
+                      <XCircleIcon
+                        width={30}
+                        color="maroon"
+                        onClick={() => cancelAppointment(event.appointmentId)}
+                      />
+                    )}
                   </div>
 
                   <div className="flex flex-row mb-2">

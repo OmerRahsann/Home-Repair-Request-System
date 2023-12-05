@@ -6,6 +6,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import logo from '../../Logos/mainLogo.png'
 import { logout } from '../../AuthContext'
 import Notifications from '../Notifications/Notifications'
+import NotificationSlider from '../Notifications/NotificationSlider'
 
 const navigation = [
   { name: 'Home', href: '/', current: true },
@@ -182,6 +183,8 @@ export default function NavBar({ isLoggedIn }) {
               <Notifications onClose={closeNotifications} customer={true} />
             </div>
           )}
+
+          <NotificationSlider />
 
           <Disclosure.Panel className="sm:hidden">
             <div className="space-y-1 px-2 pb-3 pt-2">

@@ -16,6 +16,7 @@ import Footer from "components/Footer";
 import { MyQuotes } from "pages/Customer/MyQuotes";
 import Appointments from "pages/Provider/Appointments";
 import CustomerNotification from "./components/Notifications/Notifications";
+import Notifications from "./components/Notifications/Notifications";
 
 function App() {
   return (
@@ -47,7 +48,6 @@ function App() {
       
     </div>
     <Footer/>
-   
     </div>
   );
 }

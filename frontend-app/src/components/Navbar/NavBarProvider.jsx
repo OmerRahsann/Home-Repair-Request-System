@@ -6,6 +6,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import logo from '../../Logos/mainLogo.png'
 import { logout } from '../../AuthContext'
 import Notifications from '../Notifications/Notifications'
+import NotificationSlider from '../Notifications/NotificationSlider'
 
 const navigation = [
   { name: 'Find Jobs', href: '/provider/viewrequests', current: true },
@@ -172,9 +173,10 @@ export default function NavBarProvider({
                   : 'opacity-0 transform translate-x-full'
               } transition-all duration-500 ease-in-out`}
             >
-              <Notifications onClose={closeNotifications} customer={true} />
+              <Notifications onClose={closeNotifications} />
             </div>
           )}
+          <NotificationSlider />
 
           <Disclosure.Panel className="sm:hidden">
             <div className="space-y-1 px-2 pb-3 pt-2">
