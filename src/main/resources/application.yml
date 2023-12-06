@@ -27,3 +27,18 @@ spring:
     multipart:
       max-file-size: 5MB
       max-request-size: 5MB
+management:
+  server:
+    port: 8085
+    address: 127.0.0.1
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    configprops:
+      enabled: false
+    env:
+      enabled: false
+    sessions:
+      enabled: false

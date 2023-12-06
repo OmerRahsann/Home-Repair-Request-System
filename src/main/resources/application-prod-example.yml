@@ -54,3 +54,12 @@ homerep:
     images:
       max-num-pictures: 10
       max-size-pixels: 1920
+management:
+  influx:
+    metrics:
+      export:
+        uri: "http://localhost:8086"
+        api-version: v2
+        org: organization
+        bucket: bucketname
+        token: apitoken

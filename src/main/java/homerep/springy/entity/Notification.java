@@ -21,7 +21,7 @@ public class Notification {
 
     private Instant timestamp;
 
-    @Column(name = "notificationRead")
+    @Column(name = "notification_read")
     private boolean read;
 
     @Enumerated(EnumType.STRING)

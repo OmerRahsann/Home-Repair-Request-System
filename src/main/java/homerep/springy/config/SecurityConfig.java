@@ -71,6 +71,7 @@ public class SecurityConfig {
                                         AuthorityAuthorizationManager.hasAuthority(Verified.INSTANCE.getAuthority())
                                 )
                         )
+                        .requestMatchers(mvc.pattern("/actuator/**")).permitAll()
                         .anyRequest().authenticated()
         );
         http.logout(logout -> logout

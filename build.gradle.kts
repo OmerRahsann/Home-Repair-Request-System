@@ -18,6 +18,7 @@ repositories {
 
 dependencies {
 	implementation("jakarta.mail:jakarta.mail-api:2.1.2") // For Email API
+	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.springframework.boot:spring-boot-starter-aop")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-mail")
@@ -33,6 +34,8 @@ dependencies {
 	implementation("com.github.ben-manes.caffeine:caffeine") // For cache data structure
 	implementation("com.google.maps:google-maps-services:2.2.0") // For geocoding addresses with the Google Maps API
 	implementation("org.jsoup:jsoup:1.17.1") // For sanitizing HTML
+
+	implementation("io.micrometer:micrometer-registry-influx")
 
 	runtimeOnly("com.mysql:mysql-connector-j")
 
