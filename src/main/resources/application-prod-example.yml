@@ -63,3 +63,4 @@ management:
         org: organization
         bucket: bucketname
         token: apitoken
+        enabled: true

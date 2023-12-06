@@ -31,6 +31,10 @@ management:
   server:
     port: 8085
     address: 127.0.0.1
+  defaults:
+    metrics:
+      export:
+        enabled: false
   endpoints:
     web:
       exposure:
@@ -42,3 +46,7 @@ management:
       enabled: false
     sessions:
       enabled: false
+  simple:
+    metrics:
+      export:
+        enabled: true
