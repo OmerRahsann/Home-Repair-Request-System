@@ -1,7 +1,7 @@
 import React from 'react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../../AuthContext'
+import { checkIsServiceProviderLoggedIn, useAuth } from '../../AuthContext'
 import logo from '../../Logos/mainLogo.png'
 
 function ProviderSignIn() {
@@ -26,8 +26,23 @@ function ProviderSignIn() {
         )
         .then(
           (res) => {
-            console.log(res.data)
-            navigate('/provider/viewrequests')
+            const check = async () => {
+              const result = await checkIsServiceProviderLoggedIn();
+              return result;
+            };
+          
+            const checkResult = check(); 
+          
+            checkResult.then((result) => {
+              console.log(result);
+          
+              if (result) {
+                navigate('/provider/viewrequests');
+              } else {
+                window.alert("This is a Customer account. Navigating you to the Customer Home Page.");
+                navigate('/');
+              }
+            });
           },
           (fail) => {
             alert('Oops...an error occurred. Please try again.')

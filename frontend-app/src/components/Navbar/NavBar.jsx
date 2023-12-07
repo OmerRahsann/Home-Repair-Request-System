@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon, BellIcon } from '@heroicons/react/24/outline'
 import { UserCircleIcon } from '@heroicons/react/24/outline'
@@ -30,7 +30,7 @@ export default function NavBar({ isLoggedIn }) {
   navigation.forEach((item) => {
     item.current = item.href === location.pathname
   })
-
+  
   const navigate = useNavigate()
   const handleSignIn = () => {
     navigate('/customer/signup')
