@@ -7,7 +7,7 @@ function MyJobs() {
     <div>
       <NavBarProvider />
 
-      <ProviderCalendar />
+      <ProviderCalendar createEventPopop={false} />
     </div>
   )
 }

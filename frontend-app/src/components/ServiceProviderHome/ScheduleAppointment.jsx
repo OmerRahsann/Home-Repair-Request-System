@@ -105,6 +105,7 @@ export const CreateQuote = (request) => {
               request={request}
               setDate={handleDateChange}
               isQuote={true}
+              createEventPopup={true}
             />
           </div>
           <p className="text-md text-custom-maroon font-bold pt-4">

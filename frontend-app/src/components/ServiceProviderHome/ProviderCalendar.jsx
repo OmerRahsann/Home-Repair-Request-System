@@ -8,7 +8,13 @@ import ServiceRequestModal from 'components/Customer/ServiceRequestModal'
 import TimePickers from 'components/TimePickers'
 import { XCircleIcon } from '@heroicons/react/24/outline'
 
-const ProviderCalendar = ({ customerView, request, setDate, isQuote }) => {
+const ProviderCalendar = ({
+  customerView,
+  request,
+  setDate,
+  isQuote,
+  createEventPopup,
+}) => {
   const localizer = momentLocalizer(moment)
   const [events, setEvents] = useState([])
   const [showEvent, setShowEvent] = useState(false)
@@ -128,41 +134,43 @@ const ProviderCalendar = ({ customerView, request, setDate, isQuote }) => {
 
   const onSelectSlot = useCallback(
     (calEvent) => {
-      console.log(buildMessage(calEvent))
-      window.clearTimeout(clickRef?.current)
+      if (createEventPopup) {
+        console.log(buildMessage(calEvent))
+        window.clearTimeout(clickRef?.current)
 
-      // Set a timeout to detect whether it's a single or double click
-      clickRef.current = window.setTimeout(() => {
-        // Single click logic
-        const shouldCreateNewEvent = window.confirm(
-          `Do you want to create a new appointment?`,
-        )
+        // Set a timeout to detect whether it's a single or double click
+        clickRef.current = window.setTimeout(() => {
+          // Single click logic
+          const shouldCreateNewEvent = window.confirm(
+            `Do you want to create a new appointment?`,
+          )
 
-        if (shouldCreateNewEvent) {
-          if (isQuote) {
-            const tempEvent = {
-              title: request.request.title,
-              start: calEvent.start, // Adjust the format as needed
-              end: calEvent.end, // Adjust the format as needed
-              // Assign a unique ID, adjust as needed
+          if (shouldCreateNewEvent) {
+            if (isQuote) {
+              const tempEvent = {
+                title: request.request.title,
+                start: calEvent.start, // Adjust the format as needed
+                end: calEvent.end, // Adjust the format as needed
+                // Assign a unique ID, adjust as needed
+              }
+
+              const newEvent = {
+                start: calEvent.start, // Adjust the format as needed
+                end: calEvent.end, // Adjust the format as needed
+                // Assign a unique ID, adjust as needed
+              }
+
+              console.log(newEvent)
+
+              if (setDate != null) setDate(newEvent)
+
+              setEvents((prevEvents) => [...prevEvents, tempEvent])
+            } else {
+              //TODO Here
             }
-
-            const newEvent = {
-              start: calEvent.start, // Adjust the format as needed
-              end: calEvent.end, // Adjust the format as needed
-              // Assign a unique ID, adjust as needed
-            }
-
-            console.log(newEvent)
-
-            if (setDate != null) setDate(newEvent)
-
-            setEvents((prevEvents) => [...prevEvents, tempEvent])
-          } else {
-            //TODO Here
           }
-        }
-      }, 250)
+        }, 250)
+      }
     },
     [setDate],
   )
