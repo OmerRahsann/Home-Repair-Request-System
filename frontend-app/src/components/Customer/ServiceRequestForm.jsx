@@ -150,6 +150,24 @@ function ServiceRequestForm() {
     })
   }
 
+  const handleMoneyChange = (e) => {
+    // Get the entered value from the input
+    let inputValue = e.target.value;
+  
+    // Validate if the entered value is an integer
+    if (/^\d*$/.test(inputValue)) {
+      // Update the state 
+      setServiceRequestModel({
+        ...serviceRequestModel,
+        dollars: inputValue,
+      });
+    } else {
+
+      window.alert("Please enter numbers only.");
+    }
+  };
+  
+
   const handleDescriptionChange = (event) => {
     const text = event.target.value
     setServiceRequestModel({
@@ -272,7 +290,7 @@ function ServiceRequestForm() {
                 name="dollars"
                 value={serviceRequestModel.dollars}
                 placeholder="ex: 250"
-                onChange={handleChange}
+                onChange={handleMoneyChange}
                 className="bg-white border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5  dark:border-gray-600 dark:placeholder-gray-400 "
                 required
               />
