@@ -27,22 +27,24 @@ function CustomerSignIn() {
         .then(
           (res) => {
             const check = async () => {
-              const result = await checkIsCustomerLoggedIn();
-              return result;
-            };
-          
-            const checkResult = check(); // This is a Promise
-          
+              const result = await checkIsCustomerLoggedIn()
+              return result
+            }
+
+            const checkResult = check() // This is a Promise
+
             checkResult.then((result) => {
-              console.log(result);
-          
+              console.log(result)
+
               if (result) {
-                navigate('/');
+                navigate('/')
               } else {
-                window.alert("This is a provider account. Navigating you to the Provider Home Page.");
-                navigate('/provider/viewrequests');
+                window.alert(
+                  'This is a provider account. Navigating you to the Provider Home Page.',
+                )
+                navigate('/provider/viewrequests')
               }
-            });
+            })
           },
           (fail) => {
             alert('Oops...an error occurred. Please try again.')

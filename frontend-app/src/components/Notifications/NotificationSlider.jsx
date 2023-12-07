@@ -8,6 +8,31 @@ const NotificationSlider = () => {
   const fetchNotifications = async () => {
     try {
       const notificationsData = await getNotifications()
+
+      if (!notificationsData) {
+        return
+      }
+
+      const latestTimestamp =
+        notificationsData.length > 0 ? notificationsData[0].timestamp : null
+
+      // Retrieve the last stored timestamp from local storage
+      const lastNotificationTimestamp = localStorage.getItem(
+        'lastNotificationTimestamp',
+      )
+
+      // Check if the latest timestamp is different from the last stored timestamp
+      const newNotifications =
+        !lastNotificationTimestamp ||
+        lastNotificationTimestamp !== latestTimestamp
+
+      if (!newNotifications) {
+        return
+      }
+
+      // Store the latest timestamp in local storage
+      localStorage.setItem('lastNotificationTimestamp', latestTimestamp)
+
       setNotifications(notificationsData)
       console.log(notificationsData)
 
@@ -17,7 +42,6 @@ const NotificationSlider = () => {
       // Hide the notification after 5 seconds
       const timeout = setTimeout(() => {
         setIsVisible(false)
-        markRead()
       }, 7500)
 
       return () => clearTimeout(timeout)
@@ -35,14 +59,14 @@ const NotificationSlider = () => {
   }
 
   useEffect(() => {
-    // Fetch notifications every 10 seconds
+    // Fetch notifications every 30 seconds
     const intervalId = setInterval(() => {
       fetchNotifications()
-    }, 30000)
+    }, 3000)
 
     // Clear the interval when the component is unmounted
     return () => clearInterval(intervalId)
-  }, [])
+  }, [notifications])
 
   return (
     <div>

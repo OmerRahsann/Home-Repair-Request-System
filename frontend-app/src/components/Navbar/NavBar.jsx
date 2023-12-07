@@ -30,7 +30,7 @@ export default function NavBar({ isLoggedIn }) {
   navigation.forEach((item) => {
     item.current = item.href === location.pathname
   })
-  
+
   const navigate = useNavigate()
   const handleSignIn = () => {
     navigate('/customer/signup')
