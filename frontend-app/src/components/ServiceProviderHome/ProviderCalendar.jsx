@@ -5,7 +5,6 @@ import moment from 'moment'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 import './ProviderCalendar.scss' // Import your SASS file
 import ServiceRequestModal from 'components/Customer/ServiceRequestModal'
-import TimePickers from 'components/TimePickers'
 import { XCircleIcon } from '@heroicons/react/24/outline'
 
 const ProviderCalendar = ({
@@ -260,7 +259,7 @@ const ProviderCalendar = ({
   }, [month, views])
 
   const onRangeChange = useCallback((range) => {
-    if (range.start == undefined) {
+    if (range.start === undefined) {
       setMonth((new Date(range[0]).getMonth() % 12) + 1)
     } else {
       setYear(new Date(range.start).getFullYear())

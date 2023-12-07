@@ -1,7 +1,7 @@
 import React from 'react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
-import { checkIsCustomerLoggedIn, useAuth } from '../../AuthContext'
+import { checkIsCustomerLoggedIn } from '../../AuthContext'
 import logo from '../../Logos/mainLogo.png'
 
 function CustomerSignIn() {
@@ -9,7 +9,6 @@ function CustomerSignIn() {
     email: '',
     password: '',
   })
-  const { accessAcount } = useAuth()
   const navigate = useNavigate()
   async function login(event) {
     event.preventDefault()

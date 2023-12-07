@@ -1,7 +1,7 @@
 import React from 'react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
-import { checkIsServiceProviderLoggedIn, useAuth } from '../../AuthContext'
+import { checkIsServiceProviderLoggedIn } from '../../AuthContext'
 import logo from '../../Logos/mainLogo.png'
 
 function ProviderSignIn() {
@@ -9,7 +9,6 @@ function ProviderSignIn() {
     email: '',
     password: '',
   })
-  const { accessServiceProviderAccount } = useAuth()
   const navigate = useNavigate()
   async function login(event) {
     event.preventDefault()

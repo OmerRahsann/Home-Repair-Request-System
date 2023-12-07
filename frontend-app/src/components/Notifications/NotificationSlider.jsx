@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { getNotifications, markReadNotifications } from '../../Helpers/helpers'
+import { getNotifications } from '../../Helpers/helpers'
 
 const NotificationSlider = () => {
   const [notifications, setNotifications] = useState([])
@@ -45,14 +45,6 @@ const NotificationSlider = () => {
       }, 7500)
 
       return () => clearTimeout(timeout)
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  const markRead = async () => {
-    try {
-      const respoonse = await markReadNotifications()
     } catch (error) {
       console.log(error)
     }
