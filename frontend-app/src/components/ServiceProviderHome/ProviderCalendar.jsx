@@ -171,26 +171,21 @@ const ProviderCalendar = ({ customerView, request, setDate, isQuote }) => {
 
   const onSelectEvent = useCallback(
     (calEvent) => {
-      /**
-       * Here we are waiting 250 milliseconds (use what you want) prior to firing
-       * our method. Why? Because both 'click' and 'doubleClick'
-       * would fire, in the event of a 'doubleClick'. By doing
-       * this, the 'click' handler is overridden by the 'doubleClick'
-       * action.
-       */
-      window.clearTimeout(clickRef?.current)
-      clickRef.current = window.setTimeout(() => {
-        // Filter events based on the selected date and time
-        const selectedEvents = events.filter(
-          (event) =>
-            moment(event.start).isSame(calEvent.start, 'day') &&
-            moment(event.end).isSame(calEvent.end, 'day'),
-        )
+      if (!isQuote) {
+        window.clearTimeout(clickRef?.current)
+        clickRef.current = window.setTimeout(() => {
+          // Filter events based on the selected date and time
+          const selectedEvents = events.filter(
+            (event) =>
+              moment(event.start).isSame(calEvent.start, 'day') &&
+              moment(event.end).isSame(calEvent.end, 'day'),
+          )
 
-        setEventContent(selectedEvents)
-        console.log(selectedEvents)
-        setShowEvent(true)
-      }, 250)
+          setEventContent(selectedEvents)
+          console.log(selectedEvents)
+          setShowEvent(true)
+        }, 250)
+      }
     },
     [events],
   )
