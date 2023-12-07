@@ -1,9 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import ProviderDescription from './ProviderDescription'
 import ProviderCalendar from './ProviderCalendar'
-import PriceRangePicker from './PriceRangePicker'
 import axios from 'axios'
-import TimePickers from 'components/TimePickers'
 
 export const CreateQuote = (request) => {
   const [appointmentModel, setAppointmentModel] = useState([])
@@ -61,6 +58,7 @@ export const CreateQuote = (request) => {
             error.response.data.conflictingAppointments
           // Handle conflicting appointment error here
           window.alert('Conflicting Appointment Error:')
+          console.log(conflictingAppointments)
         } else {
           window.alert(
             'There was an error sending this appointment. Please try again.',

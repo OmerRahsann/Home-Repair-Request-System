@@ -15,8 +15,6 @@ import { ProviderProfile } from "pages/Provider/ProviderProfile";
 import Footer from "components/Footer";
 import { MyQuotes } from "pages/Customer/MyQuotes";
 import Appointments from "pages/Provider/Appointments";
-import CustomerNotification from "./components/Notifications/Notifications";
-import Notifications from "./components/Notifications/Notifications";
 
 function App() {
   return (
@@ -24,10 +22,10 @@ function App() {
     <div className="min-h-[92vh]">
       <AuthProvider>
         <Router>
-          {/* <LocationFetcher /> */}
+         
           <Routes>
             <Route path="/" element={<Home/>} />
-            <Route path="/customer/login" element={<CustomerSignIn />} /> //thats prob why we are getting the 404 
+            <Route path="/customer/login" element={<CustomerSignIn />} /> 
             <Route path="/customer/signup" element={<CustomerSignUp/>} />
             <Route path="/customer/myrequests" element={<MyRequests/>}/>
             <Route path="/provider/signup" element={<ProviderSignUp/>} />

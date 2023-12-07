@@ -7,7 +7,6 @@ import '../ServiceProviderHome/ProviderCalendar.scss' // Import your SASS file
 import ServiceRequestModal from '../Customer/ServiceRequestModal'
 import {
   CheckCircleIcon,
-  PhoneIcon,
   XCircleIcon,
 } from '@heroicons/react/24/outline'
 

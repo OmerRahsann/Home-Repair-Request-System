@@ -4,11 +4,11 @@ import { clearNotifications } from '../../Helpers/helpers'
 
 const Notifications = ({ onClose, interval }) => {
   const [notifications, setNotifications] = useState([])
-  const [isVisible, setIsVisible] = useState(true)
 
   const markRead = async () => {
     try {
-      const respoonse = await markReadNotifications()
+      const response = await markReadNotifications()
+      console.log(response)
     } catch (error) {
       console.log(error)
     }
@@ -17,6 +17,7 @@ const Notifications = ({ onClose, interval }) => {
   const deleteNotifications = async () => {
     try {
       const response = await clearNotifications()
+      console.log(response)
     } catch (error) {
       console.log(error)
     }

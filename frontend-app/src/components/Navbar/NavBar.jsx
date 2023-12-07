@@ -1,8 +1,8 @@
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useState } from 'react'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon, BellIcon } from '@heroicons/react/24/outline'
 import { UserCircleIcon } from '@heroicons/react/24/outline'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import logo from '../../Logos/mainLogo.png'
 import { logout } from '../../AuthContext'
 import Notifications from '../Notifications/Notifications'
@@ -30,11 +30,6 @@ export default function NavBar({ isLoggedIn }) {
   navigation.forEach((item) => {
     item.current = item.href === location.pathname
   })
-
-  const navigate = useNavigate()
-  const handleSignIn = () => {
-    navigate('/customer/signup')
-  }
 
   return (
     <Disclosure as="nav">
