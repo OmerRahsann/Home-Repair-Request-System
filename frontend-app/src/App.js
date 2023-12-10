@@ -7,6 +7,7 @@ import ProviderSignUp from "./pages/Authentication/ProviderSignUp";
 import ProviderSignIn from "./pages/Authentication/ProviderSignIn";
 import RequestPasswordReset from "./pages/Authentication/ResetPassword/RequestPasswordReset";
 import ResetPassword from "./pages/Authentication/ResetPassword/ResetPassword";
+import VerifyEmail from "pages/Authentication/VerifyEmail";
 import RequestView from "./pages/Provider/RequestView"
 import MyRequests from "./pages/Customer/MyRequests";
 import MyJobs from "pages/Provider/MySchedule";
@@ -33,13 +34,12 @@ function App() {
             <Route path="/provider/viewrequests" element={<RequestView/>} />
             <Route path="/reset_password" element={<RequestPasswordReset/>} />
             <Route path="/reset_password/form" element={<ResetPassword/>} />
+            <Route path="/verify" element={<VerifyEmail/>} />
             <Route path='/provider/myappointments' element={<MyJobs/>} />
             <Route path='/customer/myprofile' element={<CustomerProfile/>} />
             <Route path='/provider/myprofile' element={<ProviderProfile/>} />
             <Route path='/customer/myappointments' element={<MyQuotes/>} />
             <Route path='/provider/updates' element={<Appointments/>} />
-            
-            
           </Routes>
         </Router>
       </AuthProvider>
