@@ -23,8 +23,8 @@ public class RegistrationController {
         accountService.registerAccount(registerModel);
     }
 
-    @GetMapping("/api/verify")
-    public void verify(@RequestParam(name = "token") @NotBlank String token) {
+    @PostMapping("/api/verify")
+    public void verify(@RequestBody @NotBlank String token) {
         if (!accountService.verifyAccount(token)) {
             throw new ApiException("invalid_token", "Verification token is invalid.");
         }

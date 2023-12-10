@@ -36,7 +36,6 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -147,7 +146,8 @@ class RegistrationTests {
         assertNotNull(account.getVerificationToken());
 
         // Invalid verification tokens are rejected
-        this.mvc.perform(get("/api/verify?token={token}", INVALID_TOKEN))
+        this.mvc.perform(post("/api/verify")
+                        .content(INVALID_TOKEN))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("timestamp").isNumber())
                 .andExpect(jsonPath("type").value("invalid_token"));
@@ -155,14 +155,17 @@ class RegistrationTests {
         Account afterFailedVerifyaccount = accountRepository.findByEmail(TEST_EMAIL);
         assertEquals(account, afterFailedVerifyaccount);
         // Use the correct verification token
-        this.mvc.perform(get("/api/verify?token={token}", account.getVerificationToken()))
+        String token = account.getVerificationToken();
+        this.mvc.perform(post("/api/verify")
+                        .content(token))
                 .andExpect(status().isOk());
         // Verification status is updated
         Account afterVerifyaccount = accountRepository.findByEmail(TEST_EMAIL);
         assertTrue(afterVerifyaccount.isVerified());
         assertNull(afterVerifyaccount.getVerificationToken());
         // Token is invalidated
-        this.mvc.perform(get("/api/verify?token={token}", account.getVerificationToken()))
+        this.mvc.perform(post("/api/verify")
+                        .content(token))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("timestamp").isNumber())
                 .andExpect(jsonPath("type").value("invalid_token"));
