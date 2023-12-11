@@ -5,10 +5,7 @@ import moment from 'moment'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 import '../ServiceProviderHome/ProviderCalendar.scss' // Import your SASS file
 import ServiceRequestModal from '../Customer/ServiceRequestModal'
-import {
-  CheckCircleIcon,
-  XCircleIcon,
-} from '@heroicons/react/24/outline'
+import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline'
 
 const CustomerCalendar = ({ customerView, request, setDate, isQuote }) => {
   const localizer = momentLocalizer(moment)

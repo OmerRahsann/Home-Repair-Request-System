@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../AuthContext'
 import logo from '../../Logos/mainLogo.png'
 import { Autocomplete } from '@react-google-maps/api'
+import { formatPhoneNumber } from 'Helpers/helpers'
 
 function CustomerSignUp() {
   const navigate = useNavigate()
@@ -36,7 +37,16 @@ function CustomerSignUp() {
     const { name, value } = e.target
 
     // For nested objects (accountInfo), you need to spread them correctly
-    if (name.includes('accountInfo.')) {
+    if (name.includes('accountInfo.phoneNumber')) {
+      const formattedPhoneNumber = formatPhoneNumber(value)
+      setFormData({
+        ...formData,
+        accountInfo: {
+          ...formData.accountInfo,
+          phoneNumber: formattedPhoneNumber,
+        },
+      })
+    } else if (name.includes('accountInfo.')) {
       const accountInfo = { ...formData.accountInfo }
       const field = name.split('.')[1]
       accountInfo[field] = value
@@ -83,7 +93,7 @@ function CustomerSignUp() {
             middleName: accountInfo.middleName,
             lastName: accountInfo.lastName,
             address: accountInfo.address,
-            phoneNumber: accountInfo.phoneNumber,
+            phoneNumber: accountInfo.phoneNumber.replace(/\D/g, ''),
           },
         })
         .then(
@@ -152,6 +162,7 @@ function CustomerSignUp() {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="Email"
+                  autoComplete="new-password"
                   className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
                   required=""
                 />
@@ -160,8 +171,9 @@ function CustomerSignUp() {
               <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
                 <div>
                   <input
-                    placeholder="Address"
+                    placeholder="Your Location"
                     required
+                    autoComplete="new-password"
                     className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
                   />
                 </div>

@@ -6,6 +6,7 @@ import logo from '../../Logos/mainLogo.png'
 import ProviderDescription from '../../components/ServiceProviderHome/ProviderDescription'
 import Select from 'react-select'
 import { Autocomplete } from '@react-google-maps/api'
+import { formatPhoneNumber } from 'Helpers/helpers'
 
 function ProviderSignUp() {
   const navigate = useNavigate()
@@ -51,7 +52,16 @@ function ProviderSignUp() {
     const { name, value } = e.target
 
     // For nested objects (accountInfo), you need to spread them correctly
-    if (name.includes('accountInfo.')) {
+    if (name.includes('accountInfo.phoneNumber')) {
+      const formattedPhoneNumber = formatPhoneNumber(value)
+      setFormData({
+        ...formData,
+        accountInfo: {
+          ...formData.accountInfo,
+          phoneNumber: formattedPhoneNumber,
+        },
+      })
+    } else if (name.includes('accountInfo.')) {
       const accountInfo = { ...formData.accountInfo }
       const field = name.split('.')[1]
       accountInfo[field] = value
@@ -104,7 +114,7 @@ function ProviderSignUp() {
             name: accountInfo.name,
             description: description,
             services: selectedServiceValues,
-            phoneNumber: accountInfo.phoneNumber,
+            phoneNumber: accountInfo.phoneNumber.replace(/\D/g, ''),
             address: accountInfo.address,
             contactEmailAddress: email,
           },
@@ -117,7 +127,9 @@ function ProviderSignUp() {
             navigate('/provider/login')
           },
           (fail) => {
-            alert('Oops...an error occurred. Please try again.')
+            alert(
+              'Oops...an error occurred. Please make sure all of your entered information is correct and try again.',
+            )
             console.error(fail) // Error!
           },
         )
@@ -165,8 +177,9 @@ function ProviderSignUp() {
               <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
                 <div>
                   <input
-                    placeholder="Address"
+                    placeholder="Business Address"
                     required
+                    autoComplete="new-password"
                     className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
                   />
                 </div>
@@ -193,6 +206,7 @@ function ProviderSignUp() {
                 isSearchable={true}
                 isMulti
                 className="bg-custom-gray"
+                required
               />
               <div>
                 <input

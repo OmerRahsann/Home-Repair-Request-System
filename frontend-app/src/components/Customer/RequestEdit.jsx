@@ -146,20 +146,19 @@ function RequestEdit({ request }) {
 
   const handleMoneyChange = (e) => {
     // Get the entered value from the input
-    let inputValue = e.target.value;
-  
+    let inputValue = e.target.value
+
     // Validate if the entered value is an integer
     if (/^\d*$/.test(inputValue)) {
-      // Update the state 
+      // Update the state
       setServiceRequestModel({
         ...serviceRequestModel,
         dollars: inputValue,
-      });
+      })
     } else {
-
-      window.alert("Please enter numbers only.");
+      window.alert('Please enter numbers only.')
     }
-  };
+  }
 
   const handleDescriptionChange = (event) => {
     const text = event.target.value

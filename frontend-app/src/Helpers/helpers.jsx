@@ -93,3 +93,32 @@ export function extractTownAndStateFromAddress(address) {
     return { town: '', state: '' } // Return default values or handle the case where the address format is not as expected
   }
 }
+
+export const isValidEmail = (email) => {
+  // Regular expression for basic email validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return emailRegex.test(email)
+}
+
+export const formatPhoneNumber = (input) => {
+  // Remove non-numeric characters from the input
+  const phoneNumber = input.replace(/\D/g, '')
+
+  // Truncate the input to the first 10 digits
+  const truncatedPhoneNumber = phoneNumber.slice(0, 10)
+  console.log(truncatedPhoneNumber)
+
+  // Apply phone number formatting with parentheses and dashes
+  if (truncatedPhoneNumber.length <= 3) {
+    return `(${truncatedPhoneNumber}`
+  } else if (truncatedPhoneNumber.length <= 6) {
+    return `(${truncatedPhoneNumber.slice(0, 3)}) ${truncatedPhoneNumber.slice(
+      3,
+    )}`
+  } else {
+    return `(${truncatedPhoneNumber.slice(0, 3)}) ${truncatedPhoneNumber.slice(
+      3,
+      6,
+    )}-${truncatedPhoneNumber.slice(6, 10)}`
+  }
+}
