@@ -2,6 +2,7 @@ package homerep.springy.service.impl;
 
 import homerep.springy.authorities.Verified;
 import homerep.springy.config.AccountServiceConfig;
+import homerep.springy.config.EmailAllowListConfig;
 import homerep.springy.entity.Account;
 import homerep.springy.entity.Customer;
 import homerep.springy.entity.ServiceProvider;
@@ -65,12 +66,23 @@ public class AccountServiceImpl implements AccountService, UserDetailsService {
     @Autowired
     private AccountServiceConfig accountServiceConfig;
 
+    @Autowired
+    private EmailAllowListConfig emailAllowListConfig;
+
     // TODO configurable expiration
     private static final Duration RESET_TOKEN_VALID_DURATION = Duration.ofHours(2);
 
     // TODO configurable expiration
     // Time after token creation in which a new token can be created
     private static final Duration RESET_TOKEN_REFRESH_DURATION = RESET_TOKEN_VALID_DURATION.minus(Duration.ofMinutes(90));
+
+    @Override
+    public boolean isAllowedEmail(String email) {
+        if (!emailAllowListConfig.isEnabled()) {
+            return true;
+        }
+        return emailAllowListConfig.getEmails().contains(email);
+    }
 
     @Override
     public boolean isRegistered(String email) {

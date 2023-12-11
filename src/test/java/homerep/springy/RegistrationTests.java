@@ -5,10 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.icegreen.greenmail.spring.GreenMailBean;
 import com.icegreen.greenmail.store.FolderException;
 import homerep.springy.authorities.AccountType;
-import homerep.springy.config.AccountServiceConfig;
-import homerep.springy.config.TestDatabaseConfig;
-import homerep.springy.config.TestDisableRateLimitConfig;
-import homerep.springy.config.TestMailConfig;
+import homerep.springy.config.*;
 import homerep.springy.entity.Account;
 import homerep.springy.entity.Customer;
 import homerep.springy.entity.ServiceProvider;
@@ -19,6 +16,7 @@ import homerep.springy.model.accountinfo.ServiceProviderInfoModel;
 import homerep.springy.repository.AccountRepository;
 import homerep.springy.repository.CustomerRepository;
 import homerep.springy.repository.ServiceProviderRepository;
+import homerep.springy.service.AccountService;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,7 +54,13 @@ class RegistrationTests {
     private AccountRepository accountRepository;
 
     @Autowired
+    private AccountService accountService;
+
+    @Autowired
     private AccountServiceConfig accountServiceConfig;
+
+    @Autowired
+    private EmailAllowListConfig emailAllowListConfig;
 
     @Autowired
     private CustomerRepository customerRepository;
@@ -267,6 +271,27 @@ class RegistrationTests {
                 .andExpect(jsonPath("fieldErrors").isNotEmpty())
                 .andExpect(jsonPath("objectErrors").isArray())
                 .andExpect(jsonPath("objectErrors").isNotEmpty());
+    }
+
+    @Test
+    void registerAllowedEmails() throws Exception {
+        // Email is by default allowed when the allow list is disabled
+        assertTrue(accountService.isAllowedEmail(TEST_EMAIL));
+        // Enable the email allow list
+        emailAllowListConfig.setEnabled(true);
+        // Email is not allowed by default
+        assertFalse(accountService.isAllowedEmail(TEST_EMAIL));
+        // Attempting to register with a disallowed email fails
+        this.mvc.perform(postJson("/api/register", VALID_CUSTOMER1))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("timestamp").isNumber())
+                .andExpect(jsonPath("type").value("forbidden_email"));
+
+        // Add the email to the allow list
+        emailAllowListConfig.getEmails().add(TEST_EMAIL);
+        // Registration is successful
+        this.mvc.perform(postJson("/api/register", VALID_CUSTOMER1))
+                .andExpect(status().isOk());
     }
 
     private MockHttpServletRequestBuilder postJson(String url, Object content) throws JsonProcessingException {

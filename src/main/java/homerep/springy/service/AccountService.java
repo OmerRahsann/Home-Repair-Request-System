@@ -6,6 +6,8 @@ import homerep.springy.model.resetpassword.ResetPasswordModel;
 import jakarta.validation.constraints.NotBlank;
 
 public interface AccountService {
+    boolean isAllowedEmail(String email);
+
     boolean isRegistered(String email);
 
     Account registerAccount(RegisterModel registerModel);

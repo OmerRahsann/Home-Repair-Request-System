@@ -17,7 +17,11 @@ public class RegistrationController {
     @PostMapping("/api/register")
     @RateLimited(capacity = 1, refillAmount = 1, refillDuration = 30)
     public void register(@RequestBody @Validated RegisterModel registerModel) {
-        if (accountService.isRegistered(registerModel.account().email())) {
+        String email = registerModel.account().email();
+        if (!accountService.isAllowedEmail(email)) {
+            throw new ApiException("forbidden_email", "Your email address is not allowed to register an account.");
+        }
+        if (accountService.isRegistered(email)) {
             throw new ApiException("already_registered", "An account was already registered with that email address.");
         }
         accountService.registerAccount(registerModel);
