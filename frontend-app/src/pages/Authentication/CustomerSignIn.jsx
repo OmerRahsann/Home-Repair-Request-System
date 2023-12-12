@@ -16,40 +16,32 @@ function CustomerSignIn() {
       const { email, password } = state
       await axios
         .post(
-          `${process.env.REACT_APP_API_URL}/api/login`,
+          '/api/login',
           {
             email: email,
             password: password,
           },
           { withCredentials: true },
         )
-        .then(
-          (res) => {
-            const check = async () => {
-              const result = await checkIsCustomerLoggedIn()
-              return result
-            }
-
-            const checkResult = check() // This is a Promise
-
-            checkResult.then((result) => {
-              console.log(result)
-
-              if (result) {
-                navigate('/')
-              } else {
-                window.alert(
-                  'This is a provider account. Navigating you to the Provider Home Page.',
-                )
-                navigate('/provider/viewrequests')
-              }
-            })
-          },
-          (fail) => {
-            alert('Oops...an error occurred. Please try again.')
-            console.error(fail) // Error!
-          },
-        )
+        .then(checkIsCustomerLoggedIn)
+        .then((result) => {
+          if (result) {
+            navigate('/')
+          } else {
+            window.alert(
+              'This is a provider account. Navigating you to the Provider Home Page.',
+            )
+            navigate('/provider/viewrequests')
+          }
+        })
+        .catch((fail) => {
+          console.error(fail) // Error!
+          if (fail.response && fail.response.status == 403) {
+            alert('Invalid credentials. Please try again.')
+            return
+          }
+          alert('Oops...an error occurred. Please try again.')
+        })
     } catch (err) {
       alert(err)
     }
