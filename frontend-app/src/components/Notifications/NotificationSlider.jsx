@@ -54,7 +54,7 @@ const NotificationSlider = () => {
     // Fetch notifications every 30 seconds
     const intervalId = setInterval(() => {
       fetchNotifications()
-    }, 3000)
+    }, 30000)
 
     // Clear the interval when the component is unmounted
     return () => clearInterval(intervalId)
