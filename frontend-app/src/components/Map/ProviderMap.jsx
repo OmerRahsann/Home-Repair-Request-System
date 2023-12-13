@@ -8,22 +8,17 @@ import { createRoundedRange } from '../../Helpers/helpers'
 
 const ProviderMap = ({
   coords,
+  defaultCoords,
   requests,
-  setCoords,
   setBounds,
   onCardClicked,
-  selectedLocation,
   selectedCardIndex,
 }) => {
   const matches = useMediaQuery('(min-width:600px)')
   const classes = useStyles()
-  const [mapReady, setMapReady] = useState(false)
-  const [c, setC] = useState(coords)
-  const [mapKey, setMapKey] = useState(0)
-  console.log({ c })
+  const [map, setMap] = useState(null)
 
   const handleMapChange = (map) => {
-    console.log(map)
     const newBounds = {
       ne: {
         lat: map.bounds.eb.hi,
@@ -38,82 +33,69 @@ const ProviderMap = ({
     setBounds(newBounds)
   }
 
-  const handleMapLoad = (map) => {
-    setMapReady(true)
+  const handleGoogleApiLoaded = ({map}) => {
+    setMap(map)
   }
 
   useEffect(() => {
-    if (mapReady) {
-      // Fetch or update data and set it in the state
+    if (map) {
+      map.panTo(coords)
     }
-  }, [mapReady])
+  }, [map, coords])
 
-  useEffect(() => {
-    setC(coords)
-    setMapKey((prevKey) => prevKey + 1) // Increment the key to trigger a re-render
-  }, [coords])
-
-  useEffect(() => {
-    if (selectedLocation) {
-      setCoords(selectedLocation)
-    }
-  }, [selectedLocation])
+  const loadingContent = (
+    <div className="flex items-center justify-center h-full">
+      <CircularProgress />
+    </div>
+  )
 
   return (
     <div className={classes.mapContainer}>
-      {Object.keys(c).length !== 0 ? (
-        <GoogleMap
-          key={mapKey}
-          apiKey={process.env.REACT_APP_GOOGLE_API_KEY}
-          defaultCenter={coords}
-          center={coords}
-          defaultZoom={13}
-          options={{
-            disableDefaultUI: true,
-            zoomControl: true,
-            styles: mapStyles,
-            gestureHandling: "greedy",
-          }}
-          margin={[50, 50, 50, 50]}
-          onChange={handleMapChange}
-          onLoad={handleMapLoad}
-        >
-          {requests.length &&
-            requests.map((request, i) => (
-              <div
-                className={classes.markerContainer}
-                lat={Number(request.latitude)}
-                lng={Number(request.longitude)}
-                key={i}
-                onClick={() => onCardClicked(i)}
-                zIndex={i == selectedCardIndex ? 10 : 0}
-              >
-                <Paper elevation={3} className={classes.paper}>
-                  <h1 className="text-[1.75vh] font-bold text-center pb-1">
-                    {' '}
-                    {request.title}
-                  </h1>
-                  <img
-                    className={`${classes.pointer} w-20 h-14 md:w-20 md:h-14 lg:w-20 lg:h-14 object-cover`}
-                    src={
-                      request.pictures && request.pictures[0]
-                        ? `${process.env.REACT_APP_API_URL}/image/${request.pictures[0]}`
-                        : noImage
-                    }
-                  />
-                  {console.log(request.pictures)}
-                  <h1 className="pt-1 text-center font-bold">
-                    ${createRoundedRange(request.dollars)}
-                  </h1>
-                </Paper>
-              </div>
-            ))}
-        </GoogleMap>
-      ) : (
-        <div className="flex items-center justify-center h-full">
-          <CircularProgress />
-        </div>
-      )}
+      <GoogleMap
+        apiKey={process.env.REACT_APP_GOOGLE_API_KEY}
+        defaultCenter={defaultCoords}
+        defaultZoom={13}
+        options={{
+          disableDefaultUI: true,
+          zoomControl: true,
+          styles: mapStyles,
+          gestureHandling: "greedy",
+        }}
+        margin={[50, 50, 50, 50]}
+        onChange={handleMapChange}
+        onGoogleApiLoaded={handleGoogleApiLoaded}
+        loadingContent={loadingContent}
+      >
+        {requests.length &&
+          requests.map((request, i) => (
+            <div
+              className={classes.markerContainer}
+              lat={Number(request.latitude)}
+              lng={Number(request.longitude)}
+              key={i}
+              onClick={() => onCardClicked(i)}
+              zIndex={i == selectedCardIndex ? 10 : 0}
+            >
+              <Paper elevation={3} className={classes.paper}>
+                <h1 className="text-[1.75vh] font-bold text-center pb-1">
+                  {' '}
+                  {request.title}
+                </h1>
+                <img
+                  className={`${classes.pointer} w-20 h-14 md:w-20 md:h-14 lg:w-20 lg:h-14 object-cover`}
+                  src={
+                    request.pictures && request.pictures[0]
+                      ? '/image/${request.pictures[0]}'
+                      : noImage
+                  }
+                />
+                <h1 className="pt-1 text-center font-bold">
+                  ${createRoundedRange(request.dollars)}
+                </h1>
+              </Paper>
+            </div>
+          ))}
+      </GoogleMap>
     </div>
   )
 }

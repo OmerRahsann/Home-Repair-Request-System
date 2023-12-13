@@ -6,14 +6,16 @@ import axios from 'axios'
 import { checkIsServiceProviderLoggedIn } from '../../AuthContext'
 import { useNavigate } from 'react-router-dom'
 
+// Rowan University's coordinates
+const DEFAULT_COORDS = { lat: 39.71, lng: -75.1192 }
+
 function RequestView() {
   const [requests, setRequests] = useState([])
-  const [coords, setCoords] = useState({})
+  const [coords, setCoords] = useState(DEFAULT_COORDS)
   const [bounds, setBounds] = useState(null)
   const [selectedCardIndex, setSelectedCardIndex] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [autocomplete, setAutocomplete] = useState(null)
-  const [selectedLocation, setSelectedLocation] = useState(null)
   const [categoryChange, setCategoryChange] = useState(null)
   const [priceRangeChange, setPriceRangeChange] = useState(null)
   const navigate = useNavigate()
@@ -23,7 +25,6 @@ function RequestView() {
   }
 
   const [loggedIn, setLoggedIn] = useState(false)
-  const [hasSecondEffectRun, setHasSecondEffectRun] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,8 +40,6 @@ function RequestView() {
         }
       } catch (error) {
         console.error('Error checking if customer is logged in:', error)
-      } finally {
-        setHasSecondEffectRun(true)
       }
     }
 
@@ -48,57 +47,45 @@ function RequestView() {
   }, [])
 
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        ({ coords: { latitude, longitude } }) => {
-          setIsLoading(true)
-
-          setCoords({ lat: latitude, lng: longitude })
-          const ne = {
-            lat: latitude + 0.015,
-            lng: longitude + 0.015,
-          }
-
-          const sw = {
-            lat: latitude - 0.015,
-            lng: longitude - 0.015,
-          }
-          setBounds({ ne, sw })
-          setIsLoading(false)
-        },
-      )
-    }
-  }, [hasSecondEffectRun])
-
-  useEffect(() => {
     if (bounds) {
-      setIsLoading(true)
       const { ne, sw } = bounds
 
-      let url = `${process.env.REACT_APP_API_URL}/api/provider/service_requests/nearby?latitudeS=${sw.lat}&longitudeW=${sw.lng}&latitudeN=${ne.lat}&longitudeE=${ne.lng}`
+      let filters = {}
       if (categoryChange) {
-        url += `&serviceType=${categoryChange.value}`
+        filters = {
+          serviceType: categoryChange.value,
+          ...filters,
+        }
       }
-
-      // Add price range parameters if selected
       if (priceRangeChange) {
-        url += `&lowerDollarRange=${priceRangeChange.value[0]}&higherDollarRange=${priceRangeChange.value[1]}`
+        filters = {
+          lowerDollarRange: priceRangeChange.value[0],
+          upperDollarRange: priceRangeChange.value[1],
+          ...filters,
+        }
       }
-
-      console.log(url)
 
       // Make the GET request using Axios
       axios
-        .get(url, { withCredentials: true })
+        .get('/api/provider/service_requests/nearby', {
+          withCredentials: true,
+          params: {
+            latitudeS: sw.lat,
+            longitudeW: sw.lng,
+            latitudeN: ne.lat,
+            longitudeE: ne.lng,
+            ...filters,
+          },
+        })
         .then((response) => {
-          console.log({ response })
           // Handle the response and set the serviceRequests state
           setRequests(response?.data)
+          // Hide initial spinners
+          setIsLoading(false)
         })
         .catch((error) => {
           console.error('Error:', error)
         })
-      setIsLoading(false)
     }
   }, [bounds, categoryChange, priceRangeChange])
 
@@ -108,7 +95,7 @@ function RequestView() {
       if (place && place.geometry && place.formatted_address) {
         const lat = place.geometry.location.lat()
         const lng = place.geometry.location.lng()
-        setSelectedLocation({ lat, lng })
+        setCoords({ lat, lng })
       } else {
         window.alert('Please Enter a Valid Address.')
       }
@@ -116,6 +103,16 @@ function RequestView() {
   }
 
   const onLoad = (autoC) => setAutocomplete(autoC)
+
+  const centerOnLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        ({ coords: { latitude, longitude } }) => {
+          setCoords({ lat: latitude, lng: longitude })
+        },
+      )
+    }
+  }
 
   return (
     <div>
@@ -129,6 +126,7 @@ function RequestView() {
             isLoading={isLoading}
             onLoad={onLoad}
             onRequestChanged={onRequestChanged}
+            onCenterLocation={centerOnLocation}
             setCategoryChange={setCategoryChange}
             setPriceRangeChange={setPriceRangeChange}
           />
@@ -138,9 +136,9 @@ function RequestView() {
             setBounds={setBounds}
             setCoords={setCoords}
             coords={coords}
+            defaultCoords={DEFAULT_COORDS}
             onCardClicked={handleCardClick}
             requests={requests}
-            selectedLocation={selectedLocation}
             selectedCardIndex={selectedCardIndex}
           />
         </div>

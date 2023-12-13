@@ -16,6 +16,7 @@ function RequestList({
   selectedCardIndex,
   onLoad,
   onRequestChanged,
+  onCenterLocation,
   setCategoryChange,
   setPriceRangeChange,
 }) {
@@ -61,8 +62,8 @@ function RequestList({
         </div>
       ) : (
         <>
-          <div className="w-full">
-            <Autocomplete onLoad={onLoad} onPlaceChanged={onRequestChanged}>
+          <div className="w-full flex">
+            <Autocomplete onLoad={onLoad} onPlaceChanged={onRequestChanged} className='inline-block flex-grow'>
               <div className="flex flex-row p-2 border rounded-lg shadow-sm bg-custom-gray items-center">
                 <FaSearch className="text-gray-500 mr-2" />
                 <InputBase
@@ -75,6 +76,12 @@ function RequestList({
                 />
               </div>
             </Autocomplete>
+            <button
+              className={`text-white bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 text-3xl rounded-lg text-center dark:bg-primary-600 dark:hover-bg-primary-700 dark:focus-ring-primary-800 m-[.25em]`}
+              onClick={onCenterLocation}
+            >
+              🕴️
+            </button>
           </div>
 
           <div className="flex flex-col md:flex-row justify-center md:justify-between  md:pb-2 md:pt-2">
