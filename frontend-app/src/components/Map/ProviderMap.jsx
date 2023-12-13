@@ -13,6 +13,7 @@ const ProviderMap = ({
   setBounds,
   onCardClicked,
   selectedLocation,
+  selectedCardIndex,
 }) => {
   const matches = useMediaQuery('(min-width:600px)')
   const classes = useStyles()
@@ -71,6 +72,7 @@ const ProviderMap = ({
             disableDefaultUI: true,
             zoomControl: true,
             styles: mapStyles,
+            gestureHandling: "greedy",
           }}
           margin={[50, 50, 50, 50]}
           onChange={handleMapChange}
@@ -84,6 +86,7 @@ const ProviderMap = ({
                 lng={Number(request.longitude)}
                 key={i}
                 onClick={() => onCardClicked(i)}
+                zIndex={i == selectedCardIndex ? 10 : 0}
               >
                 <Paper elevation={3} className={classes.paper}>
                   <h1 className="text-[1.75vh] font-bold text-center pb-1">

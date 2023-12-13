@@ -8,7 +8,7 @@ import { Quote } from 'components/Quotes/Quote'
 
 function ServiceRequestCard({ request, selected, refProp }) {
   if (selected)
-    refProp?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    refProp?.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   const [showModal, setShowModal] = useState(false)
   const handleClick = async () => {
     setShowModal(true)

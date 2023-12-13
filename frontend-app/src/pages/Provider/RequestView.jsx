@@ -141,6 +141,7 @@ function RequestView() {
             onCardClicked={handleCardClick}
             requests={requests}
             selectedLocation={selectedLocation}
+            selectedCardIndex={selectedCardIndex}
           />
         </div>
       </div>
