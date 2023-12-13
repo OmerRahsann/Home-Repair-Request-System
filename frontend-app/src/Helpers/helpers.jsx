@@ -39,17 +39,13 @@ export async function getServices() {
 }
 
 export async function getNotifications() {
-  try {
-    const response = await axios.get(
-      `${process.env.REACT_APP_API_URL}/api/notifications`,
-      {
-        withCredentials: true,
-      },
-    )
-    return response.data
-  } catch (error) {
-    console.error('Error', error)
-  }
+  const response = await axios.get(
+    '/api/notifications',
+    {
+      withCredentials: true,
+    },
+  )
+  return response.data
 }
 
 export async function markReadNotifications() {

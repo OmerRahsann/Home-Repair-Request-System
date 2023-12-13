@@ -6,13 +6,12 @@ const NotificationSlider = () => {
   const [isVisible, setIsVisible] = useState(false)
 
   const fetchNotifications = async () => {
+    const notificationsData = await getNotifications()
+
+    if (!notificationsData) {
+      return
+    }
     try {
-      const notificationsData = await getNotifications()
-
-      if (!notificationsData) {
-        return
-      }
-
       const latestTimestamp =
         notificationsData.length > 0 ? notificationsData[0].timestamp : null
 
@@ -32,28 +31,33 @@ const NotificationSlider = () => {
 
       // Store the latest timestamp in local storage
       localStorage.setItem('lastNotificationTimestamp', latestTimestamp)
-
-      setNotifications(notificationsData)
-      console.log(notificationsData)
-
-      // Show the notification when new notifications are fetched
-      setIsVisible(true)
-
-      // Hide the notification after 5 seconds
-      const timeout = setTimeout(() => {
-        setIsVisible(false)
-      }, 7500)
-
-      return () => clearTimeout(timeout)
     } catch (error) {
+      // Ignore any errors caused by localStorage.getItem and localStorage.setItem
       console.log(error)
     }
+
+    setNotifications(notificationsData)
+
+    // Show the notification when new notifications are fetched
+    setIsVisible(true)
+
+    // Hide the notification after 7.5 seconds
+    const timeout = setTimeout(() => {
+      setIsVisible(false)
+    }, 7500)
+
+    return () => clearTimeout(timeout)
   }
 
   useEffect(() => {
     // Fetch notifications every 30 seconds
     const intervalId = setInterval(() => {
-      fetchNotifications()
+      fetchNotifications().catch((error) => {
+        if (error.response && error.response.status == 403) {
+          // User is logged out, there's no need to check for notifications
+          clearInterval(intervalId)
+        }
+      })
     }, 30000)
 
     // Clear the interval when the component is unmounted
