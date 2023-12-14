@@ -84,7 +84,7 @@ public class AccountServiceImpl implements AccountService, UserDetailsService {
 
     @Override
     public boolean isRegistered(String email) {
-        return accountRepository.findByEmail(email) != null;
+        return accountRepository.existsByEmail(email);
     }
 
     @Override

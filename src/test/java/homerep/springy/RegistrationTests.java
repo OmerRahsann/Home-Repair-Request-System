@@ -219,7 +219,7 @@ class RegistrationTests {
         assertNotNull(account.getVerificationToken());
         // An associated Customer is also stored
         CustomerInfoModel customerInfo = (CustomerInfoModel) VALID_CUSTOMER1.accountInfo();
-        Customer customer = customerRepository.findByAccountEmail(account.getEmail());
+        Customer customer = customerRepository.findByAccountId(account.getId());
         assertNotNull(customer);
         assertEquals(customerInfo.firstName(), customer.getFirstName());
         assertEquals(customerInfo.middleName(), customer.getMiddleName());
@@ -247,7 +247,7 @@ class RegistrationTests {
         assertNotNull(account.getVerificationToken());
         // An associated ServiceProvider is also stored
         ServiceProviderInfoModel serviceInfo = (ServiceProviderInfoModel) VALID_SERVICE_PROVIDER.accountInfo();
-        ServiceProvider serviceProvider = serviceProviderRepository.findByAccountEmail(account.getEmail());
+        ServiceProvider serviceProvider = serviceProviderRepository.findByAccountId(account.getId());
         assertNotNull(serviceProvider);
         assertEquals(serviceInfo.name(), serviceProvider.getName());
         assertEquals(serviceInfo.description(), serviceProvider.getDescription());

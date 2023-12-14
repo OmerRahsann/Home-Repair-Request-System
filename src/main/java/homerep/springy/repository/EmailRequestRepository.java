@@ -17,5 +17,5 @@ public interface EmailRequestRepository extends JpaRepository<EmailRequest, Long
 
     EmailRequest findByServiceProviderAndServiceRequest(ServiceProvider serviceProvider, ServiceRequest serviceRequest);
 
-    EmailRequest findByIdAndServiceRequestCustomerAccountEmail(long id, String email);
+    EmailRequest findByIdAndServiceRequestCustomerAccountId(long id, long accountId);
 }

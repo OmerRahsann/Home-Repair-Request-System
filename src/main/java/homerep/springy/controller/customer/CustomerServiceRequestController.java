@@ -54,7 +54,7 @@ public class CustomerServiceRequestController {
 
     @PostMapping("/create")
     public int createPost(@RequestBody @Validated ServiceRequestModel serviceRequestModel, @AuthenticationPrincipal User user) {
-        Customer customer = customerRepository.findByAccountEmail(user.getEmail());
+        Customer customer = customerRepository.findByAccountId(user.getAccountId());
         ServiceRequest serviceRequest = new ServiceRequest(customer);
         updatePost(serviceRequestModel, serviceRequest);
         serviceRequest.setCreationDate(new Date());
@@ -66,7 +66,7 @@ public class CustomerServiceRequestController {
     @DeleteMapping("/{id}")
     @Transactional
     public void deletePost(@PathVariable("id") int id, @AuthenticationPrincipal User user) {
-        ServiceRequest serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountEmail(id, user.getEmail());
+        ServiceRequest serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountId(id, user.getAccountId());
         if (serviceRequest == null) {
             throw new NonExistentPostException();
         }
@@ -80,7 +80,7 @@ public class CustomerServiceRequestController {
     @Transactional
     public void editPost(@PathVariable("id") int id, @RequestBody @Validated ServiceRequestModel serviceRequestModel,
                          @AuthenticationPrincipal User user) {
-        ServiceRequest serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountEmail(id, user.getEmail());
+        ServiceRequest serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountId(id, user.getAccountId());
         if (serviceRequest == null) {
             throw new NonExistentPostException();
         }
@@ -95,7 +95,7 @@ public class CustomerServiceRequestController {
             if (file.isEmpty() || file.getContentType() == null) {
                 throw new ApiException("empty_file", "No image file was sent.");
             }
-            ServiceRequest serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountEmail(id, user.getEmail());
+            ServiceRequest serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountId(id, user.getAccountId());
             if (serviceRequest == null) {
                 throw new NonExistentPostException();
             }
@@ -115,7 +115,7 @@ public class CustomerServiceRequestController {
 
     @GetMapping
     public List<ServiceRequestModel> getPosts(@AuthenticationPrincipal User user) {
-        List<ServiceRequest> serviceRequests = serviceRequestRepository.findAllByCustomerAccountEmail(user.getEmail());
+        List<ServiceRequest> serviceRequests = serviceRequestRepository.findAllByCustomerAccountId(user.getAccountId());
         List<ServiceRequestModel> models = new ArrayList<>(serviceRequests.size());
         for (ServiceRequest serviceRequest : serviceRequests) {
             models.add(ServiceRequestModel.fromEntity(serviceRequest));
@@ -125,7 +125,7 @@ public class CustomerServiceRequestController {
 
     @GetMapping("/{id}")
     public ServiceRequestModel getPost(@PathVariable("id") int id, @AuthenticationPrincipal User user) {
-        ServiceRequest serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountEmail(id, user.getEmail());
+        ServiceRequest serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountId(id, user.getAccountId());
         if (serviceRequest == null) {
             throw new NonExistentPostException();
         }
@@ -134,7 +134,7 @@ public class CustomerServiceRequestController {
 
     @GetMapping("/templates")
     public List<ServiceRequestModel> getTemplates(@AuthenticationPrincipal User user) {
-        Customer customer = customerRepository.findByAccountEmail(user.getEmail());
+        Customer customer = customerRepository.findByAccountId(user.getAccountId());
 
         List<ServiceRequestTemplate> templates = serviceRequestTemplateRepository.findAllTemplates();
         List<ServiceRequestModel> models = new ArrayList<>(templates.size());

@@ -30,7 +30,7 @@ public class ServiceProviderEmailRequestController {
 
     @GetMapping("/email_requests")
     public List<EmailRequestModel> getAcceptedEmailRequests(@AuthenticationPrincipal User user) {
-        ServiceProvider serviceProvider = serviceProviderRepository.findByAccountEmail(user.getEmail());
+        ServiceProvider serviceProvider = serviceProviderRepository.findByAccountId(user.getAccountId());
         return emailRequestService.getAcceptedEmailRequests(serviceProvider);
     }
 
@@ -40,7 +40,7 @@ public class ServiceProviderEmailRequestController {
         if (serviceRequest == null) {
             throw new NonExistentPostException();
         }
-        ServiceProvider serviceProvider = serviceProviderRepository.findByAccountEmail(user.getEmail());
+        ServiceProvider serviceProvider = serviceProviderRepository.findByAccountId(user.getAccountId());
         return emailRequestService.getEmail(serviceRequest, serviceProvider);
     }
 
@@ -50,7 +50,7 @@ public class ServiceProviderEmailRequestController {
         if (serviceRequest == null) {
             throw new NonExistentPostException();
         }
-        ServiceProvider serviceProvider = serviceProviderRepository.findByAccountEmail(user.getEmail());
+        ServiceProvider serviceProvider = serviceProviderRepository.findByAccountId(user.getAccountId());
         if (!emailRequestService.sendEmailRequest(serviceRequest, serviceProvider)) {
             throw new ApiException("already_requested", "Email request was already sent.");
         }

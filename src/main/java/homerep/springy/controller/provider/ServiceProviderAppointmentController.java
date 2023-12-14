@@ -54,13 +54,13 @@ public class ServiceProviderAppointmentController {
             weekEnds = false;
         }
         YearMonth yearMonth = YearMonth.of(year, month);
-        ServiceProvider serviceProvider = serviceProviderRepository.findByAccountEmail(user.getEmail());
+        ServiceProvider serviceProvider = serviceProviderRepository.findByAccountId(user.getAccountId());
         return appointmentService.getAppointmentsByMonth(serviceProvider, yearMonth, weekEnds, zoneId);
     }
 
     @GetMapping("/appointments/{id}")
     public AppointmentModel getAppointment(@PathVariable("id") int id, @AuthenticationPrincipal User user) {
-        Appointment appointment = appointmentRepository.findByIdAndServiceProviderAccountEmail(id, user.getEmail());
+        Appointment appointment = appointmentRepository.findByIdAndServiceProviderAccountId(id, user.getAccountId());
         if (appointment == null) {
             throw new NonExistentAppointmentException();
         }
@@ -69,7 +69,7 @@ public class ServiceProviderAppointmentController {
 
     @GetMapping("/appointments/updated")
     public List<AppointmentModel> getUpdatedAppointments(@AuthenticationPrincipal User user) {
-        ServiceProvider serviceProvider = serviceProviderRepository.findByAccountEmail(user.getEmail());
+        ServiceProvider serviceProvider = serviceProviderRepository.findByAccountId(user.getAccountId());
         return appointmentService.getUpdatedAppointments(serviceProvider);
     }
 
@@ -82,7 +82,7 @@ public class ServiceProviderAppointmentController {
         if (serviceRequest == null) {
             throw new NonExistentPostException();
         }
-        ServiceProvider serviceProvider = serviceProviderRepository.findByAccountEmail(user.getEmail());
+        ServiceProvider serviceProvider = serviceProviderRepository.findByAccountId(user.getAccountId());
         if (!emailRequestService.canAccessEmail(serviceProvider, serviceRequest)) {
             throw new ApiException("missing_accepted_email_request", "Can't create appointment for service request without an accepted email request.");
         }
@@ -92,7 +92,7 @@ public class ServiceProviderAppointmentController {
 
     @PostMapping("/appointments/{id}/cancel")
     public void cancelAppointment(@PathVariable("id") int id, @AuthenticationPrincipal User user) {
-        Appointment appointment = appointmentRepository.findByIdAndServiceProviderAccountEmail(id, user.getEmail());
+        Appointment appointment = appointmentRepository.findByIdAndServiceProviderAccountId(id, user.getAccountId());
         if (appointment == null) {
             throw new NonExistentAppointmentException();
         }

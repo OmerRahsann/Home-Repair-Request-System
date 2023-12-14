@@ -4,5 +4,5 @@ import homerep.springy.entity.Customer;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CustomerRepository extends JpaRepository<Customer, Integer> {
-    Customer findByAccountEmail(String email);
+    Customer findByAccountId(Long accountId);
 }

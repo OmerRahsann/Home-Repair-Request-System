@@ -47,7 +47,7 @@ public class ImageServiceRequestTests extends AbstractServiceRequestTests {
     private CustomerServiceRequestController customerServiceRequestController;
 
     @BeforeEach
-    void setupPost() throws Exception {
+    void setupPost() {
         postId = customerServiceRequestController.createPost(VALID_SERVICE_REQUEST, new User(customer.getAccount()));
         ServiceRequest serviceRequest = serviceRequestRepository.findById(postId).orElse(null);
         assertNotNull(serviceRequest);
@@ -73,7 +73,7 @@ public class ImageServiceRequestTests extends AbstractServiceRequestTests {
         assertFalse(picture2Key.isBlank());
         assertNotEquals(picture1Key, picture2Key); // Keys should be different for each picture
         // Pictures are stored with the service request in the repository
-        ServiceRequest serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountEmail(postId, TEST_EMAIL);
+        ServiceRequest serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountId(postId, customer.getAccount().getId());
         assertNotNull(serviceRequest);
         assertEquals(2, serviceRequest.getPictures().size());
         assertEquals(List.of(picture1Key, picture2Key), serviceRequest.getImagesUUIDs()); // Pictures are attached in the order sent
@@ -254,7 +254,7 @@ public class ImageServiceRequestTests extends AbstractServiceRequestTests {
         // Can't edit a service request to have duplicate photos
         this.mvc.perform(attachPhoto(postId, "file", MediaType.IMAGE_PNG_VALUE, createImage(2, 2, "PNG")))
                 .andExpect(status().isOk());
-        ServiceRequest serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountEmail(postId, TEST_EMAIL);
+        ServiceRequest serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountId(postId, customer.getAccount().getId());
         String attachedPhotoUUID = serviceRequest.getPictures().get(0).getUuid().toString();
         ServiceRequestModel editedModel = VALID_SERVICE_REQUEST.withPictures(List.of(attachedPhotoUUID, attachedPhotoUUID));
         this.mvc.perform(editServiceRequest(postId, editedModel))

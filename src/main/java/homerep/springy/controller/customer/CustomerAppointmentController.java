@@ -48,13 +48,13 @@ public class CustomerAppointmentController {
             weekEnds = false;
         }
         YearMonth yearMonth = YearMonth.of(year, month);
-        Customer customer = customerRepository.findByAccountEmail(user.getEmail());
+        Customer customer = customerRepository.findByAccountId(user.getAccountId());
         return appointmentService.getAppointmentsByMonth(customer, yearMonth, weekEnds, zoneId);
     }
 
     @GetMapping("/appointments/{id}")
     public AppointmentModel getAppointment(@PathVariable("id") int id, @AuthenticationPrincipal User user) {
-        Appointment appointment = appointmentRepository.findByIdAndCustomerAccountEmail(id, user.getEmail());
+        Appointment appointment = appointmentRepository.findByIdAndCustomerAccountId(id, user.getAccountId());
         if (appointment == null) {
             throw new NonExistentAppointmentException();
         }
@@ -63,7 +63,7 @@ public class CustomerAppointmentController {
 
     @GetMapping("/appointments/{id}/conflicting")
     public List<AppointmentModel> getConflictingAppointments(@PathVariable("id") int id, @AuthenticationPrincipal User user) {
-        Appointment appointment = appointmentRepository.findByIdAndCustomerAccountEmail(id, user.getEmail());
+        Appointment appointment = appointmentRepository.findByIdAndCustomerAccountId(id, user.getAccountId());
         if (appointment == null) {
             throw new NonExistentAppointmentException();
         }
@@ -72,7 +72,7 @@ public class CustomerAppointmentController {
 
     @GetMapping("/appointments/unconfirmed")
     public List<AppointmentModel> listUnconfirmedAppointments(@AuthenticationPrincipal User user) {
-        Customer customer = customerRepository.findByAccountEmail(user.getEmail());
+        Customer customer = customerRepository.findByAccountId(user.getAccountId());
         return appointmentService.getUnconfirmedAppointments(customer);
     }
 
@@ -80,7 +80,7 @@ public class CustomerAppointmentController {
     public List<AppointmentModel> getAppointmentsFor(
             @PathVariable("service_request_id") int serviceRequestId,
             @AuthenticationPrincipal User user) {
-        ServiceRequest serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountEmail(serviceRequestId, user.getEmail());
+        ServiceRequest serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountId(serviceRequestId, user.getAccountId());
         if (serviceRequest == null) {
             throw new NonExistentPostException();
         }
@@ -89,7 +89,7 @@ public class CustomerAppointmentController {
 
     @PostMapping("/appointments/{id}/confirm")
     public void confirmAppointment(@PathVariable("id") int id, @AuthenticationPrincipal User user) throws UnconfirmableAppointmentException, ConflictingAppointmentException {
-        Appointment appointment = appointmentRepository.findByIdAndCustomerAccountEmail(id, user.getEmail());
+        Appointment appointment = appointmentRepository.findByIdAndCustomerAccountId(id, user.getAccountId());
         if (appointment == null) {
             throw new NonExistentAppointmentException();
         }
@@ -98,7 +98,7 @@ public class CustomerAppointmentController {
 
     @PostMapping("/appointments/{id}/cancel")
     public void cancelAppointment(@PathVariable("id") int id, @AuthenticationPrincipal User user) {
-        Appointment appointment = appointmentRepository.findByIdAndCustomerAccountEmail(id, user.getEmail());
+        Appointment appointment = appointmentRepository.findByIdAndCustomerAccountId(id, user.getAccountId());
         if (appointment == null) {
             throw new NonExistentAppointmentException();
         }

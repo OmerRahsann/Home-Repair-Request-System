@@ -53,25 +53,25 @@ public class AccountController {
 
     @PostMapping("/customer/update")
     public void updateCustomerInfo(@RequestBody @Validated CustomerInfoModel model, @AuthenticationPrincipal User user) {
-        Customer customer = customerRepository.findByAccountEmail(user.getUsername());
+        Customer customer = customerRepository.findByAccountId(user.getAccountId());
         accountService.updateCustomerInfo(customer, model);
     }
 
     @GetMapping("/customer")
     public CustomerInfoModel getCustomerInfo(@AuthenticationPrincipal User user) {
-        Customer customer = customerRepository.findByAccountEmail(user.getUsername());
+        Customer customer = customerRepository.findByAccountId(user.getAccountId());
         return CustomerInfoModel.fromEntity(customer);
     }
 
     @PostMapping("/provider/update")
     public void updateServiceProviderInfo(@RequestBody @Validated ServiceProviderInfoModel model, @AuthenticationPrincipal User user) {
-        ServiceProvider serviceProvider = serviceProviderRepository.findByAccountEmail(user.getUsername());
+        ServiceProvider serviceProvider = serviceProviderRepository.findByAccountId(user.getAccountId());
         accountService.updateServiceProviderInfo(serviceProvider, model);
     }
 
     @GetMapping("/provider")
     public ServiceProviderInfoModel getServiceProviderInfo(@AuthenticationPrincipal User user) {
-        ServiceProvider serviceProvider = serviceProviderRepository.findByAccountEmail(user.getUsername());
+        ServiceProvider serviceProvider = serviceProviderRepository.findByAccountId(user.getAccountId());
         return ServiceProviderInfoModel.fromEntity(serviceProvider);
     }
 

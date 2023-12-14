@@ -35,13 +35,13 @@ public class CustomerEmailRequestController {
 
     @GetMapping("/email_requests")
     public List<EmailRequestInfoModel> getPendingEmailRequests(@AuthenticationPrincipal User user) {
-        Customer customer = customerRepository.findByAccountEmail(user.getEmail());
+        Customer customer = customerRepository.findByAccountId(user.getAccountId());
         return emailRequestService.getPendingEmailRequests(customer);
     }
 
     @GetMapping("/service_request/{id}/email_requests")
     public List<EmailRequestInfoModel> getEmailRequests(@PathVariable("id") int id, @AuthenticationPrincipal User user) {
-        ServiceRequest serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountEmail(id, user.getEmail());
+        ServiceRequest serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountId(id, user.getAccountId());
         if (serviceRequest == null) {
             throw new NonExistentPostException();
         }
@@ -50,7 +50,7 @@ public class CustomerEmailRequestController {
 
     @PostMapping("/email_requests/{email_request_id}/accept")
     public void acceptEmailRequest(@PathVariable("email_request_id") long emailRequestId, @AuthenticationPrincipal User user) {
-        EmailRequest emailRequest = emailRequestRepository.findByIdAndServiceRequestCustomerAccountEmail(emailRequestId, user.getEmail());
+        EmailRequest emailRequest = emailRequestRepository.findByIdAndServiceRequestCustomerAccountId(emailRequestId, user.getAccountId());
         if (emailRequest == null) {
             throw new ApiException("non_existent_email_request", "Email request not found.");
         }
@@ -59,7 +59,7 @@ public class CustomerEmailRequestController {
 
     @PostMapping("/email_requests/{email_request_id}/reject")
     public void rejectEmailRequest(@PathVariable("email_request_id") long emailRequestId, @AuthenticationPrincipal User user) {
-        EmailRequest emailRequest = emailRequestRepository.findByIdAndServiceRequestCustomerAccountEmail(emailRequestId, user.getEmail());
+        EmailRequest emailRequest = emailRequestRepository.findByIdAndServiceRequestCustomerAccountId(emailRequestId, user.getAccountId());
         if (emailRequest == null) {
             throw new ApiException("non_existent_email_request", "Email request not found.");
         }

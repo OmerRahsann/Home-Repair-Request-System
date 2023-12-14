@@ -39,7 +39,7 @@ public class PlainServiceRequestTests extends AbstractServiceRequestTests {
                 .andReturn();
         int id = Integer.parseInt(result.getResponse().getContentAsString());
         // It is saved to the repository and is associated with the Customer
-        List<ServiceRequest> serviceRequests = serviceRequestRepository.findAllByCustomerAccountEmail(TEST_EMAIL);
+        List<ServiceRequest> serviceRequests = serviceRequestRepository.findAllByCustomerAccountId(customer.getAccount().getId());
         assertEquals(1, serviceRequests.size());
         // with all the data
         ServiceRequest serviceRequest = serviceRequests.get(0);
@@ -68,7 +68,7 @@ public class PlainServiceRequestTests extends AbstractServiceRequestTests {
                 .andReturn();
         int id = Integer.parseInt(result.getResponse().getContentAsString());
         // It is saved to the repository and is associated with the Customer
-        ServiceRequest serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountEmail(id, TEST_EMAIL);
+        ServiceRequest serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountId(id, customer.getAccount().getId());
         assertNotNull(serviceRequest);
         // Location is updated with data from the geocoding service
         assertEquals(VALID_REQUEST_LOCATION.latitude(), serviceRequest.getLatitude(), 0.015); // Can vary depending on which building was returned
@@ -187,7 +187,7 @@ public class PlainServiceRequestTests extends AbstractServiceRequestTests {
         assertNotNull(model.creationDate());
         assertEquals(initialModel.creationDate(), model.creationDate()); // Creation date stays the same
         // Edited service request is saved to the repository
-        List<ServiceRequest> serviceRequests = serviceRequestRepository.findAllByCustomerAccountEmail(TEST_EMAIL);
+        List<ServiceRequest> serviceRequests = serviceRequestRepository.findAllByCustomerAccountId(customer.getAccount().getId());
         assertEquals(1, serviceRequests.size());
         // with all the data
         ServiceRequest serviceRequest = serviceRequests.get(0);
@@ -212,14 +212,14 @@ public class PlainServiceRequestTests extends AbstractServiceRequestTests {
                 .andExpect(status().isOk())
                 .andReturn();
         int id = Integer.parseInt(result.getResponse().getContentAsString());
-        ServiceRequest serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountEmail(id, TEST_EMAIL);
+        ServiceRequest serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountId(id, customer.getAccount().getId());
         Instant initialRetrievalTime = serviceRequest.getLocationRetrievalTime();
         // Edit the service request with a valid ServiceRequestModel with some additional data that is ignored
         Instant editInstant = Instant.now();
         this.mvc.perform(editServiceRequest(id, MODIFIED_VALID_SERVICE_REQUEST_WITH_ADDITIONAl))
                 .andExpect(status().isOk());
 
-        serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountEmail(id, TEST_EMAIL);
+        serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountId(id, customer.getAccount().getId());
         assertNotNull(serviceRequest);
         // Location matches results from Geocoding service
         // Location is updated with data from the geocoding service
@@ -286,7 +286,7 @@ public class PlainServiceRequestTests extends AbstractServiceRequestTests {
         // Editing a non-existent post does not work
         this.mvc.perform(editServiceRequest(Integer.MAX_VALUE, VALID_SERVICE_REQUEST))
                 .andExpect(status().isBadRequest());
-        assertTrue(serviceRequestRepository.findAllByCustomerAccountEmail(TEST_EMAIL).isEmpty());
+        assertTrue(serviceRequestRepository.findAllByCustomerAccountId(customer.getAccount().getId()).isEmpty());
     }
 
     @Test
@@ -324,11 +324,11 @@ public class PlainServiceRequestTests extends AbstractServiceRequestTests {
                 .andExpect(status().isOk())
                 .andReturn();
         int id = Integer.parseInt(result.getResponse().getContentAsString());
-        assertEquals(1, serviceRequestRepository.findAllByCustomerAccountEmail(TEST_EMAIL).size());
+        assertEquals(1, serviceRequestRepository.findAllByCustomerAccountId(customer.getAccount().getId()).size());
         // Customer can delete a service request with the given id
         this.mvc.perform(deleteServiceRequest(id))
                 .andExpect(status().isOk());
-        assertTrue(serviceRequestRepository.findAllByCustomerAccountEmail(TEST_EMAIL).isEmpty());
+        assertTrue(serviceRequestRepository.findAllByCustomerAccountId(customer.getAccount().getId()).isEmpty());
     }
 
     @Test
@@ -337,12 +337,12 @@ public class PlainServiceRequestTests extends AbstractServiceRequestTests {
         // Customer can create a service request
         this.mvc.perform(createServiceRequest(VALID_SERVICE_REQUEST))
                 .andExpect(status().isOk());
-        assertEquals(1, serviceRequestRepository.findAllByCustomerAccountEmail(TEST_EMAIL).size());
+        assertEquals(1, serviceRequestRepository.findAllByCustomerAccountId(customer.getAccount().getId()).size());
         // Attempting to delete with an invalid id is rejected
         this.mvc.perform(deleteServiceRequest(Integer.MAX_VALUE))
                 .andExpect(status().isBadRequest());
         // repository is not affect
-        assertEquals(1, serviceRequestRepository.findAllByCustomerAccountEmail(TEST_EMAIL).size());
+        assertEquals(1, serviceRequestRepository.findAllByCustomerAccountId(customer.getAccount().getId()).size());
     }
 
     @Test

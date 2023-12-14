@@ -27,19 +27,19 @@ public class NotificationController {
     @PostMapping("/clear")
     @Transactional
     public void clearNotifications(@AuthenticationPrincipal User user) {
-        Account account = accountRepository.findByEmail(user.getEmail());
+        Account account = accountRepository.getReferenceById(user.getAccountId());
         notificationService.clearNotifications(account);
     }
 
     @PostMapping("/mark_read")
     public void markNotificationsAsRead(@AuthenticationPrincipal User user) {
-        Account account = accountRepository.findByEmail(user.getEmail());
+        Account account = accountRepository.getReferenceById(user.getAccountId());
         notificationService.markNotificationsAsRead(account);
     }
 
     @GetMapping
     public List<NotificationModel> getNotifications(@AuthenticationPrincipal User user) {
-        Account account = accountRepository.findByEmail(user.getEmail());
+        Account account = accountRepository.getReferenceById(user.getAccountId());
         return notificationService.getNotifications(account);
     }
 }

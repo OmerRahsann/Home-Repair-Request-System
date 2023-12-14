@@ -11,9 +11,9 @@ import java.time.Instant;
 import java.util.List;
 
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
-    Appointment findByIdAndCustomerAccountEmail(long id, String email);
+    Appointment findByIdAndCustomerAccountId(long id, long accountId);
 
-    Appointment findByIdAndServiceProviderAccountEmail(long id, String email);
+    Appointment findByIdAndServiceProviderAccountId(long id, long accountId);
 
     List<Appointment> findAllByCustomerAndEndTimeAfterAndStartTimeBefore(Customer customer, Instant start, Instant end);
 
