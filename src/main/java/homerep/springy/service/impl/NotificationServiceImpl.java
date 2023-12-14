@@ -36,11 +36,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public void markNotificationsAsRead(Account account) {
-        List<Notification> notifications = notificationRepository.findAllByAccountAndRead(account, false);
-        for (Notification notification : notifications) {
-            notification.setRead(true);
-        }
-        notificationRepository.saveAll(notifications);
+        notificationRepository.markAllByAccountAsRead(account);
     }
 
     @Override

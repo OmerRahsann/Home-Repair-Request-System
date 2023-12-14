@@ -12,7 +12,7 @@ public class Notification {
     @GeneratedValue
     private Long id;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private Account account;
 
     private String title;

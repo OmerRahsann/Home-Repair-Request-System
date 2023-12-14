@@ -86,8 +86,6 @@ public class ServiceProviderServiceRequestTests {
     void setupProvider() {
         ServiceProvider serviceProvider = dummyDataComponent.createServiceProvider(SERVICE_PROVIDER_EMAIL);
         serviceProvider.setAddress("201 Mullica Hill Rd, Glassboro, NJ 08028");
-        serviceProvider.setLongitude(39.709824);
-        serviceProvider.setLatitude(-75.1206862);
         serviceProviderRepository.save(serviceProvider);
     }
 

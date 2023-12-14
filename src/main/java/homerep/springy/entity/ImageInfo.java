@@ -10,10 +10,11 @@ public class ImageInfo {
     @Id
     private UUID uuid;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     private Account uploader;
 
     private Instant uploadDate;
+
     protected ImageInfo() {}
 
     public ImageInfo(UUID uuid, Account uploader, Instant uploadDate) {

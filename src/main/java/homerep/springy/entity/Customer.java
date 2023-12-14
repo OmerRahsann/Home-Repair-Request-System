@@ -11,7 +11,7 @@ public class Customer {
     @GeneratedValue
     private int id;
 
-    @OneToOne
+    @OneToOne(optional = false)
     private Account account;
 
     private String firstName;

@@ -7,8 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface ServiceTypeRepository extends JpaRepository<ServiceType, Integer> {
-    List<ServiceType> findAll(Sort sort);
-
     default List<String> findAllServices() {
         List<String> services = findAll(Sort.by("serviceType").ascending())
                 .stream()

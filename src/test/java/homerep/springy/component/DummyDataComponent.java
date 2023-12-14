@@ -74,8 +74,6 @@ public class DummyDataComponent {
         serviceProvider.setPhoneNumber("1231231234");
         serviceProvider.setAddress("201 Mullica Hill Rd, Glassboro, NJ 08028");
         serviceProvider.setContactEmailAddress(email);
-        serviceProvider.setLongitude(random.nextDouble(-180, 180));
-        serviceProvider.setLatitude(random.nextDouble(-180, 180));
         return serviceProviderRepository.save(serviceProvider);
     }
 

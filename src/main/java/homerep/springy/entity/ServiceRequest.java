@@ -12,7 +12,7 @@ public class ServiceRequest {
     @GeneratedValue
     private int id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private Customer customer;
 
     private String title;
