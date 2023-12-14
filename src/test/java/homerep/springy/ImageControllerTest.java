@@ -16,8 +16,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.security.test.context.support.TestExecutionEvent;
 import org.springframework.security.test.context.support.WithAnonymousUser;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -66,21 +67,21 @@ public class ImageControllerTest {
     }
 
     @Test
-    @WithMockUser(username = TEST_EMAIL)
+    @WithUserDetails(value = TEST_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     void nonExistentImage() throws Exception {
         this.mvc.perform(get("/image/{uuid}", UUID.randomUUID()))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    @WithMockUser(username = TEST_EMAIL)
+    @WithUserDetails(value = TEST_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     void invalidUUID() throws Exception {
         this.mvc.perform(get("/image/1232132135124"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    @WithMockUser(username = TEST_EMAIL)
+    @WithUserDetails(value = TEST_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     void validImage() throws Exception {
         MvcResult result = this.mvc.perform(get("/image/{uuid}", storedImageUUID))
                 .andExpect(status().isOk())

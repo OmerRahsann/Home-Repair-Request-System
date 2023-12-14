@@ -8,9 +8,9 @@ import homerep.springy.model.emailrequest.EmailRequestModel;
 import homerep.springy.repository.ServiceProviderRepository;
 import homerep.springy.repository.ServiceRequestRepository;
 import homerep.springy.service.EmailRequestService;
+import homerep.springy.type.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,7 +30,7 @@ public class ServiceProviderEmailRequestController {
 
     @GetMapping("/email_requests")
     public List<EmailRequestModel> getAcceptedEmailRequests(@AuthenticationPrincipal User user) {
-        ServiceProvider serviceProvider = serviceProviderRepository.findByAccountEmail(user.getUsername());
+        ServiceProvider serviceProvider = serviceProviderRepository.findByAccountEmail(user.getEmail());
         return emailRequestService.getAcceptedEmailRequests(serviceProvider);
     }
 
@@ -40,7 +40,7 @@ public class ServiceProviderEmailRequestController {
         if (serviceRequest == null) {
             throw new NonExistentPostException();
         }
-        ServiceProvider serviceProvider = serviceProviderRepository.findByAccountEmail(user.getUsername());
+        ServiceProvider serviceProvider = serviceProviderRepository.findByAccountEmail(user.getEmail());
         return emailRequestService.getEmail(serviceRequest, serviceProvider);
     }
 
@@ -50,7 +50,7 @@ public class ServiceProviderEmailRequestController {
         if (serviceRequest == null) {
             throw new NonExistentPostException();
         }
-        ServiceProvider serviceProvider = serviceProviderRepository.findByAccountEmail(user.getUsername());
+        ServiceProvider serviceProvider = serviceProviderRepository.findByAccountEmail(user.getEmail());
         if (!emailRequestService.sendEmailRequest(serviceRequest, serviceProvider)) {
             throw new ApiException("already_requested", "Email request was already sent.");
         }

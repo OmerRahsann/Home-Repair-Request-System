@@ -1,8 +1,6 @@
 package homerep.springy;
 
 import com.icegreen.greenmail.spring.GreenMailBean;
-import homerep.springy.authorities.AccountType;
-import homerep.springy.authorities.Verified;
 import homerep.springy.component.DummyDataComponent;
 import homerep.springy.config.TestDatabaseConfig;
 import homerep.springy.config.TestMailConfig;
@@ -25,6 +23,7 @@ import homerep.springy.model.notification.NotificationType;
 import homerep.springy.repository.EmailRequestRepository;
 import homerep.springy.service.EmailRequestService;
 import homerep.springy.service.impl.NotificationServiceImpl;
+import homerep.springy.type.User;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +31,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.core.userdetails.User;
 
 import java.time.Instant;
 import java.util.List;
@@ -66,28 +64,31 @@ public class EmailRequestTest {
     private GreenMailBean greenMailBean;
 
     private Customer customer;
+    private User customerUser;
     private ServiceProvider serviceProvider1;
+    private User serviceProvider1User;
     private ServiceProvider serviceProvider2;
+    private User serviceProvider2User;
     private ServiceRequest serviceRequest1;
     private ServiceRequest serviceRequest2;
 
     private static final String CUSTOMER_EMAIL = "test@localhost";
-    private static final User CUSTOMER_USER = new User(CUSTOMER_EMAIL, "", List.of(AccountType.CUSTOMER, Verified.INSTANCE));
 
     private static final String SERVICE_PROVIDER_1_EMAIL = "example@example.com";
-    private static final User SERVICE_PROVIDER_1_USER = new User(SERVICE_PROVIDER_1_EMAIL, "", List.of(AccountType.SERVICE_PROVIDER, Verified.INSTANCE));
 
     private static final String SERVICE_PROVIDER_2_EMAIL = "example2@example.com";
-    private static final User SERVICE_PROVIDER_2_USER = new User(SERVICE_PROVIDER_2_EMAIL, "", List.of(AccountType.SERVICE_PROVIDER, Verified.INSTANCE));
 
     @BeforeEach
     void setup() {
         customer = dummyDataComponent.createCustomer(CUSTOMER_EMAIL);
+        customerUser = new User(customer.getAccount());
         serviceRequest1 = dummyDataComponent.createServiceRequest(customer);
         serviceRequest2 = dummyDataComponent.createServiceRequest(customer);
 
         serviceProvider1 = dummyDataComponent.createServiceProvider(SERVICE_PROVIDER_1_EMAIL);
+        serviceProvider1User = new User(serviceProvider1.getAccount());
         serviceProvider2 = dummyDataComponent.createServiceProvider(SERVICE_PROVIDER_2_EMAIL);
+        serviceProvider2User = new User(serviceProvider2.getAccount());
     }
 
     @Test
@@ -226,26 +227,26 @@ public class EmailRequestTest {
     void nonExistentPost() {
         // Trying to get the email for a non-existent post results in an ApiException
         assertThrows(NonExistentPostException.class,
-                () -> serviceProviderEmailRequestController.getEmail(Integer.MAX_VALUE, SERVICE_PROVIDER_1_USER));
+                () -> serviceProviderEmailRequestController.getEmail(Integer.MAX_VALUE, serviceProvider1User));
 
         // Trying to send an email request for a non-existent post results in an ApiException
         assertThrows(NonExistentPostException.class,
-                () -> serviceProviderEmailRequestController.requestEmail(Integer.MAX_VALUE, SERVICE_PROVIDER_1_USER));
+                () -> serviceProviderEmailRequestController.requestEmail(Integer.MAX_VALUE, serviceProvider1User));
 
         // Trying to list email requests for a non-existent post results in an ApiException
         assertThrows(NonExistentPostException.class,
-                () -> customerEmailRequestController.getEmailRequests(Integer.MAX_VALUE, CUSTOMER_USER));
+                () -> customerEmailRequestController.getEmailRequests(Integer.MAX_VALUE, customerUser));
     }
 
     @Test
     void nonExistentEmailRequest() {
         // Trying to accept a non-existent email request results in an ApiException
         ApiException exception = assertThrows(ApiException.class,
-                () -> customerEmailRequestController.acceptEmailRequest(Integer.MAX_VALUE, CUSTOMER_USER));
+                () -> customerEmailRequestController.acceptEmailRequest(Integer.MAX_VALUE, customerUser));
         assertEquals(exception.getType(), "non_existent_email_request");
         // Trying to reject a non-existent email request results in an ApiException
         exception = assertThrows(ApiException.class,
-                () -> customerEmailRequestController.rejectEmailRequest(Integer.MAX_VALUE, CUSTOMER_USER));
+                () -> customerEmailRequestController.rejectEmailRequest(Integer.MAX_VALUE, customerUser));
         assertEquals(exception.getType(), "non_existent_email_request");
     }
 
@@ -255,11 +256,11 @@ public class EmailRequestTest {
         // No email requests
         assertTrue(emailRequestRepository.findAll().isEmpty());
         // Sending a single email request is successful
-        assertDoesNotThrow(() -> serviceProviderEmailRequestController.requestEmail(serviceRequest1.getId(), SERVICE_PROVIDER_1_USER));
+        assertDoesNotThrow(() -> serviceProviderEmailRequestController.requestEmail(serviceRequest1.getId(), serviceProvider1User));
         assertEquals(1, emailRequestRepository.findAll().size());
         // Sending another email request results in an error
         ApiException exception = assertThrows(ApiException.class,
-                () -> serviceProviderEmailRequestController.requestEmail(serviceRequest1.getId(), SERVICE_PROVIDER_1_USER));
+                () -> serviceProviderEmailRequestController.requestEmail(serviceRequest1.getId(), serviceProvider1User));
         assertEquals(exception.getType(), "already_requested");
         // no additional email requests are created
         assertEquals(1, emailRequestRepository.findAll().size());
@@ -269,10 +270,10 @@ public class EmailRequestTest {
     @Transactional
     void customerGetPendingEmailRequests() {
         // Multiple service providers can send an email request
-        serviceProviderEmailRequestController.requestEmail(serviceRequest1.getId(), SERVICE_PROVIDER_1_USER);
-        serviceProviderEmailRequestController.requestEmail(serviceRequest1.getId(), SERVICE_PROVIDER_2_USER);
+        serviceProviderEmailRequestController.requestEmail(serviceRequest1.getId(), serviceProvider1User);
+        serviceProviderEmailRequestController.requestEmail(serviceRequest1.getId(), serviceProvider2User);
         // Customer can get a list of all pending email requests
-        List<EmailRequestInfoModel> requests = customerEmailRequestController.getPendingEmailRequests(CUSTOMER_USER);
+        List<EmailRequestInfoModel> requests = customerEmailRequestController.getPendingEmailRequests(customerUser);
         assertEquals(2, requests.size());
         // Both requests in the list are pending
         assertEquals(EmailRequestStatus.PENDING, requests.get(0).status());
@@ -287,10 +288,10 @@ public class EmailRequestTest {
         assertTrue(request0Timestamp.isAfter(request1Timestamp));
 
         // Accept and reject some requests
-        customerEmailRequestController.acceptEmailRequest(requests.get(0).id(), CUSTOMER_USER);
-        customerEmailRequestController.rejectEmailRequest(requests.get(1).id(), CUSTOMER_USER);
+        customerEmailRequestController.acceptEmailRequest(requests.get(0).id(), customerUser);
+        customerEmailRequestController.rejectEmailRequest(requests.get(1).id(), customerUser);
         // There's no more pending requests
-        requests = customerEmailRequestController.getPendingEmailRequests(CUSTOMER_USER);
+        requests = customerEmailRequestController.getPendingEmailRequests(customerUser);
         assertTrue(requests.isEmpty());
     }
 
@@ -298,17 +299,17 @@ public class EmailRequestTest {
     @Transactional
     void serviceProviderGetAcceptedEmailRequests() {
         // Send multiple email requests
-        serviceProviderEmailRequestController.requestEmail(serviceRequest1.getId(), SERVICE_PROVIDER_1_USER);
-        serviceProviderEmailRequestController.requestEmail(serviceRequest2.getId(), SERVICE_PROVIDER_1_USER);
+        serviceProviderEmailRequestController.requestEmail(serviceRequest1.getId(), serviceProvider1User);
+        serviceProviderEmailRequestController.requestEmail(serviceRequest2.getId(), serviceProvider1User);
         // There's no pending email requests were accepted
-        List<EmailRequestModel> models = serviceProviderEmailRequestController.getAcceptedEmailRequests(SERVICE_PROVIDER_1_USER);
+        List<EmailRequestModel> models = serviceProviderEmailRequestController.getAcceptedEmailRequests(serviceProvider1User);
         assertTrue(models.isEmpty());
         // Accept both requests
         for (EmailRequest emailRequest : emailRequestRepository.findAll()) {
-            customerEmailRequestController.acceptEmailRequest(emailRequest.getId(), CUSTOMER_USER);
+            customerEmailRequestController.acceptEmailRequest(emailRequest.getId(), customerUser);
         }
         // Service provider get a list of accepted email requests
-        models = serviceProviderEmailRequestController.getAcceptedEmailRequests(SERVICE_PROVIDER_1_USER);
+        models = serviceProviderEmailRequestController.getAcceptedEmailRequests(serviceProvider1User);
         assertEquals(2, models.size());
         // List is sorted by status update timestamp in descending order
         Instant request0Timestamp = models.get(0).updateTimestamp();

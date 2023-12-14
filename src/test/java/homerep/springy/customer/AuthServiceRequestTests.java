@@ -1,9 +1,15 @@
 package homerep.springy.customer;
 
+import homerep.springy.component.DummyDataComponent;
+import homerep.springy.entity.Account;
+import homerep.springy.entity.Customer;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.TestExecutionEvent;
 import org.springframework.security.test.context.support.WithAnonymousUser;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.WithUserDetails;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -12,8 +18,23 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Tests that validate the authorization of various customer/service_request endpoints
  */
 public class AuthServiceRequestTests extends AbstractServiceRequestTests {
+    @Autowired
+    private DummyDataComponent dummyDataComponent;
+
+    private static final String SERVICE_PROVIDER_EMAIL = "test@localhost";
+    private static final String UNVERIFIED_EMAIL = "test2@localhost";
+
+    @BeforeEach
+    void setupExtraAccounts() {
+        dummyDataComponent.createServiceProvider(SERVICE_PROVIDER_EMAIL);
+        Customer unverifiedCustomer = dummyDataComponent.createCustomer(UNVERIFIED_EMAIL);
+        Account account = unverifiedCustomer.getAccount();
+        account.setVerified(false);
+        accountRepository.save(account);
+    }
+
     @Test
-    @WithMockUser(username = TEST_EMAIL, authorities = {"SERVICE_PROVIDER", "VERIFIED"})
+    @WithUserDetails(value = SERVICE_PROVIDER_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     void serviceProviderCreateTest() throws Exception {
         // Service providers can't create requests
         this.mvc.perform(createServiceRequest(VALID_SERVICE_REQUEST))
@@ -37,7 +58,7 @@ public class AuthServiceRequestTests extends AbstractServiceRequestTests {
     }
 
     @Test
-    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER"})
+    @WithUserDetails(value = UNVERIFIED_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     void unverifiedCustomerCreateTest() throws Exception {
         // Unverified customers can't create requests
         this.mvc.perform(createServiceRequest(VALID_SERVICE_REQUEST))

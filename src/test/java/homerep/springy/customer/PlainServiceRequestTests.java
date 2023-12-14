@@ -7,7 +7,8 @@ import homerep.springy.service.impl.geocoding.NoopGeocodingService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.TestExecutionEvent;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.time.Instant;
@@ -28,7 +29,7 @@ public class PlainServiceRequestTests extends AbstractServiceRequestTests {
     private GeocodingService geocodingService;
 
     @Test
-    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
+    @WithUserDetails(value = TEST_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     @Transactional
     void customerCreate() throws Exception {
         Date now = new Date();
@@ -55,7 +56,7 @@ public class PlainServiceRequestTests extends AbstractServiceRequestTests {
     }
 
     @Test
-    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
+    @WithUserDetails(value = TEST_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     @Transactional
     void customerCreateLocation() throws Exception {
         assumeFalse(geocodingService instanceof NoopGeocodingService);
@@ -76,7 +77,7 @@ public class PlainServiceRequestTests extends AbstractServiceRequestTests {
     }
 
     @Test
-    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
+    @WithUserDetails(value = TEST_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     void customerCreateGetList() throws Exception {
         Date now = new Date();
         // Customer can create a service request
@@ -115,7 +116,7 @@ public class PlainServiceRequestTests extends AbstractServiceRequestTests {
     }
 
     @Test
-    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
+    @WithUserDetails(value = TEST_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     void customerGetNonExistent() throws Exception {
         // Attempting to get a non-existent post does not work
         this.mvc.perform(getServiceRequest(Integer.MAX_VALUE))
@@ -123,7 +124,7 @@ public class PlainServiceRequestTests extends AbstractServiceRequestTests {
     }
 
     @Test
-    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
+    @WithUserDetails(value = TEST_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     void customerCreateAdditional() throws Exception {
         // Customer can create a service request
         MvcResult result = this.mvc.perform(createServiceRequest(VALID_SERVICE_REQUEST_WITH_ADDITIONAL))
@@ -151,7 +152,7 @@ public class PlainServiceRequestTests extends AbstractServiceRequestTests {
     }
 
     @Test
-    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
+    @WithUserDetails(value = TEST_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     @Transactional
     void customerCreateEdit() throws Exception {
         // Customer can create a service request
@@ -202,7 +203,7 @@ public class PlainServiceRequestTests extends AbstractServiceRequestTests {
     }
 
     @Test
-    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
+    @WithUserDetails(value = TEST_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     @Transactional
     void customerCreateEditLocation() throws Exception {
         assumeFalse(geocodingService instanceof NoopGeocodingService);
@@ -230,7 +231,7 @@ public class PlainServiceRequestTests extends AbstractServiceRequestTests {
     }
 
     @Test
-    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
+    @WithUserDetails(value = TEST_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     @Transactional
     void customerCreateEditStatus() throws Exception {
         // Customer can create a service request
@@ -280,7 +281,7 @@ public class PlainServiceRequestTests extends AbstractServiceRequestTests {
     }
 
     @Test
-    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
+    @WithUserDetails(value = TEST_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     void customerEditNonExistent() throws Exception {
         // Editing a non-existent post does not work
         this.mvc.perform(editServiceRequest(Integer.MAX_VALUE, VALID_SERVICE_REQUEST))
@@ -289,7 +290,7 @@ public class PlainServiceRequestTests extends AbstractServiceRequestTests {
     }
 
     @Test
-    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
+    @WithUserDetails(value = TEST_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     void customerCreateEditInvalid() throws Exception {
         // Customer can create a service request
         MvcResult result = this.mvc.perform(createServiceRequest(VALID_SERVICE_REQUEST))
@@ -316,7 +317,7 @@ public class PlainServiceRequestTests extends AbstractServiceRequestTests {
     }
 
     @Test
-    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
+    @WithUserDetails(value = TEST_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     void customerCreateDelete() throws Exception {
         // Customer can create a service request
         MvcResult result = this.mvc.perform(createServiceRequest(VALID_SERVICE_REQUEST))
@@ -331,7 +332,7 @@ public class PlainServiceRequestTests extends AbstractServiceRequestTests {
     }
 
     @Test
-    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
+    @WithUserDetails(value = TEST_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     void customerCreateDeleteInvalid() throws Exception {
         // Customer can create a service request
         this.mvc.perform(createServiceRequest(VALID_SERVICE_REQUEST))
@@ -345,7 +346,7 @@ public class PlainServiceRequestTests extends AbstractServiceRequestTests {
     }
 
     @Test
-    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
+    @WithUserDetails(value = TEST_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     void postValidation() throws Exception {
         this.mvc.perform(createServiceRequest(INVALID_SERVICE_REQUEST))
                 .andExpect(status().isBadRequest())
@@ -358,7 +359,7 @@ public class PlainServiceRequestTests extends AbstractServiceRequestTests {
     }
 
     @Test
-    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
+    @WithUserDetails(value = TEST_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     void editPostValidation() throws Exception {
         MvcResult result = this.mvc.perform(createServiceRequest(VALID_SERVICE_REQUEST))
                 .andExpect(status().isOk())

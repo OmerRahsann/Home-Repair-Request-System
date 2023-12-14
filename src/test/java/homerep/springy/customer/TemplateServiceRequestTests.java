@@ -5,7 +5,8 @@ import homerep.springy.model.ServiceRequestModel;
 import homerep.springy.repository.ServiceRequestTemplateRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.TestExecutionEvent;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MvcResult;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,7 +27,7 @@ public class TemplateServiceRequestTests extends AbstractServiceRequestTests {
     );
 
     @Test
-    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
+    @WithUserDetails(value = TEST_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     void getTemplates() throws Exception {
         // Customer can get a list of template service requests
         MvcResult result = this.mvc.perform(get("/api/customer/service_request/templates"))

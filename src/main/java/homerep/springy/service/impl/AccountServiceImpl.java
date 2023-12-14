@@ -1,6 +1,5 @@
 package homerep.springy.service.impl;
 
-import homerep.springy.authorities.Verified;
 import homerep.springy.config.AccountServiceConfig;
 import homerep.springy.config.EmailAllowListConfig;
 import homerep.springy.entity.Account;
@@ -18,12 +17,11 @@ import homerep.springy.repository.CustomerRepository;
 import homerep.springy.repository.ServiceProviderRepository;
 import homerep.springy.service.AccountService;
 import homerep.springy.service.EmailService;
+import homerep.springy.type.User;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -37,7 +35,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -197,12 +194,7 @@ public class AccountServiceImpl implements AccountService, UserDetailsService {
         if (account == null) {
             throw new UsernameNotFoundException("No user with the given email was found.");
         }
-        List<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(account.getType());
-        if (account.isVerified()) {
-            authorities.add(Verified.INSTANCE);
-        }
-        return new User(account.getEmail(), account.getPassword(), authorities);
+        return new User(account);
     }
 
     @Override

@@ -15,9 +15,9 @@ import homerep.springy.repository.ServiceProviderRepository;
 import homerep.springy.repository.ServiceRequestRepository;
 import homerep.springy.service.AppointmentService;
 import homerep.springy.service.impl.EmailRequestServiceImpl;
+import homerep.springy.type.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -54,13 +54,13 @@ public class ServiceProviderAppointmentController {
             weekEnds = false;
         }
         YearMonth yearMonth = YearMonth.of(year, month);
-        ServiceProvider serviceProvider = serviceProviderRepository.findByAccountEmail(user.getUsername());
+        ServiceProvider serviceProvider = serviceProviderRepository.findByAccountEmail(user.getEmail());
         return appointmentService.getAppointmentsByMonth(serviceProvider, yearMonth, weekEnds, zoneId);
     }
 
     @GetMapping("/appointments/{id}")
     public AppointmentModel getAppointment(@PathVariable("id") int id, @AuthenticationPrincipal User user) {
-        Appointment appointment = appointmentRepository.findByIdAndServiceProviderAccountEmail(id, user.getUsername());
+        Appointment appointment = appointmentRepository.findByIdAndServiceProviderAccountEmail(id, user.getEmail());
         if (appointment == null) {
             throw new NonExistentAppointmentException();
         }
@@ -69,7 +69,7 @@ public class ServiceProviderAppointmentController {
 
     @GetMapping("/appointments/updated")
     public List<AppointmentModel> getUpdatedAppointments(@AuthenticationPrincipal User user) {
-        ServiceProvider serviceProvider = serviceProviderRepository.findByAccountEmail(user.getUsername());
+        ServiceProvider serviceProvider = serviceProviderRepository.findByAccountEmail(user.getEmail());
         return appointmentService.getUpdatedAppointments(serviceProvider);
     }
 
@@ -82,7 +82,7 @@ public class ServiceProviderAppointmentController {
         if (serviceRequest == null) {
             throw new NonExistentPostException();
         }
-        ServiceProvider serviceProvider = serviceProviderRepository.findByAccountEmail(user.getUsername());
+        ServiceProvider serviceProvider = serviceProviderRepository.findByAccountEmail(user.getEmail());
         if (!emailRequestService.canAccessEmail(serviceProvider, serviceRequest)) {
             throw new ApiException("missing_accepted_email_request", "Can't create appointment for service request without an accepted email request.");
         }
@@ -92,7 +92,7 @@ public class ServiceProviderAppointmentController {
 
     @PostMapping("/appointments/{id}/cancel")
     public void cancelAppointment(@PathVariable("id") int id, @AuthenticationPrincipal User user) {
-        Appointment appointment = appointmentRepository.findByIdAndServiceProviderAccountEmail(id, user.getUsername());
+        Appointment appointment = appointmentRepository.findByIdAndServiceProviderAccountEmail(id, user.getEmail());
         if (appointment == null) {
             throw new NonExistentAppointmentException();
         }

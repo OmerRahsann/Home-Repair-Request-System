@@ -55,6 +55,8 @@ public abstract class AbstractServiceRequestTests {
     @Autowired
     protected MockMvc mvc;
 
+    protected Customer customer;
+
     protected static final String TEST_EMAIL = "example@example.com";
 
     protected static final String CUSTOMER_ADDRESS = "201 Mullica Hill Rd, Glassboro, NJ 08028";
@@ -78,9 +80,9 @@ public abstract class AbstractServiceRequestTests {
 
     @BeforeEach
     void setup() {
-        Customer customer = dummyDataComponent.createCustomer(TEST_EMAIL);
+        customer = dummyDataComponent.createCustomer(TEST_EMAIL);
         customer.setAddress(CUSTOMER_ADDRESS);
-        customerRepository.save(customer);
+        customer = customerRepository.save(customer);
     }
 
     protected MockHttpServletRequestBuilder createServiceRequest(ServiceRequestModel serviceRequestModel) throws JsonProcessingException {

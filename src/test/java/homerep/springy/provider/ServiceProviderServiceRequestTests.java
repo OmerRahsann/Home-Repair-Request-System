@@ -17,7 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.TestExecutionEvent;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -69,7 +70,6 @@ public class ServiceProviderServiceRequestTests {
     }
 
     @BeforeEach
-    @WithMockUser(username = CUSTOMER_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
     void setupCustomer() {
         Customer customer = dummyDataComponent.createCustomer(CUSTOMER_EMAIL);
 
@@ -90,7 +90,7 @@ public class ServiceProviderServiceRequestTests {
     }
 
     @Test
-    @WithMockUser(username = SERVICE_PROVIDER_EMAIL, authorities = {"SERVICE_PROVIDER", "VERIFIED"})
+    @WithUserDetails(value = SERVICE_PROVIDER_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     void testQueryAll() throws Exception {
         MvcResult result = this.mvc.perform(get("/api/provider/service_requests/all"))
                 .andExpect(status().isOk())
@@ -105,7 +105,7 @@ public class ServiceProviderServiceRequestTests {
     }
 
     @Test
-    @WithMockUser(username = SERVICE_PROVIDER_EMAIL, authorities = {"SERVICE_PROVIDER", "VERIFIED"})
+    @WithUserDetails(value = SERVICE_PROVIDER_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     void testQueryRange() throws Exception {
         MvcResult result = this.mvc.perform(get("/api/provider/service_requests/nearby")
                         .queryParam("latitudeS", String.valueOf(SERVICE_REQUEST_LOCATION.latitude() - 0.2))
@@ -122,7 +122,7 @@ public class ServiceProviderServiceRequestTests {
     }
 
     @Test
-    @WithMockUser(username = SERVICE_PROVIDER_EMAIL, authorities = {"SERVICE_PROVIDER", "VERIFIED"})
+    @WithUserDetails(value = SERVICE_PROVIDER_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     void testQueryLargeRange() throws Exception {
         MvcResult result = this.mvc.perform(get("/api/provider/service_requests/nearby")
                         .queryParam("latitudeS", String.valueOf(SERVICE_REQUEST_LOCATION.latitude() - 2))
@@ -138,7 +138,7 @@ public class ServiceProviderServiceRequestTests {
     }
 
     @Test
-    @WithMockUser(username = SERVICE_PROVIDER_EMAIL, authorities = {"SERVICE_PROVIDER", "VERIFIED"})
+    @WithUserDetails(value = SERVICE_PROVIDER_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     void testQueryOutOfRange() throws Exception {
         MvcResult result = this.mvc.perform(get("/api/provider/service_requests/nearby")
                         .queryParam("latitudeS", String.valueOf(SERVICE_REQUEST_LOCATION.latitude() - 3))
@@ -154,7 +154,7 @@ public class ServiceProviderServiceRequestTests {
     }
 
     @Test
-    @WithMockUser(username = SERVICE_PROVIDER_EMAIL, authorities = {"SERVICE_PROVIDER", "VERIFIED"})
+    @WithUserDetails(value = SERVICE_PROVIDER_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     void testQueryWrapAround() throws Exception {
         MvcResult result = this.mvc.perform(get("/api/provider/service_requests/nearby")
                         .queryParam("latitudeS", "-0.5")

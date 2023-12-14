@@ -12,9 +12,9 @@ import homerep.springy.repository.AccountRepository;
 import homerep.springy.repository.CustomerRepository;
 import homerep.springy.repository.ServiceProviderRepository;
 import homerep.springy.service.AccountService;
+import homerep.springy.type.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,13 +36,13 @@ public class AccountController {
 
     @GetMapping("/type")
     public AccountType getAccountType(@AuthenticationPrincipal User user) {
-        Account account = accountRepository.findByEmail(user.getUsername());
+        Account account = accountRepository.findByEmail(user.getEmail());
         return account.getType();
     }
 
     @GetMapping("/verified")
     public boolean isVerified(@AuthenticationPrincipal User user) {
-        Account account = accountRepository.findByEmail(user.getUsername());
+        Account account = accountRepository.findByEmail(user.getEmail());
         return account.isVerified();
     }
 

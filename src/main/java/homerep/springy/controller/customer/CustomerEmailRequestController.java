@@ -10,9 +10,9 @@ import homerep.springy.repository.CustomerRepository;
 import homerep.springy.repository.EmailRequestRepository;
 import homerep.springy.repository.ServiceRequestRepository;
 import homerep.springy.service.EmailRequestService;
+import homerep.springy.type.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -35,13 +35,13 @@ public class CustomerEmailRequestController {
 
     @GetMapping("/email_requests")
     public List<EmailRequestInfoModel> getPendingEmailRequests(@AuthenticationPrincipal User user) {
-        Customer customer = customerRepository.findByAccountEmail(user.getUsername());
+        Customer customer = customerRepository.findByAccountEmail(user.getEmail());
         return emailRequestService.getPendingEmailRequests(customer);
     }
 
     @GetMapping("/service_request/{id}/email_requests")
     public List<EmailRequestInfoModel> getEmailRequests(@PathVariable("id") int id, @AuthenticationPrincipal User user) {
-        ServiceRequest serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountEmail(id, user.getUsername());
+        ServiceRequest serviceRequest = serviceRequestRepository.findByIdAndCustomerAccountEmail(id, user.getEmail());
         if (serviceRequest == null) {
             throw new NonExistentPostException();
         }
@@ -50,7 +50,7 @@ public class CustomerEmailRequestController {
 
     @PostMapping("/email_requests/{email_request_id}/accept")
     public void acceptEmailRequest(@PathVariable("email_request_id") long emailRequestId, @AuthenticationPrincipal User user) {
-        EmailRequest emailRequest = emailRequestRepository.findByIdAndServiceRequestCustomerAccountEmail(emailRequestId, user.getUsername());
+        EmailRequest emailRequest = emailRequestRepository.findByIdAndServiceRequestCustomerAccountEmail(emailRequestId, user.getEmail());
         if (emailRequest == null) {
             throw new ApiException("non_existent_email_request", "Email request not found.");
         }
@@ -59,7 +59,7 @@ public class CustomerEmailRequestController {
 
     @PostMapping("/email_requests/{email_request_id}/reject")
     public void rejectEmailRequest(@PathVariable("email_request_id") long emailRequestId, @AuthenticationPrincipal User user) {
-        EmailRequest emailRequest = emailRequestRepository.findByIdAndServiceRequestCustomerAccountEmail(emailRequestId, user.getUsername());
+        EmailRequest emailRequest = emailRequestRepository.findByIdAndServiceRequestCustomerAccountEmail(emailRequestId, user.getEmail());
         if (emailRequest == null) {
             throw new ApiException("non_existent_email_request", "Email request not found.");
         }

@@ -15,8 +15,10 @@ import homerep.springy.model.accountinfo.CustomerInfoModel;
 import homerep.springy.model.accountinfo.ServiceProviderInfoModel;
 import homerep.springy.repository.AccountRepository;
 import homerep.springy.service.AccountService;
+import homerep.springy.type.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -24,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +38,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @Import(TestMailConfig.class)
@@ -64,13 +66,13 @@ public class AccountInfoTests {
 
     private ServiceProvider serviceProvider;
 
-    private static final String CUSTOMER_EMAIL = "example@example.com";
-    private static final User CUSTOMER_USER = new User(CUSTOMER_EMAIL, "", List.of(AccountType.CUSTOMER, Verified.INSTANCE));
+    private User customerUser;
+    private User serviceProviderUser;
+    private User unverifiedUser;
 
+    private static final String CUSTOMER_EMAIL = "example@example.com";
     private static final String SERVICE_PROVIDER_EMAIL = "test@localhost";
-    private static final User SERVICE_PROVIDER_USER = new User(SERVICE_PROVIDER_EMAIL, "", List.of(AccountType.SERVICE_PROVIDER, Verified.INSTANCE));
     private static final String UNVERIFIED_EMAIL = "unverified@localhost";
-    private static final User UNVERIFIED_USER = new User(UNVERIFIED_EMAIL, "", List.of(AccountType.SERVICE_PROVIDER));
 
     private static final String INITIAL_PASSWORD = "TestPassword1";
     private static final String INCORRECT_PASSWORD = "Hunter42";
@@ -79,18 +81,21 @@ public class AccountInfoTests {
     @BeforeEach
     void reset() {
         customer = dummyDataComponent.createCustomer(CUSTOMER_EMAIL);
+        customerUser = new User(customer.getAccount());
         serviceProvider = dummyDataComponent.createServiceProvider(SERVICE_PROVIDER_EMAIL);
+        serviceProviderUser = new User(serviceProvider.getAccount());
 
         ServiceProvider unverifiedProvider = dummyDataComponent.createServiceProvider(UNVERIFIED_EMAIL);
         unverifiedProvider.getAccount().setVerified(false);
+        unverifiedUser = new User(unverifiedProvider.getAccount());
         accountRepository.save(unverifiedProvider.getAccount());
     }
 
-    private static Stream<Arguments> allUsers() {
+    private Stream<Arguments> allUsers() {
         return Stream.of(
-                Arguments.of(CUSTOMER_USER, AccountType.CUSTOMER, true),
-                Arguments.of(SERVICE_PROVIDER_USER, AccountType.SERVICE_PROVIDER, true),
-                Arguments.of(UNVERIFIED_USER, AccountType.SERVICE_PROVIDER, false)
+                Arguments.of(customerUser, AccountType.CUSTOMER, true),
+                Arguments.of(serviceProviderUser, AccountType.SERVICE_PROVIDER, true),
+                Arguments.of(unverifiedUser, AccountType.SERVICE_PROVIDER, false)
         );
     }
 
@@ -112,20 +117,20 @@ public class AccountInfoTests {
                 "9999999999"
         );
         accountService.updateCustomerInfo(customer, infoModel);
-        CustomerInfoModel newInfoModel = accountController.getCustomerInfo(CUSTOMER_USER);
+        CustomerInfoModel newInfoModel = accountController.getCustomerInfo(customerUser);
         assertEquals(infoModel, newInfoModel);
     }
 
     @Test
     void getCustomerInfo() {
-        CustomerInfoModel infoModel = accountController.getCustomerInfo(CUSTOMER_USER);
+        CustomerInfoModel infoModel = accountController.getCustomerInfo(customerUser);
         assertEquals(CustomerInfoModel.fromEntity(customer), infoModel);
     }
 
     @Test
     @Transactional
     void getServiceProviderInfo() {
-        ServiceProviderInfoModel infoModel = accountController.getServiceProviderInfo(SERVICE_PROVIDER_USER);
+        ServiceProviderInfoModel infoModel = accountController.getServiceProviderInfo(serviceProviderUser);
         assertEquals(ServiceProviderInfoModel.fromEntity(serviceProvider), infoModel);
     }
 
@@ -141,7 +146,7 @@ public class AccountInfoTests {
                 SERVICE_PROVIDER_EMAIL
         );
         accountService.updateServiceProviderInfo(serviceProvider, infoModel);
-        ServiceProviderInfoModel newInfoModel = accountController.getServiceProviderInfo(SERVICE_PROVIDER_USER);
+        ServiceProviderInfoModel newInfoModel = accountController.getServiceProviderInfo(serviceProviderUser);
         assertEquals(infoModel, newInfoModel);
     }
 
@@ -182,7 +187,7 @@ public class AccountInfoTests {
         ApiException exception = assertThrows(ApiException.class, () -> accountController.changePassword(new ChangePasswordModel(
                 INCORRECT_PASSWORD,
                 NEW_PASSWORD
-        ), CUSTOMER_USER));
+        ), customerUser));
         assertEquals("incorrect_password", exception.getType());
         // and does not change the password
         assertTrue(passwordEncoder.matches(INITIAL_PASSWORD, account.getPassword()));
@@ -192,7 +197,7 @@ public class AccountInfoTests {
         assertDoesNotThrow(() -> accountController.changePassword(new ChangePasswordModel(
                 INITIAL_PASSWORD,
                 NEW_PASSWORD
-        ), CUSTOMER_USER));
+        ), customerUser));
         assertFalse(passwordEncoder.matches(INITIAL_PASSWORD, account.getPassword()));
         assertTrue(passwordEncoder.matches(NEW_PASSWORD, account.getPassword()));
     }

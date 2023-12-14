@@ -3,7 +3,6 @@ package homerep.springy;
 import com.icegreen.greenmail.spring.GreenMailBean;
 import com.icegreen.greenmail.store.FolderException;
 import homerep.springy.authorities.AccountType;
-import homerep.springy.authorities.Verified;
 import homerep.springy.component.DummyDataComponent;
 import homerep.springy.config.TestDatabaseConfig;
 import homerep.springy.config.TestMailConfig;
@@ -22,6 +21,7 @@ import homerep.springy.repository.ServiceRequestRepository;
 import homerep.springy.service.AppointmentService;
 import homerep.springy.service.EmailRequestService;
 import homerep.springy.service.NotificationService;
+import homerep.springy.type.User;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolation;
@@ -36,7 +36,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.core.userdetails.User;
 
 import java.time.*;
 import java.util.*;
@@ -76,14 +75,14 @@ public class AppointmentTest {
     private GreenMailBean greenMailBean;
 
     private Customer customer;
+    private User customerUser;
     private ServiceProvider serviceProvider;
+    private User serviceProviderUser;
     private ServiceRequest serviceRequest;
 
     private static final String CUSTOMER_EMAIL = "test@localhost";
-    private static final User CUSTOMER_USER = new User(CUSTOMER_EMAIL, "", List.of(AccountType.CUSTOMER, Verified.INSTANCE));
 
     private static final String SERVICE_PROVIDER_EMAIL = "example@example.com";
-    private static final User SERVICE_PROVIDER_USER = new User(SERVICE_PROVIDER_EMAIL, "", List.of(AccountType.SERVICE_PROVIDER, Verified.INSTANCE));
 
     private static final ZoneId TIME_ZONE = ZoneId.of("America/New_York");
 
@@ -92,8 +91,10 @@ public class AppointmentTest {
         greenMailBean.getGreenMail().purgeEmailFromAllMailboxes();
 
         customer = dummyDataComponent.createCustomer(CUSTOMER_EMAIL);
+        customerUser = new User(customer.getAccount());
         serviceRequest = dummyDataComponent.createServiceRequest(customer);
         serviceProvider = dummyDataComponent.createServiceProvider(SERVICE_PROVIDER_EMAIL);
+        serviceProviderUser = new User(serviceProvider.getAccount());
     }
 
     private CreateAppointmentModel appointmentAt(LocalTime startTime, Duration duration) {
@@ -430,26 +431,26 @@ public class AppointmentTest {
     @Test
     void nonExistentAppointment() {
         assertThrows(NonExistentAppointmentException.class,
-                () -> customerAppointmentController.getAppointment(Integer.MAX_VALUE, CUSTOMER_USER));
+                () -> customerAppointmentController.getAppointment(Integer.MAX_VALUE, customerUser));
         assertThrows(NonExistentAppointmentException.class,
-                () -> customerAppointmentController.getConflictingAppointments(Integer.MAX_VALUE, CUSTOMER_USER));
+                () -> customerAppointmentController.getConflictingAppointments(Integer.MAX_VALUE, customerUser));
         assertThrows(NonExistentAppointmentException.class,
-                () -> customerAppointmentController.confirmAppointment(Integer.MAX_VALUE, CUSTOMER_USER));
+                () -> customerAppointmentController.confirmAppointment(Integer.MAX_VALUE, customerUser));
         assertThrows(NonExistentAppointmentException.class,
-                () -> customerAppointmentController.cancelAppointment(Integer.MAX_VALUE, CUSTOMER_USER));
+                () -> customerAppointmentController.cancelAppointment(Integer.MAX_VALUE, customerUser));
 
         assertThrows(NonExistentAppointmentException.class,
-                () -> serviceProviderAppointmentController.getAppointment(Integer.MAX_VALUE, SERVICE_PROVIDER_USER));
+                () -> serviceProviderAppointmentController.getAppointment(Integer.MAX_VALUE, serviceProviderUser));
         assertThrows(NonExistentAppointmentException.class,
-                () -> serviceProviderAppointmentController.cancelAppointment(Integer.MAX_VALUE, SERVICE_PROVIDER_USER));
+                () -> serviceProviderAppointmentController.cancelAppointment(Integer.MAX_VALUE, serviceProviderUser));
     }
 
     @Test
     void nonExistentPost() {
         assertThrows(NonExistentPostException.class,
-                () -> customerAppointmentController.getAppointmentsFor(Integer.MAX_VALUE, CUSTOMER_USER));
+                () -> customerAppointmentController.getAppointmentsFor(Integer.MAX_VALUE, customerUser));
         assertThrows(NonExistentPostException.class,
-                () -> serviceProviderAppointmentController.createAppointment(Integer.MAX_VALUE, null, SERVICE_PROVIDER_USER));
+                () -> serviceProviderAppointmentController.createAppointment(Integer.MAX_VALUE, null, serviceProviderUser));
     }
 
     @Test
@@ -458,26 +459,26 @@ public class AppointmentTest {
         CreateAppointmentModel model = appointmentAt(LocalTime.NOON, Duration.ofHours(2));
         // Trying to create an appointment for a service request without an accepted email request fails
         ApiException exception = assertThrows(ApiException.class,
-                () -> serviceProviderAppointmentController.createAppointment(serviceRequest.getId(), model, SERVICE_PROVIDER_USER));
+                () -> serviceProviderAppointmentController.createAppointment(serviceRequest.getId(), model, serviceProviderUser));
         assertEquals("missing_accepted_email_request", exception.getType());
 
         // Send an email request
         assertTrue(emailRequestService.sendEmailRequest(serviceRequest, serviceProvider));
         // Email request has not been accepted yet, so creating an appointment should still fail
         exception = assertThrows(ApiException.class,
-                () -> serviceProviderAppointmentController.createAppointment(serviceRequest.getId(), model, SERVICE_PROVIDER_USER));
+                () -> serviceProviderAppointmentController.createAppointment(serviceRequest.getId(), model, serviceProviderUser));
         assertEquals("missing_accepted_email_request", exception.getType());
 
         // Accept the email request
         assertTrue(emailRequestService.acceptEmailRequest(serviceRequest.getEmailRequests().iterator().next()));
         // Creating an appointment works
-        assertDoesNotThrow(() -> serviceProviderAppointmentController.createAppointment(serviceRequest.getId(), model, SERVICE_PROVIDER_USER));
+        assertDoesNotThrow(() -> serviceProviderAppointmentController.createAppointment(serviceRequest.getId(), model, serviceProviderUser));
 
         // Reject the email request
         emailRequestService.rejectEmailRequest(serviceRequest.getEmailRequests().iterator().next());
         // Trying to create an appointment fails
         exception = assertThrows(ApiException.class,
-                () -> serviceProviderAppointmentController.createAppointment(serviceRequest.getId(), model, SERVICE_PROVIDER_USER));
+                () -> serviceProviderAppointmentController.createAppointment(serviceRequest.getId(), model, serviceProviderUser));
         assertEquals("missing_accepted_email_request", exception.getType());
     }
 
@@ -490,7 +491,7 @@ public class AppointmentTest {
         appointmentService.cancelAppointment(appointment, AccountType.SERVICE_PROVIDER);
         // When the customer tries to confirm it, it fails
         assertThrows(UnconfirmableAppointmentException.class,
-                () -> customerAppointmentController.confirmAppointment(serviceRequest.getId(), CUSTOMER_USER));
+                () -> customerAppointmentController.confirmAppointment(serviceRequest.getId(), customerUser));
     }
 
     @Test

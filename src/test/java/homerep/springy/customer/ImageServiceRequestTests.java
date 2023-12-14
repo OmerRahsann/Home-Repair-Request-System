@@ -1,18 +1,21 @@
 package homerep.springy.customer;
 
 import homerep.springy.config.ServiceRequestPictureConfig;
+import homerep.springy.controller.customer.CustomerServiceRequestController;
 import homerep.springy.entity.Account;
 import homerep.springy.entity.ImageInfo;
 import homerep.springy.entity.ServiceRequest;
 import homerep.springy.model.ServiceRequestModel;
 import homerep.springy.repository.ImageInfoRepository;
 import homerep.springy.service.ImageStorageService;
+import homerep.springy.type.User;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.TestExecutionEvent;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MvcResult;
 
 import javax.imageio.ImageIO;
@@ -40,22 +43,19 @@ public class ImageServiceRequestTests extends AbstractServiceRequestTests {
     private ServiceRequestPictureConfig pictureConfig;
 
     private int postId;
+    @Autowired
+    private CustomerServiceRequestController customerServiceRequestController;
 
     @BeforeEach
-    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
     void setupPost() throws Exception {
-        MvcResult result = this.mvc.perform(createServiceRequest(VALID_SERVICE_REQUEST))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isNumber())
-                .andReturn();
-        postId = Integer.parseInt(result.getResponse().getContentAsString());
+        postId = customerServiceRequestController.createPost(VALID_SERVICE_REQUEST, new User(customer.getAccount()));
         ServiceRequest serviceRequest = serviceRequestRepository.findById(postId).orElse(null);
         assertNotNull(serviceRequest);
     }
 
     @Test
-    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
     @Transactional
+    @WithUserDetails(value = TEST_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     void attachPictures() throws Exception {
         // Can attach PNG pictures
         MvcResult result = this.mvc.perform(attachPhoto(postId, "file", MediaType.IMAGE_PNG_VALUE, createImage(2, 2, "PNG")))
@@ -93,8 +93,8 @@ public class ImageServiceRequestTests extends AbstractServiceRequestTests {
     }
 
     @Test
-    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
     @Transactional
+    @WithUserDetails(value = TEST_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     void editAttachedPictures() throws Exception {
         // Can attach PNG pictures
         this.mvc.perform(attachPhoto(postId, "file", MediaType.IMAGE_PNG_VALUE, createImage(2, 2, "PNG")))
@@ -129,8 +129,8 @@ public class ImageServiceRequestTests extends AbstractServiceRequestTests {
     }
 
     @Test
-    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
     @Transactional
+    @WithUserDetails(value = TEST_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     void deleteAttachedPicturesWithEdit() throws Exception {
         // Can attach PNG pictures
         this.mvc.perform(attachPhoto(postId, "file", MediaType.IMAGE_PNG_VALUE, createImage(2, 2, "PNG")))
@@ -173,8 +173,8 @@ public class ImageServiceRequestTests extends AbstractServiceRequestTests {
     }
 
     @Test
-    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
     @Transactional
+    @WithUserDetails(value = TEST_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     void deletePostWithAttachedPictures() throws Exception {
         // Can attach PNG pictures
         this.mvc.perform(attachPhoto(postId, "file", MediaType.IMAGE_PNG_VALUE, createImage(2, 2, "PNG")))
@@ -190,8 +190,8 @@ public class ImageServiceRequestTests extends AbstractServiceRequestTests {
     }
 
     @Test
-    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
     @Transactional
+    @WithUserDetails(value = TEST_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     void attachPhotoRequestValidation() throws Exception {
         // Must include a file
         this.mvc.perform(attachPhoto(postId, "file", MediaType.IMAGE_PNG_VALUE, null))
@@ -210,8 +210,8 @@ public class ImageServiceRequestTests extends AbstractServiceRequestTests {
     }
 
     @Test
-    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
     @Transactional
+    @WithUserDetails(value = TEST_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     void attachInvalidPhoto() throws Exception {
         // Invalid images are rejected
         this.mvc.perform(attachPhoto(postId, "file", MediaType.IMAGE_PNG_VALUE, new ByteArrayInputStream(new byte[]{0x41, 0x6d})))
@@ -222,8 +222,8 @@ public class ImageServiceRequestTests extends AbstractServiceRequestTests {
     }
 
     @Test
-    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
     @Transactional
+    @WithUserDetails(value = TEST_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     void attachToNonExistentPost() throws Exception {
         // Can't attach photos to nonexistent service requests
         this.mvc.perform(attachPhoto(Integer.MAX_VALUE, "file", MediaType.IMAGE_PNG_VALUE, createImage(2, 2, "PNG")))
@@ -234,8 +234,8 @@ public class ImageServiceRequestTests extends AbstractServiceRequestTests {
     }
 
     @Test
-    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
     @Transactional
+    @WithUserDetails(value = TEST_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     void attachOtherPostImage() throws Exception {
         // Can't attach other photos without going through the {id}/attach endpoint
         Account account = accountRepository.findByEmail(TEST_EMAIL);
@@ -248,8 +248,8 @@ public class ImageServiceRequestTests extends AbstractServiceRequestTests {
     }
 
     @Test
-    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
     @Transactional
+    @WithUserDetails(value = TEST_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     void editDuplicatePhotos() throws Exception {
         // Can't edit a service request to have duplicate photos
         this.mvc.perform(attachPhoto(postId, "file", MediaType.IMAGE_PNG_VALUE, createImage(2, 2, "PNG")))
@@ -264,7 +264,7 @@ public class ImageServiceRequestTests extends AbstractServiceRequestTests {
     }
     
     @Test
-    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
+    @WithUserDetails(value = TEST_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     void resizeAttachedPicture() throws Exception {
         // Decrease max pixels for testing
         pictureConfig.setMaxSizePixels(8);
@@ -295,7 +295,7 @@ public class ImageServiceRequestTests extends AbstractServiceRequestTests {
     }
 
     @Test
-    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
+    @WithUserDetails(value = TEST_EMAIL, setupBefore = TestExecutionEvent.TEST_EXECUTION)
     void maxAttachedPictures() throws Exception {
         // Attaching pictures up to the max configured limit is fine
         for (int i = 0; i < pictureConfig.getMaxNumPictures(); i++) {
