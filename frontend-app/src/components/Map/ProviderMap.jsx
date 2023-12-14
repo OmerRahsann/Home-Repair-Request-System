@@ -85,7 +85,7 @@ const ProviderMap = ({
                   className={`${classes.pointer} w-20 h-14 md:w-20 md:h-14 lg:w-20 lg:h-14 object-cover`}
                   src={
                     request.pictures && request.pictures[0]
-                      ? '/image/${request.pictures[0]}'
+                      ? `/image/${request.pictures[0]}`
                       : noImage
                   }
                 />
