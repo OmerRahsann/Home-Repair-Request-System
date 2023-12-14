@@ -7,6 +7,11 @@ import jakarta.persistence.*;
 import java.util.Objects;
 
 @Entity
+@Table(
+        indexes = {
+                @Index(columnList = "email", unique = true)
+        }
+)
 public class Account {
     @Id
     @GeneratedValue

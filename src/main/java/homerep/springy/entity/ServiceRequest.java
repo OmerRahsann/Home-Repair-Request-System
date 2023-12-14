@@ -6,6 +6,12 @@ import java.time.Instant;
 import java.util.*;
 
 @Entity
+@Table(
+        indexes = {
+                @Index(columnList = "latitude"),
+                @Index(columnList = "longitude")
+        }
+)
 public class ServiceRequest {
 
     @Id

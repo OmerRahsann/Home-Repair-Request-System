@@ -6,6 +6,12 @@ import jakarta.persistence.*;
 import java.time.Instant;
 
 @Entity
+@Table(
+        indexes = {
+                @Index(columnList = "startTime"),
+                @Index(columnList = "endTime")
+        }
+)
 public class Appointment {
     @Id
     @GeneratedValue
