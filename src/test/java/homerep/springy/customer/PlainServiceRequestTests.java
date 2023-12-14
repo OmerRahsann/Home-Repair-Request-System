@@ -1,9 +1,7 @@
 package homerep.springy.customer;
 
 import homerep.springy.entity.ServiceRequest;
-import homerep.springy.entity.ServiceType;
 import homerep.springy.model.ServiceRequestModel;
-import homerep.springy.repository.ServiceTypeRepository;
 import homerep.springy.service.GeocodingService;
 import homerep.springy.service.impl.geocoding.NoopGeocodingService;
 import jakarta.transaction.Transactional;
@@ -18,7 +16,6 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -26,9 +23,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Tests that involve service requests without attached images
  */
 public class PlainServiceRequestTests extends AbstractServiceRequestTests {
-
-    @Autowired
-    private ServiceTypeRepository serviceTypeRepository;
 
     @Autowired
     private GeocodingService geocodingService;
@@ -334,40 +328,6 @@ public class PlainServiceRequestTests extends AbstractServiceRequestTests {
         this.mvc.perform(deleteServiceRequest(id))
                 .andExpect(status().isOk());
         assertTrue(serviceRequestRepository.findAllByCustomerAccountEmail(TEST_EMAIL).isEmpty());
-    }
-
-    @Test
-    @WithMockUser(username = TEST_EMAIL, authorities = {"CUSTOMER", "VERIFIED"})
-    void getServices() throws Exception {
-        // Customer can get a list of available services
-        MvcResult result = this.mvc.perform(get("/api/customer/service_request/services"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$").isNotEmpty())
-                .andReturn();
-        // Default services are returned when no services are available from the repository
-        String[] services = mapper.readValue(result.getResponse().getContentAsString(), String[].class);
-        assertTrue(serviceTypeRepository.findAll().isEmpty());
-        assertEquals(3, services.length);
-        assertEquals("Plumbing", services[0]);
-        assertEquals("Roofing", services[1]);
-        assertEquals("Yardwork", services[2]);
-
-        serviceTypeRepository.save(new ServiceType("Power washing"));
-        serviceTypeRepository.save(new ServiceType("Inspections"));
-
-        // List of services return the service types from the repository
-        result = this.mvc.perform(get("/api/customer/service_request/services"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$").isNotEmpty())
-                .andReturn();
-        services = mapper.readValue(result.getResponse().getContentAsString(), String[].class);
-        assertFalse(serviceTypeRepository.findAll().isEmpty());
-        assertEquals(2, services.length);
-        // in alphabetical order
-        assertEquals("Inspections", services[0]);
-        assertEquals("Power washing", services[1]);
     }
 
     @Test

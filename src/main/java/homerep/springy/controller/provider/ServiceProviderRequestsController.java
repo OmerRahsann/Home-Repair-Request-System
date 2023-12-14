@@ -3,7 +3,6 @@ package homerep.springy.controller.provider;
 import homerep.springy.entity.ServiceRequest;
 import homerep.springy.model.ServiceRequestModel;
 import homerep.springy.repository.ServiceRequestRepository;
-import homerep.springy.repository.ServiceTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,9 +19,6 @@ public class ServiceProviderRequestsController {
 
     @Autowired
     private ServiceRequestRepository serviceRequestRepository;
-
-    @Autowired
-    private ServiceTypeRepository serviceTypeRepository;
 
     @GetMapping("/all")
     public List<ServiceRequestModel> getAllServiceRequests() {
@@ -82,11 +78,6 @@ public class ServiceProviderRequestsController {
                 })
                 .map(ServiceRequestModel::fromEntity)
                 .collect(Collectors.toList());
-    }
-
-    @GetMapping("/services")
-    public List<String> getServices() {
-        return serviceTypeRepository.findAllServices();
     }
 
 }

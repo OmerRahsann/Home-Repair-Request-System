@@ -59,6 +59,7 @@ public class SecurityConfig {
                         .requestMatchers(mvc.pattern("/api/login")).permitAll()
                         .requestMatchers(mvc.pattern("/api/logout")).permitAll()
                         .requestMatchers(mvc.pattern("/api/reset_password/**")).permitAll()
+                        .requestMatchers(mvc.pattern("/api/services")).permitAll() // Used during service provider registration
                         .requestMatchers(mvc.pattern("/api/customer/**")).access(
                                 AuthorizationManagers.allOf(
                                         AuthorityAuthorizationManager.hasAuthority(AccountType.CUSTOMER.getAuthority()),
@@ -71,7 +72,7 @@ public class SecurityConfig {
                                         AuthorityAuthorizationManager.hasAuthority(Verified.INSTANCE.getAuthority())
                                 )
                         )
-                        .requestMatchers(mvc.pattern("/actuator/**")).permitAll()
+                        .requestMatchers(mvc.pattern("/actuator/**")).permitAll() // Only accessible through the management port
                         .anyRequest().authenticated()
         );
         http.logout(logout -> logout

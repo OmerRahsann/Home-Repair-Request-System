@@ -10,7 +10,6 @@ import homerep.springy.model.ServiceRequestModel;
 import homerep.springy.repository.CustomerRepository;
 import homerep.springy.repository.ServiceRequestRepository;
 import homerep.springy.repository.ServiceRequestTemplateRepository;
-import homerep.springy.repository.ServiceTypeRepository;
 import homerep.springy.service.GeocodingService;
 import homerep.springy.service.ImageStorageService;
 import homerep.springy.type.LatLong;
@@ -43,9 +42,6 @@ public class CustomerServiceRequestController {
 
     @Autowired
     private ServiceRequestTemplateRepository serviceRequestTemplateRepository;
-
-    @Autowired
-    private ServiceTypeRepository serviceTypeRepository;
 
     @Autowired
     private ImageStorageService imageStorage;
@@ -134,11 +130,6 @@ public class CustomerServiceRequestController {
             throw new NonExistentPostException();
         }
         return ServiceRequestModel.fromEntity(serviceRequest);
-    }
-
-    @GetMapping("/services")
-    public List<String> getServices() {
-        return serviceTypeRepository.findAllServices();
     }
 
     @GetMapping("/templates")
