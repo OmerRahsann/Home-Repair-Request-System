@@ -35,7 +35,7 @@ function RequestList({
 
   useEffect(() => {
     // Call the getServices function and update the state with the returned data
-    getServices()
+    getServices('provider', 's')
       .then((transformedServices) => {
         setServices(transformedServices)
       })
