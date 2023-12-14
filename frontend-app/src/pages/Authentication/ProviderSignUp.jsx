@@ -121,16 +121,35 @@ function ProviderSignUp() {
         })
         .then(
           (res) => {
+            // Registration successful
             alert(
-              'Provider Registation Successful. Please Login to your New Account!',
+              'Provider Registration Successful. Please Login to your New Account!',
             )
             navigate('/provider/login')
           },
-          (fail) => {
-            alert(
-              'Oops...an error occurred. Please make sure all of your entered information is correct and try again.',
-            )
-            console.error(fail) // Error!
+          (error) => {
+            const errorType = error.response.data.type
+            if (errorType === 'already_registered') {
+              alert(
+                'An account was already registered with that email address.',
+              )
+            } else if (
+              error.response &&
+              error.response.data &&
+              error.response.data.fieldErrors
+            ) {
+              // Validation error occurred
+              const errorMessages = error.response.data.fieldErrors.map(
+                (fieldError) => `${fieldError.field}: ${fieldError.message}`,
+              )
+              alert(`Validation Error:\n${errorMessages.join('\n')}`)
+            } else {
+              // Other types of errors
+              alert(
+                'Oops...an error occurred. Please make sure all of your entered information is correct and try again.',
+              )
+              console.error(error) // Log the error for debugging
+            }
           },
         )
     } catch (err) {

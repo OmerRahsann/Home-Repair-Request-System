@@ -63,7 +63,11 @@ function RequestList({
       ) : (
         <>
           <div className="w-full flex">
-            <Autocomplete onLoad={onLoad} onPlaceChanged={onRequestChanged} className='inline-block flex-grow'>
+            <Autocomplete
+              onLoad={onLoad}
+              onPlaceChanged={onRequestChanged}
+              className="inline-block flex-grow"
+            >
               <div className="flex flex-row p-2 border rounded-lg shadow-sm bg-custom-gray items-center">
                 <FaSearch className="text-gray-500 mr-2" />
                 <InputBase

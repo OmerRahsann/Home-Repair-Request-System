@@ -33,7 +33,7 @@ const ProviderMap = ({
     setBounds(newBounds)
   }
 
-  const handleGoogleApiLoaded = ({map}) => {
+  const handleGoogleApiLoaded = ({ map }) => {
     setMap(map)
   }
 
@@ -59,7 +59,7 @@ const ProviderMap = ({
           disableDefaultUI: true,
           zoomControl: true,
           styles: mapStyles,
-          gestureHandling: "greedy",
+          gestureHandling: 'greedy',
         }}
         margin={[50, 50, 50, 50]}
         onChange={handleMapChange}

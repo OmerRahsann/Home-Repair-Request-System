@@ -39,12 +39,9 @@ export async function getServices() {
 }
 
 export async function getNotifications() {
-  const response = await axios.get(
-    '/api/notifications',
-    {
-      withCredentials: true,
-    },
-  )
+  const response = await axios.get('/api/notifications', {
+    withCredentials: true,
+  })
   return response.data
 }
 
