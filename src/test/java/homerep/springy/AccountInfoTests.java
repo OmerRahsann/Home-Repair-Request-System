@@ -99,6 +99,7 @@ public class AccountInfoTests {
     void getAccountInfoTests(User user, AccountType type, boolean isVerified) {
         assertEquals(type, accountController.getAccountType(user));
         assertEquals(isVerified, accountController.isVerified(user));
+        assertEquals(user.getUsername(), accountController.getEmail(user));
     }
 
     @Test

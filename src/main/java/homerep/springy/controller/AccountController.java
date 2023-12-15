@@ -46,6 +46,11 @@ public class AccountController {
         return account.isVerified();
     }
 
+    @GetMapping("/email")
+    public String getEmail(@AuthenticationPrincipal User user) {
+        return user.getUsername();
+    }
+
     @PostMapping("/customer/update")
     public void updateCustomerInfo(@RequestBody @Validated CustomerInfoModel model, @AuthenticationPrincipal User user) {
         Customer customer = customerRepository.findByAccountEmail(user.getUsername());
