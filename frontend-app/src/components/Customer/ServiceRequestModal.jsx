@@ -22,7 +22,7 @@ function ServiceRequestModal({ isVisible, onClose, children, isFinal, last }) {
       id="wrapper"
       onClick={handleClose}
     >
-      <div className={isFinal ? 'w-[100vh] h-[80vh]' : 'w-[80vh]'}>
+      <div className={isFinal ? 'md:w-[100vh] w-[50vh] h-[80vh]' : 'w-[80vh]'}>
         <button
           className="text-white text-xl place-self-end"
           onClick={() => onClose()}

@@ -8,6 +8,7 @@ import { InputBase } from '@material-ui/core'
 import useStyles from './styles.js'
 import { FaSearch } from 'react-icons/fa'
 import { getServices } from '../../Helpers/helpers'
+import myLocation from '../../Pictures/myLocation.png'
 
 function RequestList({
   onSearch,
@@ -62,10 +63,14 @@ function RequestList({
         </div>
       ) : (
         <>
-          <div className="w-full flex">
-            <Autocomplete onLoad={onLoad} onPlaceChanged={onRequestChanged} className='inline-block flex-grow'>
+          <div className="w-full flex flex-col  sm:flex-row">
+            <Autocomplete
+              onLoad={onLoad}
+              onPlaceChanged={onRequestChanged}
+              className="flex-grow "
+            >
               <div className="flex flex-row p-2 border rounded-lg shadow-sm bg-custom-gray items-center">
-                <FaSearch className="text-gray-500 mr-2" />
+                <FaSearch className="text-gray-500" />
                 <InputBase
                   classes={{
                     root: classes.inputRoot,
@@ -77,10 +82,14 @@ function RequestList({
               </div>
             </Autocomplete>
             <button
-              className={`text-white bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 text-3xl rounded-lg text-center dark:bg-primary-600 dark:hover-bg-primary-700 dark:focus-ring-primary-800 m-[.25em]`}
+              className={`text-white bg-custom-grain hover:bg-primary-700 focus:ring-4 items-center focus:outline-none focus:ring-primary-300 text-2xl rounded-lg text-center dark:bg-primary-600 dark:hover-bg-primary-700 dark:focus-ring-primary-800 m-[.25em]`}
               onClick={onCenterLocation}
             >
-              🕴️
+              <img
+                src={myLocation}
+                alt="My Location"
+                className="w-10 h-10 p-1 items-center mx-auto"
+              />
             </button>
           </div>
 

@@ -2,16 +2,12 @@ import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import Select from 'react-select'
 import { Autocomplete } from '@react-google-maps/api'
+import { getServices } from 'Helpers/helpers'
 
 function RequestEdit({ request }) {
   const [formSubmitted, setFormSubmitted] = useState(false)
   const [notification, setNotification] = useState('')
 
-  const category = [
-    { value: 'plumbing', label: 'Plumbing' },
-    { value: 'yardwork', label: 'Yardwork' },
-    { value: 'roofing', label: 'Roofing' },
-  ]
   const [autoComplete, setAutoComplete] = useState(null)
   const [selectedCategory, setSelectedCategory] = useState()
   const [serviceRequestModel, setServiceRequestModel] = useState({
@@ -26,29 +22,13 @@ function RequestEdit({ request }) {
 
   useEffect(() => {
     // Fetch services when the component mounts
-    getServices()
+    fetchCustomerServices()
   }, [])
 
-  async function getServices() {
+  async function fetchCustomerServices() {
     try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/customer/service_request/services`,
-        {
-          withCredentials: true,
-        },
-      )
-
-      // Extract the services from the response
-      const servicesData = response.data
-
-      // Transform the servicesData into the desired format (label and value are the same)
-      const transformedServices = servicesData.map((service) => ({
-        label: service,
-        value: service,
-      }))
-
-      // Update the state with the transformed services
-      setServices(transformedServices)
+      const services = await getServices()
+      setServices(services)
     } catch (error) {
       console.error('Error:', error)
     }

@@ -16,10 +16,7 @@ export function createRoundedRange(value) {
 export async function getServices() {
   try {
     const response = await axios.get(
-      `${process.env.REACT_APP_API_URL}/api/provider/service_requests/services`,
-      {
-        withCredentials: true,
-      },
+      `${process.env.REACT_APP_API_URL}/api/services`,
     )
 
     // Extract the services from the response
@@ -39,12 +36,9 @@ export async function getServices() {
 }
 
 export async function getNotifications() {
-  const response = await axios.get(
-    '/api/notifications',
-    {
-      withCredentials: true,
-    },
-  )
+  const response = await axios.get('/api/notifications', {
+    withCredentials: true,
+  })
   return response.data
 }
 

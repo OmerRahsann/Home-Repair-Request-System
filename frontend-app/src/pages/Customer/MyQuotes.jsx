@@ -136,31 +136,31 @@ export const MyQuotes = () => {
           {/* Add more content for the right side as needed */}
 
           {emailRequests.length !== 0 ? (
-            <div className=" h-[90vh] overflow-y-auto flex-col">
+            <div className="h-screen overflow-y-auto flex flex-col">
               {emailRequests.map((emailRequest, i) => (
-                <div className="rounded-sm border border-gray-400 text-[2vh]">
-                  <div className="md:pl-14 font-bold sm:pl-2">
-                    <a href="#">
-                      {/*quote.provider*/}
-                      {emailRequest.serviceProvider.name}
-                    </a>
+                <div
+                  key={i}
+                  className="max-w-md rounded-sm border border-gray-400 text-sm p-2 mb-4 w-full"
+                >
+                  <div className="md:pl-4 font-bold">
+                    {emailRequest.serviceProvider.name}
                   </div>
-                  <div>
-                    <div className="flex flex-row justify-between">
-                      <div className="flex flex-row ">
+                  <div className="flex flex-col mt-2">
+                    <div className="flex flex-col md:flex-row justify-between items-start">
+                      <div className="flex items-center mb-2 md:mb-0">
                         {iconSize > 25 ? (
                           <UserCircleIcon width={iconSize} />
                         ) : null}
-                        <div className="flex flex-col justify-center text-gray-400 text-[1.2vh] md:pl-4">
-                          <p>
+                        <div className="flex flex-col text-[1.5vh]">
+                          <p className="text-gray-700">
                             {emailRequest.serviceProvider.contactEmailAddress}
                           </p>
-                          <p>{emailRequest.serviceProvider.phoneNumber}</p>
-                          <Rating value={5} style={{ maxWidth: 75 }} />
+                          <p className="text-gray-700">
+                            {emailRequest.serviceProvider.phoneNumber}
+                          </p>
                         </div>
                       </div>
-
-                      <div className="flex flex-row">
+                      <div className="flex space-x-2">
                         <XCircleIcon
                           color="maroon"
                           width={iconSize}
@@ -173,8 +173,7 @@ export const MyQuotes = () => {
                         />
                       </div>
                     </div>
-
-                    <p className="text-[1vh]">
+                    <p className="text-xs text-gray-500">
                       {new Date(emailRequest.requestTimestamp).toLocaleString()}
                     </p>
                   </div>

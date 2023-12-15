@@ -1,18 +1,22 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from 'AuthContext'
 import axios from 'axios'
 import { Autocomplete } from '@react-google-maps/api'
 import logo from '../../Logos/mainLogo.png'
-import NavBar from 'components/Navbar/NavBar'
+import NavBarProvider from 'components/Navbar/NavBarProvider'
+import Select from 'react-select'
+import Review from '../../components/ServiceProviderHome/Review'
+import ServiceRequestModal from '../../components/Customer/ServiceRequestModal'
+import { formatPhoneNumber } from 'Helpers/helpers'
 
 export const CustomerProfile = () => {
   const navigate = useNavigate()
-  const { accessAcount } = useAuth()
+  const { accessAccount } = useAuth()
   const [autoComplete, setAutoComplete] = useState(null)
+  const [edit, setEdit] = useState(false)
   const [formData, setFormData] = useState({
     email: '',
-    password: '',
     type: 'CUSTOMER',
     accountInfo: {
       firstName: '',
@@ -22,6 +26,80 @@ export const CustomerProfile = () => {
       phoneNumber: '',
     },
   })
+
+  useEffect(() => {
+    // Fetch customer profile data when the component mounts
+    const fetchCustomerData = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/account/customer`,
+          {
+            withCredentials: true,
+          },
+        )
+
+        const { firstName, lastName, phoneNumber, address } = response.data
+        setFormData({
+          ...formData,
+          accountInfo: {
+            firstName,
+            lastName,
+            phoneNumber,
+            address,
+          },
+        })
+      } catch (error) {
+        console.error('Error fetching customer data:', error)
+      }
+    }
+
+    fetchCustomerData()
+  }, [])
+
+  const handleUpdate = async (event) => {
+    event.preventDefault()
+
+    try {
+      const { accountInfo } = formData
+      await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/account/customer/update`,
+        {
+          firstName: accountInfo.firstName,
+          lastName: accountInfo.lastName,
+          middleName: '',
+          phoneNumber: accountInfo.phoneNumber.replace(/\D/g, ''),
+          address: accountInfo.address,
+        },
+        {
+          withCredentials: true,
+        },
+      )
+
+      alert('Customer information updated successfully.')
+      setEdit(false)
+    } catch (error) {
+      console.error('Error updating customer information:', error)
+
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.type === 'validation_error'
+      ) {
+        // Handle validation errors
+        const { fieldErrors } = error.response.data
+        const errorMessage = fieldErrors
+          .map((error) => `${error.field}: ${error.message}`)
+          .join('\n')
+        alert(errorMessage)
+      } else {
+        // Handle other types of errors
+        alert(
+          'An error occurred while updating customer information. Please try again.',
+        )
+      }
+    }
+  }
+
   const passwordsMatch = () => formData.password === formData.confirmPassword
 
   const handleConfirmPasswordChange = (e) => {
@@ -37,7 +115,16 @@ export const CustomerProfile = () => {
     const { name, value } = e.target
 
     // For nested objects (accountInfo), you need to spread them correctly
-    if (name.includes('accountInfo.')) {
+    if (name.includes('accountInfo.phoneNumber')) {
+      const formattedPhoneNumber = formatPhoneNumber(value)
+      setFormData({
+        ...formData,
+        accountInfo: {
+          ...formData.accountInfo,
+          phoneNumber: formattedPhoneNumber,
+        },
+      })
+    } else if (name.includes('accountInfo.')) {
       const accountInfo = { ...formData.accountInfo }
       const field = name.split('.')[1]
       accountInfo[field] = value
@@ -70,108 +157,88 @@ export const CustomerProfile = () => {
 
   const onLoad = (autoC) => setAutoComplete(autoC)
 
-  async function save(event) {
-    event.preventDefault()
-    try {
-      const { email, password, type, accountInfo } = formData
-      await axios
-        .post(`${process.env.REACT_APP_API_URL}/api/register`, {
-          email: email,
-          password: password,
-          type: type,
-          accountInfo: {
-            firstName: accountInfo.firstName,
-            middleName: accountInfo.middleName,
-            lastName: accountInfo.lastName,
-            address: accountInfo.address,
-            phoneNumber: accountInfo.phoneNumber,
-          },
-        })
-        .then(
-          (res) => {
-            console.log(res.data)
-            alert(
-              'Customer Registation Successful. Please Login to your New Account!',
-            )
-            navigate('/customer/login')
-          },
-          (fail) => {
-            alert('Oops...an error occurred. Please try again.')
-            console.error(fail) // Error!
-          },
-        )
-    } catch (err) {
-      // Handle other errors
-      alert('An unexpected error occurred. Please try again.')
-    }
-  }
-
   return (
-    <div className="bg-gradient-to-r from-[#b9a290] via-[#76323f] to-[#b9a290]">
-      <NavBar />
-      <div className="flex flex-col items-center  mx-auto md:h-screen pt-2">
-        <div className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0  ">
-          <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
-            <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl text-center">
-              Edit Your Account
-            </h1>
-            <form className="space-y-4 " action="#" onSubmit={save}>
-              <div className="flex justify-between">
-                <input
-                  type="text"
-                  name="accountInfo.firstName"
-                  value={formData.accountInfo.firstName}
-                  onChange={handleChange}
-                  placeholder="First Name"
-                  required
-                  className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
-                />
-                <div className="p-2"></div>
-                <input
-                  type="text"
-                  name="accountInfo.lastName"
-                  value={formData.accountInfo.lastName}
-                  onChange={handleChange}
-                  placeholder="Last Name"
-                  required
-                  className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
-                />
-              </div>
-
-              <div>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="Email"
-                  className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
-                  required=""
-                />
-              </div>
-
-              <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
-                <div>
+    <div className="bg-custom-gray">
+      <NavBarProvider />
+      <div className="bg-custom-gray h-screen flex flex-col justify-center items-center pb-44">
+        <div className="w-full bg-white shadow-lg rounded-md p-4 md:w-2/5">
+          <h1 className="font-bold text-2xl text-center">
+            {formData.accountInfo.lastName}, {formData.accountInfo.firstName}
+          </h1>
+          <div className="flex flex-col items-center justify-between mt-2">
+            <p>📞 {formData.accountInfo.phoneNumber}</p>
+            <p>📍{formData.accountInfo.address}</p>
+          </div>
+          <div className="flex flex-col md:flex-row justify-between mt-2">
+            <button
+              onClick={() => setEdit(true)}
+              className="text-white bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center md:mr-2 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+            >
+              Edit Account
+            </button>
+            <a
+              className="mt-2 md:mt-0 text-white bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+              href="/reset_password"
+            >
+              Reset Password
+            </a>
+          </div>
+        </div>
+        <div className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 p">
+          <ServiceRequestModal isVisible={edit} onClose={() => setEdit(false)}>
+            <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
+              <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl text-center">
+                Edit Your Account
+              </h1>
+              <form className="space-y-4 " action="#" onSubmit={handleUpdate}>
+                <div className="flex justify-between">
                   <input
-                    placeholder="Address"
+                    type="text"
+                    name="accountInfo.firstName"
+                    onChange={handleChange}
+                    placeholder={formData.accountInfo.firstName}
+                    required
+                    className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
+                  />
+                  <div className="p-2"></div>
+                  <input
+                    type="text"
+                    name="accountInfo.lastName"
+                    onChange={handleChange}
+                    placeholder={formData.accountInfo.lastName}
                     required
                     className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
                   />
                 </div>
-              </Autocomplete>
-              <div>
-                <input
-                  type="text"
-                  name="accountInfo.phoneNumber"
-                  value={formData.accountInfo.phoneNumber}
-                  onChange={handleChange}
-                  placeholder="Phone Number"
-                  required
-                  className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
-                />
-              </div>
-            </form>
-          </div>
+                <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
+                  <div>
+                    <input
+                      placeholder={formData.accountInfo.address}
+                      required
+                      className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
+                    />
+                  </div>
+                </Autocomplete>
+                <div>
+                  <input
+                    type="text"
+                    name="accountInfo.phoneNumber"
+                    value={formData.accountInfo.phoneNumber}
+                    onChange={handleChange}
+                    placeholder="Phone Number"
+                    required
+                    className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
+                  />
+                </div>
+              </form>
+              <button
+                onClick={handleUpdate}
+                className="text-white w-full bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center md:mr-2 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+              >
+                Update
+              </button>
+            </div>
+          </ServiceRequestModal>
         </div>
       </div>
     </div>

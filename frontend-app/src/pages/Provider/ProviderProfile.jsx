@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from 'AuthContext'
 import axios from 'axios'
@@ -8,24 +8,134 @@ import NavBarProvider from 'components/Navbar/NavBarProvider'
 import Select from 'react-select'
 import Review from '../../components/ServiceProviderHome/Review'
 import ServiceRequestModal from '../../components/Customer/ServiceRequestModal'
+import { formatPhoneNumber, getServices } from 'Helpers/helpers'
+import ProviderDescription from 'components/ServiceProviderHome/ProviderDescription'
 
 export const ProviderProfile = () => {
   const navigate = useNavigate()
-  const { accessAcount } = useAuth()
+  const { accessAccount } = useAuth()
   const [autoComplete, setAutoComplete] = useState(null)
   const [edit, setEdit] = useState(false)
+  const [services, setServices] = useState([])
+  const [description, setDescription] = useState('')
+  const [selectedServices, setSelectedServices] = useState([])
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    type: 'CUSTOMER',
+    contactEmailAddress: '',
+    type: 'SERVICE_PROVIDER',
     accountInfo: {
-      firstName: '',
-      middleName: '',
+      name: '',
       lastName: '',
       address: '',
       phoneNumber: '',
+      services: [],
     },
   })
+
+  function handleSelect(data) {
+    setSelectedServices([data[0].value])
+  }
+
+  const handleDescriptionChange = (newDescription) => {
+    setDescription(newDescription)
+  }
+
+  useEffect(() => {
+    fetchServices()
+    // Fetch provider profile data when the component mounts
+    const fetchProviderData = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/account/provider`,
+          {
+            withCredentials: true,
+          },
+        )
+
+        const {
+          name,
+          description,
+          services,
+          phoneNumber,
+          address,
+          contactEmailAddress,
+        } = response.data
+        setFormData({
+          ...formData,
+          contactEmailAddress,
+          accountInfo: {
+            name,
+            description,
+            services,
+            phoneNumber,
+            address,
+          },
+        })
+      } catch (error) {
+        console.error('Error fetching provider data:', error)
+      }
+    }
+
+    fetchProviderData()
+  }, [])
+
+  async function fetchServices() {
+    try {
+      const services = await getServices()
+      setServices(services)
+    } catch (error) {
+      // Handle the error here
+      console.error('Error fetching services:', error)
+    }
+  }
+
+  const handleUpdate = async (event) => {
+    event.preventDefault()
+    try {
+      const { accountInfo } = formData
+      console.log(formData)
+      await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/account/provider/update`,
+        {
+          name: accountInfo.name,
+          description:
+            description.length > 0 ? description : accountInfo.description,
+          services:
+            selectedServices.length > 0
+              ? selectedServices
+              : accountInfo.services,
+          phoneNumber: accountInfo.phoneNumber.replace(/\D/g, ''),
+          address: accountInfo.address,
+          contactEmailAddress: formData.contactEmailAddress,
+        },
+        {
+          withCredentials: true,
+        },
+      )
+      alert('Provider information updated successfully.')
+      setEdit(false)
+    } catch (error) {
+      console.error('Error updating Provider information:', error)
+
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.type === 'validation_error'
+      ) {
+        // Handle validation errors
+        const { fieldErrors } = error.response.data
+        const errorMessage = fieldErrors
+          .map((error) => `${error.field}: ${error.message}`)
+          .join('\n')
+        alert(errorMessage)
+      } else {
+        // Handle other types of errors
+        alert(
+          'An error occurred while updating Provider information. Please try again.',
+        )
+      }
+    }
+  }
+
   const passwordsMatch = () => formData.password === formData.confirmPassword
 
   const handleConfirmPasswordChange = (e) => {
@@ -41,7 +151,16 @@ export const ProviderProfile = () => {
     const { name, value } = e.target
 
     // For nested objects (accountInfo), you need to spread them correctly
-    if (name.includes('accountInfo.')) {
+    if (name.includes('accountInfo.phoneNumber')) {
+      const formattedPhoneNumber = formatPhoneNumber(value)
+      setFormData({
+        ...formData,
+        accountInfo: {
+          ...formData.accountInfo,
+          phoneNumber: formattedPhoneNumber,
+        },
+      })
+    } else if (name.includes('accountInfo.')) {
       const accountInfo = { ...formData.accountInfo }
       const field = name.split('.')[1]
       accountInfo[field] = value
@@ -74,66 +193,40 @@ export const ProviderProfile = () => {
 
   const onLoad = (autoC) => setAutoComplete(autoC)
 
-  async function save(event) {
-    event.preventDefault()
-    try {
-      const { email, password, type, accountInfo } = formData
-      await axios
-        .post(`${process.env.REACT_APP_API_URL}/api/register`, {
-          email: email,
-          password: password,
-          type: type,
-          accountInfo: {
-            firstName: accountInfo.firstName,
-            middleName: accountInfo.middleName,
-            lastName: accountInfo.lastName,
-            address: accountInfo.address,
-            phoneNumber: accountInfo.phoneNumber,
-          },
-        })
-        .then(
-          (res) => {
-            console.log(res.data)
-            alert(
-              'Customer Registation Successful. Please Login to your New Account!',
-            )
-            navigate('/customer/login')
-          },
-          (fail) => {
-            alert('Oops...an error occurred. Please try again.')
-            console.error(fail) // Error!
-          },
-        )
-    } catch (err) {
-      // Handle other errors
-      alert('An unexpected error occurred. Please try again.')
-    }
-  }
-
   return (
     <div className="bg-custom-gray">
       <NavBarProvider />
-      <div className="flex flex-col items-center  mx-auto pt-2  ">
-        <div className="w-2/5 bg-white shadow-lg rounded-md p-2">
-          <h1 className="font-bold text-[3vh] text-center">Name Goes here</h1>
-          <div className="flex flex-col items-center justify-between">
-            <p>📧 email goes here</p>
-            <p>📞 phone goes here</p>
+      <div className="bg-custom-gray h-screen flex flex-col justify-center items-center pb-44">
+        <div className="w-full bg-white shadow-lg rounded-md p-4 md:w-2/5">
+          <h1 className="font-bold text-2xl text-center">
+            {formData.accountInfo.name}
+          </h1>
+          <div className="flex flex-col items-center justify-between mt-2">
+            <p>📧 {formData.contactEmailAddress}</p>
+            <p>📞 {formData.accountInfo.phoneNumber}</p>
+            <p>📍 {formData.accountInfo.address}</p>
           </div>
-          <div className="text-center">provider description goes here</div>
-          <div className=" flex flex-row items-center justify-center">
-            <Select />
+          <div className="text-center mt-2">
+            {formData.accountInfo.description}
           </div>
-          <div className="flex flex-row justify-between p-2">
+          <div className="flex flex-col items-center justify-center mt-2">
+            <label className="font-bold">Your Services: </label>
+            <ul className="list-disc ml-2">
+              {formData.accountInfo.services?.map((service, index) => (
+                <li key={index}>{service}</li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="flex flex-col md:flex-row justify-between mt-2">
             <button
               onClick={() => setEdit(true)}
-              className='text-white  bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"'
+              className="text-white bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center md:mr-2 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
             >
               Edit Account
             </button>
-            <div className="p-2"></div>
             <a
-              className='text-white bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"'
+              className="mt-2 md:mt-0 text-white bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
               href="/reset_password"
             >
               Reset Password
@@ -146,45 +239,22 @@ export const ProviderProfile = () => {
               <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl text-center">
                 Edit Your Account
               </h1>
-              <form className="space-y-4 " action="#" onSubmit={save}>
+              <form className="space-y-4 " action="#" onSubmit={handleUpdate}>
                 <div className="flex justify-between">
                   <input
                     type="text"
-                    name="accountInfo.firstName"
-                    value={formData.accountInfo.firstName}
+                    name="accountInfo.name"
                     onChange={handleChange}
-                    placeholder="First Name"
+                    placeholder={formData.accountInfo.name}
                     required
                     className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
-                  />
-                  <div className="p-2"></div>
-                  <input
-                    type="text"
-                    name="accountInfo.lastName"
-                    value={formData.accountInfo.lastName}
-                    onChange={handleChange}
-                    placeholder="Last Name"
-                    required
-                    className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
-                  />
-                </div>
-
-                <div>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="Email"
-                    className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
-                    required=""
                   />
                 </div>
 
                 <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
                   <div>
                     <input
-                      placeholder="Address"
+                      placeholder={formData.accountInfo.address}
                       required
                       className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
                     />
@@ -196,27 +266,29 @@ export const ProviderProfile = () => {
                     name="accountInfo.phoneNumber"
                     value={formData.accountInfo.phoneNumber}
                     onChange={handleChange}
-                    placeholder="Phone Number"
-                    required
+                    placeholder={formData.accountInfo.phoneNumber}
                     className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
                   />
                 </div>
-                <Select isMulti className="bg-custom-gray" />
+                <ProviderDescription
+                  onDescriptionChange={handleDescriptionChange}
+                />
+                <Select
+                  onChange={handleSelect}
+                  isMulti
+                  className="bg-custom-gray"
+                  options={services}
+                  placeholder={formData.accountInfo.services[0]}
+                />
               </form>
+              <button
+                onClick={handleUpdate}
+                className="text-white w-full bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center md:mr-2 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+              >
+                Update
+              </button>
             </div>
           </ServiceRequestModal>
-        </div>
-      </div>
-      <div className="p-3">
-        <div>
-          <h1 className="text-center font-bold">My Reviews</h1>
-          <div className=" overflow-y-scroll bg-white border-black border-2">
-            <div>
-              <Review />
-              <Review />
-              <Review />
-            </div>
-          </div>
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../AuthContext'
@@ -6,16 +6,12 @@ import logo from '../../Logos/mainLogo.png'
 import ProviderDescription from '../../components/ServiceProviderHome/ProviderDescription'
 import Select from 'react-select'
 import { Autocomplete } from '@react-google-maps/api'
-import { formatPhoneNumber } from 'Helpers/helpers'
+import { formatPhoneNumber, getServices } from 'Helpers/helpers'
 
 function ProviderSignUp() {
   const navigate = useNavigate()
   const { accessServiceProviderAccount } = useAuth()
-  const services = [
-    { value: 'plumbing', label: 'Plumbing' },
-    { value: 'yardwork', label: 'Yardwork' },
-    { value: 'roofing', label: 'Roofing' },
-  ]
+  const [services, setServices] = useState([])
   const [selectedServices, setSelectedServices] = useState()
   const [description, setDescription] = useState('')
   const [autoComplete, setAutoComplete] = useState(null)
@@ -92,6 +88,21 @@ function ProviderSignUp() {
     }
   }
 
+  useEffect(() => {
+    // Fetch services when the component mounts
+    fetchServices()
+  }, [])
+
+  async function fetchServices() {
+    try {
+      const services = await getServices()
+      setServices(services)
+    } catch (error) {
+      // Handle the error here
+      console.error('Error fetching services:', error)
+    }
+  }
+
   const onLoad = (autoC) => setAutoComplete(autoC)
 
   function handleSelect(data) {
@@ -121,16 +132,35 @@ function ProviderSignUp() {
         })
         .then(
           (res) => {
+            // Registration successful
             alert(
-              'Provider Registation Successful. Please Login to your New Account!',
+              'Provider Registration Successful. Please Login to your New Account!',
             )
             navigate('/provider/login')
           },
-          (fail) => {
-            alert(
-              'Oops...an error occurred. Please make sure all of your entered information is correct and try again.',
-            )
-            console.error(fail) // Error!
+          (error) => {
+            const errorType = error.response.data.type
+            if (errorType === 'already_registered') {
+              alert(
+                'An account was already registered with that email address.',
+              )
+            } else if (
+              error.response &&
+              error.response.data &&
+              error.response.data.fieldErrors
+            ) {
+              // Validation error occurred
+              const errorMessages = error.response.data.fieldErrors.map(
+                (fieldError) => `${fieldError.field}: ${fieldError.message}`,
+              )
+              alert(`Validation Error:\n${errorMessages.join('\n')}`)
+            } else {
+              // Other types of errors
+              alert(
+                'Oops...an error occurred. Please make sure all of your entered information is correct and try again.',
+              )
+              console.error(error) // Log the error for debugging
+            }
           },
         )
     } catch (err) {

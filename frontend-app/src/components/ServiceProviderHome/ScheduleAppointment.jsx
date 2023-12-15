@@ -76,7 +76,7 @@ export const CreateQuote = (request) => {
           </div>
         </div>
       ) : (
-        <div className="h-[100vh] p-4">
+        <div className="p-4">
           <div className="font-bold text-center text-xl">
             Create an Appointment
           </div>
