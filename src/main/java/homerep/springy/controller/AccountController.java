@@ -36,19 +36,17 @@ public class AccountController {
 
     @GetMapping("/type")
     public AccountType getAccountType(@AuthenticationPrincipal User user) {
-        Account account = accountRepository.findByEmail(user.getEmail());
-        return account.getType();
+        return user.getAccountType();
     }
 
     @GetMapping("/verified")
     public boolean isVerified(@AuthenticationPrincipal User user) {
-        Account account = accountRepository.findByEmail(user.getEmail());
-        return account.isVerified();
+        return user.isVerified();
     }
 
     @GetMapping("/email")
     public String getEmail(@AuthenticationPrincipal User user) {
-        return user.getUsername();
+        return user.getEmail();
     }
 
     @PostMapping("/customer/update")

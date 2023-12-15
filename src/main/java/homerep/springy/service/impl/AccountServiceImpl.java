@@ -133,6 +133,7 @@ public class AccountServiceImpl implements AccountService, UserDetailsService {
         account.setVerified(true);
         account.setVerificationToken(null);
         accountRepository.save(account);
+        logoutSessions(account); // Logout existing sessions which are unverified
         return true;
     }
 
