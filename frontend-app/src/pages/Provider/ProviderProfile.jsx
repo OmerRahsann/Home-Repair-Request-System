@@ -114,10 +114,25 @@ export const ProviderProfile = () => {
       alert('Provider information updated successfully.')
       setEdit(false)
     } catch (error) {
-      console.error('Error updating provider information:', error)
-      alert(
-        'An error occurred while updating provider information. Please try again.',
-      )
+      console.error('Error updating Provider information:', error)
+
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.type === 'validation_error'
+      ) {
+        // Handle validation errors
+        const { fieldErrors } = error.response.data
+        const errorMessage = fieldErrors
+          .map((error) => `${error.field}: ${error.message}`)
+          .join('\n')
+        alert(errorMessage)
+      } else {
+        // Handle other types of errors
+        alert(
+          'An error occurred while updating Provider information. Please try again.',
+        )
+      }
     }
   }
 

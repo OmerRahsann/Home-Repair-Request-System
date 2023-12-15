@@ -81,14 +81,6 @@ const ProviderCalendar = ({
             x.customerInfoModel.lastName
           x.start = new Date(x.startTime)
           x.end = new Date(x.endTime)
-        } else {
-          x.title =
-            '❌ ' +
-            x.customerInfoModel.firstName +
-            ' ' +
-            x.customerInfoModel.lastName
-          x.start = new Date(x.startTime)
-          x.end = new Date(x.endTime)
         }
       })
       setEvents(response.data)

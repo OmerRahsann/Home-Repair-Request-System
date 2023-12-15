@@ -94,14 +94,14 @@ function RequestDetailsProvider({ request }) {
                       Request Email
                     </button>
                   ) : (
-                    <div className="flex flex-row">
+                    <div className="flex flex-col md:flex-row">
                       <button
                         onClick={handleClick}
                         className="text-white bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
                       >
                         Create Appointment
                       </button>
-                      <break className="pl-2"></break>
+                      <break className="pt-2 md:pl-2 "></break>
                       <button className="text-white bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
                         <a href={`mailto:${email}`}>Send Email</a>
                       </button>

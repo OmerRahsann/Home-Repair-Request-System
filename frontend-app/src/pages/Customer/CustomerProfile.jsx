@@ -8,6 +8,7 @@ import NavBarProvider from 'components/Navbar/NavBarProvider'
 import Select from 'react-select'
 import Review from '../../components/ServiceProviderHome/Review'
 import ServiceRequestModal from '../../components/Customer/ServiceRequestModal'
+import { formatPhoneNumber } from 'Helpers/helpers'
 
 export const CustomerProfile = () => {
   const navigate = useNavigate()
@@ -37,21 +38,14 @@ export const CustomerProfile = () => {
           },
         )
 
-        const {
-          name,
-          description,
-          services,
-          phoneNumber,
-          address,
-          contactEmailAddress,
-        } = response.data
+        const { firstName, lastName, phoneNumber, address } = response.data
         setFormData({
           ...formData,
           accountInfo: {
-            name,
+            firstName,
+            lastName,
             phoneNumber,
             address,
-            contactEmailAddress,
           },
         })
       } catch (error) {
@@ -64,26 +58,45 @@ export const CustomerProfile = () => {
 
   const handleUpdate = async (event) => {
     event.preventDefault()
+
     try {
       const { accountInfo } = formData
       await axios.post(
         `${process.env.REACT_APP_API_URL}/api/account/customer/update`,
         {
-          name: accountInfo.name,
-          phoneNumber: accountInfo.phoneNumber,
+          firstName: accountInfo.firstName,
+          lastName: accountInfo.lastName,
+          middleName: '',
+          phoneNumber: accountInfo.phoneNumber.replace(/\D/g, ''),
           address: accountInfo.address,
         },
         {
           withCredentials: true,
         },
       )
+
       alert('Customer information updated successfully.')
       setEdit(false)
     } catch (error) {
       console.error('Error updating customer information:', error)
-      alert(
-        'An error occurred while updating provider information. Please try again.',
-      )
+
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.type === 'validation_error'
+      ) {
+        // Handle validation errors
+        const { fieldErrors } = error.response.data
+        const errorMessage = fieldErrors
+          .map((error) => `${error.field}: ${error.message}`)
+          .join('\n')
+        alert(errorMessage)
+      } else {
+        // Handle other types of errors
+        alert(
+          'An error occurred while updating customer information. Please try again.',
+        )
+      }
     }
   }
 
@@ -102,7 +115,16 @@ export const CustomerProfile = () => {
     const { name, value } = e.target
 
     // For nested objects (accountInfo), you need to spread them correctly
-    if (name.includes('accountInfo.')) {
+    if (name.includes('accountInfo.phoneNumber')) {
+      const formattedPhoneNumber = formatPhoneNumber(value)
+      setFormData({
+        ...formData,
+        accountInfo: {
+          ...formData.accountInfo,
+          phoneNumber: formattedPhoneNumber,
+        },
+      })
+    } else if (name.includes('accountInfo.')) {
       const accountInfo = { ...formData.accountInfo }
       const field = name.split('.')[1]
       accountInfo[field] = value
@@ -144,8 +166,8 @@ export const CustomerProfile = () => {
             {formData.accountInfo.lastName}, {formData.accountInfo.firstName}
           </h1>
           <div className="flex flex-col items-center justify-between mt-2">
-            <p>📧 {formData.email}</p>
             <p>📞 {formData.accountInfo.phoneNumber}</p>
+            <p>📍{formData.accountInfo.address}</p>
           </div>
           <div className="flex flex-col md:flex-row justify-between mt-2">
             <button
@@ -173,9 +195,8 @@ export const CustomerProfile = () => {
                   <input
                     type="text"
                     name="accountInfo.firstName"
-                    value={formData.accountInfo.firstName}
                     onChange={handleChange}
-                    placeholder="First Name"
+                    placeholder={formData.accountInfo.firstName}
                     required
                     className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
                   />
@@ -183,30 +204,16 @@ export const CustomerProfile = () => {
                   <input
                     type="text"
                     name="accountInfo.lastName"
-                    value={formData.accountInfo.lastName}
                     onChange={handleChange}
-                    placeholder="Last Name"
+                    placeholder={formData.accountInfo.lastName}
                     required
                     className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
                   />
                 </div>
-
-                <div>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="Email"
-                    className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
-                    required=""
-                  />
-                </div>
-
                 <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
                   <div>
                     <input
-                      placeholder="Address"
+                      placeholder={formData.accountInfo.address}
                       required
                       className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
                     />
@@ -223,8 +230,13 @@ export const CustomerProfile = () => {
                     className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
                   />
                 </div>
-                <Select isMulti className="bg-custom-gray" />
               </form>
+              <button
+                onClick={handleUpdate}
+                className="text-white w-full bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center md:mr-2 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+              >
+                Update
+              </button>
             </div>
           </ServiceRequestModal>
         </div>
