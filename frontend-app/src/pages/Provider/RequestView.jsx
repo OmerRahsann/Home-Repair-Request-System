@@ -60,7 +60,7 @@ function RequestView() {
       if (priceRangeChange) {
         filters = {
           lowerDollarRange: priceRangeChange.value[0],
-          upperDollarRange: priceRangeChange.value[1],
+          higherDollarRange: priceRangeChange.value[1],
           ...filters,
         }
       }
