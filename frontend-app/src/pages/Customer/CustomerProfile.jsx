@@ -3,78 +3,102 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from 'AuthContext'
 import axios from 'axios'
 import { Autocomplete } from '@react-google-maps/api'
-import logo from '../../Logos/mainLogo.png'
-import NavBarProvider from 'components/Navbar/NavBarProvider'
-import Select from 'react-select'
-import Review from '../../components/ServiceProviderHome/Review'
+import Navbar from '../../components/Navbar/NavBar'
 import ServiceRequestModal from '../../components/Customer/ServiceRequestModal'
 import { formatPhoneNumber } from 'Helpers/helpers'
 
+function createBlankData() {
+  return {
+    firstName: '',
+    middleName: '',
+    lastName: '',
+    address: '',
+    phoneNumber: '',
+  }
+}
+
 export const CustomerProfile = () => {
   const navigate = useNavigate()
-  const { accessAccount } = useAuth()
+  const { isLoggedIn, userType, checkAuth } = useAuth()
   const [autoComplete, setAutoComplete] = useState(null)
   const [edit, setEdit] = useState(false)
-  const [formData, setFormData] = useState({
-    email: '',
-    type: 'CUSTOMER',
-    accountInfo: {
-      firstName: '',
-      middleName: '',
-      lastName: '',
-      address: '',
-      phoneNumber: '',
-    },
-  })
+  const [email, setEmail] = useState('')
+
+  const [currentData, setCurrentData] = useState(createBlankData())
+  const [formData, setFormData] = useState(createBlankData())
+
+  useEffect(checkAuth, [isLoggedIn, userType])
+  useEffect(() => {
+    if (isLoggedIn == false) {
+      navigate('/customer/login')
+    } else if (isLoggedIn && userType != 'CUSTOMER') {
+      navigate('/provider/myprofile')
+    }
+  }, [isLoggedIn, userType])
 
   useEffect(() => {
     // Fetch customer profile data when the component mounts
-    const fetchCustomerData = async () => {
-      try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/account/customer`,
-          {
-            withCredentials: true,
-          },
-        )
-
-        const { firstName, lastName, phoneNumber, address } = response.data
-        setFormData({
-          ...formData,
-          accountInfo: {
-            firstName,
-            lastName,
-            phoneNumber,
-            address,
-          },
-        })
-      } catch (error) {
-        console.error('Error fetching customer data:', error)
-      }
-    }
-
     fetchCustomerData()
   }, [])
+
+  useEffect(() => {
+    // Fetch customer profile data when the component mounts
+    const controller = new AbortController()
+    axios
+      .get('/api/account/email', {
+        signal: controller.signal,
+        withCredentials: true,
+      })
+      .then((response) => setEmail(response.data))
+      .catch(() => {})
+    return () => controller.abort()
+  }, [email])
+
+  const fetchCustomerData = async () => {
+    try {
+      const response = await axios.get('/api/account/customer', {
+        withCredentials: true,
+      })
+
+      const { firstName, lastName, phoneNumber, address } = response.data
+      setCurrentData({
+        firstName,
+        lastName,
+        phoneNumber,
+        address,
+      })
+      // Reset the form as the information may have changed
+      setFormData(createBlankData())
+    } catch (error) {
+      console.error('Error fetching customer data:', error)
+    }
+  }
 
   const handleUpdate = async (event) => {
     event.preventDefault()
 
     try {
-      const { accountInfo } = formData
-      await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/account/customer/update`,
-        {
-          firstName: accountInfo.firstName,
-          lastName: accountInfo.lastName,
-          middleName: '',
-          phoneNumber: accountInfo.phoneNumber.replace(/\D/g, ''),
-          address: accountInfo.address,
-        },
-        {
-          withCredentials: true,
-        },
-      )
+      let requestBody = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        phoneNumber: formData.phoneNumber.replace(/\D/g, ''),
+        address: formData.address,
+      }
+      // Fill with previous data if an input field was left unfilled
+      for (const [key, value] of Object.entries(requestBody)) {
+        if (value.length == 0) {
+          requestBody[key] = currentData[key]
+        }
+      }
+      // We don't really care about the middle name
+      requestBody.middleName = ''
 
+      console.log(requestBody)
+      await axios.post('/api/account/customer/update', requestBody, {
+        withCredentials: true,
+      })
+      // Fetch the updated data
+      fetchCustomerData()
       alert('Customer information updated successfully.')
       setEdit(false)
     } catch (error) {
@@ -119,20 +143,14 @@ export const CustomerProfile = () => {
       const formattedPhoneNumber = formatPhoneNumber(value)
       setFormData({
         ...formData,
-        accountInfo: {
-          ...formData.accountInfo,
-          phoneNumber: formattedPhoneNumber,
-        },
+        phoneNumber: formattedPhoneNumber,
       })
     } else if (name.includes('accountInfo.')) {
-      const accountInfo = { ...formData.accountInfo }
+      const newFormData = { ...formData }
       const field = name.split('.')[1]
-      accountInfo[field] = value
+      newFormData[field] = value
 
-      setFormData({
-        ...formData,
-        accountInfo: accountInfo,
-      })
+      setFormData(newFormData)
     } else {
       setFormData({
         ...formData,
@@ -147,10 +165,7 @@ export const CustomerProfile = () => {
       const address = place.formatted_address
       setFormData({
         ...formData,
-        accountInfo: {
-          ...formData.accountInfo,
-          address: address,
-        },
+        address: address,
       })
     }
   }
@@ -159,15 +174,16 @@ export const CustomerProfile = () => {
 
   return (
     <div className="bg-custom-gray">
-      <NavBarProvider />
+      <Navbar isLoggedIn={isLoggedIn} />
       <div className="bg-custom-gray h-screen flex flex-col justify-center items-center pb-44">
         <div className="w-full bg-white shadow-lg rounded-md p-4 md:w-2/5">
           <h1 className="font-bold text-2xl text-center">
-            {formData.accountInfo.lastName}, {formData.accountInfo.firstName}
+            {currentData.lastName}, {currentData.firstName}
           </h1>
           <div className="flex flex-col items-center justify-between mt-2">
-            <p>📞 {formData.accountInfo.phoneNumber}</p>
-            <p>📍{formData.accountInfo.address}</p>
+            <p>📧 {email}</p>
+            <p>📞 {formatPhoneNumber(currentData.phoneNumber)}</p>
+            <p>📍{currentData.address}</p>
           </div>
           <div className="flex flex-col md:flex-row justify-between mt-2">
             <button
@@ -196,7 +212,7 @@ export const CustomerProfile = () => {
                     type="text"
                     name="accountInfo.firstName"
                     onChange={handleChange}
-                    placeholder={formData.accountInfo.firstName}
+                    placeholder={currentData.firstName}
                     required
                     className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
                   />
@@ -205,7 +221,7 @@ export const CustomerProfile = () => {
                     type="text"
                     name="accountInfo.lastName"
                     onChange={handleChange}
-                    placeholder={formData.accountInfo.lastName}
+                    placeholder={currentData.lastName}
                     required
                     className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
                   />
@@ -213,7 +229,7 @@ export const CustomerProfile = () => {
                 <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
                   <div>
                     <input
-                      placeholder={formData.accountInfo.address}
+                      placeholder={currentData.address}
                       required
                       className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
                     />
@@ -223,9 +239,9 @@ export const CustomerProfile = () => {
                   <input
                     type="text"
                     name="accountInfo.phoneNumber"
-                    value={formData.accountInfo.phoneNumber}
                     onChange={handleChange}
-                    placeholder="Phone Number"
+                    value={formData.phoneNumber}
+                    placeholder={formatPhoneNumber(currentData.phoneNumber)}
                     required
                     className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-200 dark:border-gray-600 dark:placeholder-gray-400 "
                   />

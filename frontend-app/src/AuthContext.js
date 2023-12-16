@@ -9,42 +9,43 @@ export function useAuth() {
 }
 
 export function AuthProvider({ children }) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(undefined)
+  const [userType, setUserType] = useState(undefined)
 
-  const accessServiceProviderAccount = (type) => {
+  const checkAuth = () => {
+    const controller = new AbortController()
     axios
-      .get('/api/account/type', { withCredentials: true })
+      .get('/api/account/type', {
+        signal: controller.signal,
+        withCredentials: true,
+      })
       .then((res) => {
         const userType = res.data
-        return userType === 'SERVICE_PROVIDER'
+        setUserType(userType)
+        setIsLoggedIn(true)
       })
-  }
-
-  const logout = () => {
-    // Implement your logout logic here
-    setIsLoggedIn(false)
+      .catch((error) => {
+        if (error.response && error.response.status == 403) {
+          setIsLoggedIn(false)
+        }
+      })
+    return () => controller.abort()
   }
 
   const value = {
     isLoggedIn,
-    logout,
-    accessServiceProviderAccount,
+    userType,
+    checkAuth,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
-export function checkIsLoggedIn() {
-  const isLoggedIn = localStorage.getItem('isLoggedIn')
-  return isLoggedIn === 'true'
-}
-
 export async function checkIsServiceProviderLoggedIn() {
   try {
-    const response = await axios.get(
-      '/api/account/type',
-      { withCredentials: true },
-    )
+    const response = await axios.get('/api/account/type', {
+      withCredentials: true,
+    })
     const type = response.data
     console.log(type)
     return type === 'SERVICE_PROVIDER'
@@ -56,10 +57,9 @@ export async function checkIsServiceProviderLoggedIn() {
 
 export async function checkIsCustomerLoggedIn() {
   try {
-    const response = await axios.get(
-      '/api/account/type',
-      { withCredentials: true },
-    )
+    const response = await axios.get('/api/account/type', {
+      withCredentials: true,
+    })
     const type = response.data
     console.log(type)
     return type === 'CUSTOMER'
