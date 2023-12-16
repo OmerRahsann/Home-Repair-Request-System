@@ -19,7 +19,7 @@ const ProviderCalendar = ({
   const [showEvent, setShowEvent] = useState(false)
   const [eventContent, setEventContent] = useState([])
   const [year, setYear] = useState(new Date().getFullYear())
-  const [view, setView] = useState(Views.WEEK)
+  const [view, setView] = useState(Views.MONTH)
   const [isConfirmed, setIsConfirmed] = useState(false)
 
   const [month, setMonth] = useState(new Date().getMonth() + 1)
@@ -58,6 +58,7 @@ const ProviderCalendar = ({
             year: year,
             month: month,
             zone_id: 'America/New_York',
+            week_ends: true,
           },
           withCredentials: true,
         },
@@ -131,6 +132,12 @@ const ProviderCalendar = ({
 
         // Set a timeout to detect whether it's a single or double click
         clickRef.current = window.setTimeout(() => {
+          let now = Date.now()
+          if (calEvent.start < now || calEvent.end < now) {
+            alert(`Can't create an appointment in the past.`)
+            return
+          }
+
           // Single click logic
           const shouldCreateNewEvent = window.confirm(
             `Do you want to create a new appointment?`,
@@ -149,13 +156,18 @@ const ProviderCalendar = ({
                 start: calEvent.start, // Adjust the format as needed
                 end: calEvent.end, // Adjust the format as needed
                 // Assign a unique ID, adjust as needed
+                new: true,
               }
 
               console.log(newEvent)
 
               if (setDate != null) setDate(newEvent)
 
-              setEvents((prevEvents) => [...prevEvents, tempEvent])
+              setEvents((prevEvents) => {
+                let events = prevEvents.filter((event) => !event.new)
+                events.push(newEvent)
+                return events
+              })
             } else {
               //TODO Here
             }
@@ -203,7 +215,7 @@ const ProviderCalendar = ({
     } else {
       return {
         defaultDate: new Date(),
-        views: [Views.WEEK, Views.MONTH, Views.AGENDA],
+        views: [Views.AGENDA, Views.WEEK, Views.MONTH],
       }
     }
   }, [])
@@ -248,12 +260,15 @@ const ProviderCalendar = ({
     return () => {
       window.clearTimeout(clickRef?.current)
     }
-  }, [month, views])
+  }, [month, year, views])
 
   const onRangeChange = useCallback((range) => {
     if (range.start === undefined) {
-      setMonth((new Date(range[0]).getMonth() % 12) + 1)
+      // Week view
+      setYear(range[0].getFullYear())
+      setMonth(range[0].getMonth() + 1)
     } else {
+      // Month view
       const adjustedMonth = new Date(range.start)
       adjustedMonth.setDate(adjustedMonth.getDate() + 6)
       setYear(adjustedMonth.getFullYear())
@@ -261,6 +276,16 @@ const ProviderCalendar = ({
       setMonth((adjustedMonth.getMonth() % 12) + 1)
     }
   }, [])
+
+  const getDrilldownView = useCallback(
+    (targetDate, currentViewName, configuredViewNames) => {
+      if (currentViewName == 'month' && configuredViewNames.includes('week')) {
+        return 'week'
+      }
+      return null
+    },
+    [],
+  )
 
   return (
     <div>
@@ -273,11 +298,12 @@ const ProviderCalendar = ({
         onSelectSlot={onSelectSlot}
         style={{ height: 500 }}
         onSelectEvent={onSelectEvent}
-        selectable
+        selectable={createEventPopup && view == Views.WEEK}
         onView={onView}
         views={views}
         view={view}
         onRangeChange={onRangeChange}
+        getDrilldownView={getDrilldownView}
       />
       {showEvent && (
         <ServiceRequestModal

@@ -51,6 +51,7 @@ const CustomerCalendar = ({ customerView, request, setDate, isQuote }) => {
             year: year,
             month: month,
             zone_id: 'America/New_York',
+            week_ends: true,
           },
           withCredentials: true,
         },
@@ -248,12 +249,15 @@ const CustomerCalendar = ({ customerView, request, setDate, isQuote }) => {
     return () => {
       window.clearTimeout(clickRef?.current)
     }
-  }, [month])
+  }, [month, year])
 
   const onRangeChange = useCallback((range) => {
-    if (range.start == undefined) {
-      setMonth((new Date(range[0]).getMonth() % 12) + 1)
+    if (range.start === undefined) {
+      // Week view
+      setYear(range[0].getFullYear())
+      setMonth(range[0].getMonth() + 1)
     } else {
+      // Month view
       const adjustedMonth = new Date(range.start)
       adjustedMonth.setDate(adjustedMonth.getDate() + 6)
       setYear(adjustedMonth.getFullYear())
@@ -272,11 +276,11 @@ const CustomerCalendar = ({ customerView, request, setDate, isQuote }) => {
         // onSelectSlot={onSelectSlot}
         style={{ height: 500 }}
         onSelectEvent={onSelectEvent}
-        selectable
+        selectable={false}
         events={events}
         views={views}
-
-        // onRangeChange={onRangeChange}
+        onRangeChange={onRangeChange}
+        onDrillDown={() => {}}
       />
       {showEvent && (
         <ServiceRequestModal
