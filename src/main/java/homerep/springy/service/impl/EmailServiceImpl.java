@@ -8,6 +8,8 @@ import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Safelist;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -22,6 +24,8 @@ import java.util.Properties;
 
 @Service
 public class EmailServiceImpl implements EmailService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(EmailServiceImpl.class);
+
     @Autowired
     private JavaMailSender mailSender;
 
@@ -46,8 +50,10 @@ public class EmailServiceImpl implements EmailService {
             email.setRecipient(Message.RecipientType.CC, null);
             email.setRecipient(Message.RecipientType.BCC, null);
             mailSender.send(email);
-        } catch (MailException | MessagingException | IOException e) {
-            throw new RuntimeException(e); // TODO handle MailException gracefully?
+        } catch (MessagingException | IOException e) {
+            throw new RuntimeException(e);
+        } catch (MailException e) {
+            LOGGER.warn("Failed to send email to " + emailAddress + " with template " + templateName, e);
         }
     }
 
