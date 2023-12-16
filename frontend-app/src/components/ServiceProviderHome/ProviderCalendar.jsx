@@ -254,9 +254,9 @@ const ProviderCalendar = ({
     if (range.start === undefined) {
       setMonth((new Date(range[0]).getMonth() % 12) + 1)
     } else {
-      setYear(new Date(range.start).getFullYear())
       const adjustedMonth = new Date(range.start)
       adjustedMonth.setDate(adjustedMonth.getDate() + 6)
+      setYear(adjustedMonth.getFullYear())
       console.log(adjustedMonth)
       setMonth((adjustedMonth.getMonth() % 12) + 1)
     }
