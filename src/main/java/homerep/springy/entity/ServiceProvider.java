@@ -24,8 +24,6 @@ public class ServiceProvider {
 
     private String address;
 
-    private String contactEmailAddress;
-
     protected ServiceProvider() {}
 
     public ServiceProvider(Account account) {
@@ -74,13 +72,5 @@ public class ServiceProvider {
 
     public void setAddress(String address) {
         this.address = address;
-    }
-
-    public String getContactEmailAddress() {
-        return contactEmailAddress;
-    }
-
-    public void setContactEmailAddress(String contactEmailAddress) {
-        this.contactEmailAddress = contactEmailAddress;
     }
 }

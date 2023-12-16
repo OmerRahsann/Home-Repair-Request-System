@@ -2,7 +2,7 @@ package homerep.springy.model.accountinfo;
 
 import homerep.springy.entity.ServiceProvider;
 import homerep.springy.validator.annotation.PhoneNumber;
-import jakarta.validation.constraints.Email;
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -16,7 +16,7 @@ public record ServiceProviderInfoModel(
         @NotNull @NotEmpty List<@NotBlank String> services,
         @NotBlank @PhoneNumber String phoneNumber,
         @NotBlank String address,
-        @NotBlank @Email String contactEmailAddress
+        @Nullable String contactEmailAddress
 ) implements AccountInfoModel {
     public static ServiceProviderInfoModel fromEntity(ServiceProvider serviceProvider) {
         return new ServiceProviderInfoModel(
@@ -25,7 +25,7 @@ public record ServiceProviderInfoModel(
                 new ArrayList<>(serviceProvider.getServices()), // Must convert from JPA collection
                 serviceProvider.getPhoneNumber(),
                 serviceProvider.getAddress(),
-                serviceProvider.getAccount().getEmail() // TODO actual contact email address?
+                serviceProvider.getAccount().getEmail()
         );
     }
 }

@@ -76,7 +76,7 @@ public class EmailRequestServiceImpl implements EmailRequestService {
                         "service-provider-name", serviceProvider.getName(),
                         "service-provider-description", serviceProvider.getDescription(),
                         "service-provider-address", serviceProvider.getAddress(),
-                        "service-provider-contact-email", serviceProvider.getContactEmailAddress(),
+                        "service-provider-contact-email", serviceProvider.getAccount().getEmail(),
                         "service-provider-phone-number", serviceProvider.getPhoneNumber(),
                         "service-request-title", serviceRequest.getTitle()
                 )

@@ -337,7 +337,7 @@ public class EmailRequestTest {
         assertTrue(content.contains(serviceProvider1.getName()));
         assertTrue(content.contains(serviceProvider1.getDescription()));
         assertTrue(content.contains(serviceProvider1.getAddress()));
-        assertTrue(content.contains(serviceProvider1.getContactEmailAddress()));
+        assertTrue(content.contains(SERVICE_PROVIDER_1_EMAIL));
         assertTrue(content.contains(serviceProvider1.getPhoneNumber()));
         // and the title of the service request
         assertTrue(content.contains(serviceRequest1.getTitle()));

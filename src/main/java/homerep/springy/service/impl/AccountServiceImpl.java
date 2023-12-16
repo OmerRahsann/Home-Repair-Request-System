@@ -215,7 +215,6 @@ public class AccountServiceImpl implements AccountService, UserDetailsService {
         serviceProvider.setServices(new ArrayList<>(infoModel.services()));
         serviceProvider.setPhoneNumber(infoModel.phoneNumber());
         serviceProvider.setAddress(infoModel.address());
-        serviceProvider.setContactEmailAddress(infoModel.contactEmailAddress());
         serviceProviderRepository.save(serviceProvider);
     }
 

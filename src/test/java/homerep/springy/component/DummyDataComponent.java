@@ -73,7 +73,6 @@ public class DummyDataComponent {
         serviceProvider.setServices(List.of("HVAC", "Plumbing"));
         serviceProvider.setPhoneNumber("1231231234");
         serviceProvider.setAddress("201 Mullica Hill Rd, Glassboro, NJ 08028");
-        serviceProvider.setContactEmailAddress(email);
         return serviceProviderRepository.save(serviceProvider);
     }
 
