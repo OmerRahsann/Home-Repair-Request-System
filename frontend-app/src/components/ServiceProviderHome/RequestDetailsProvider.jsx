@@ -9,9 +9,16 @@ import { CreateQuote } from './ScheduleAppointment'
 import ServiceRequestModal from 'components/Customer/ServiceRequestModal'
 import axios from 'axios'
 
+const STATUS_LABEL = {
+  NOT_REQUESTED: 'Not requested',
+  PENDING: 'Pending',
+  ACCEPTED: 'Accepted',
+  REJECTED: 'Rejected',
+}
+
 function RequestDetailsProvider({ request }) {
   const [showSecondStep, setShowSecondStep] = useState(false)
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState({})
   const [submitted, setFormSubmitted] = useState(false)
   const [notification, setNotification] = useState('')
   const handleClick = async () => {
@@ -69,6 +76,10 @@ function RequestDetailsProvider({ request }) {
     getCustomerEmail()
   }, [])
 
+  const openCustomerEmail = () => {
+    window.location.href = `mailto:${email.email}`
+  }
+
   return (
     <Fragment>
       <>
@@ -88,11 +99,13 @@ function RequestDetailsProvider({ request }) {
 
                   {!email.email ? (
                     <button
-                      disabled={email.status === 'PENDING'}
+                      disabled={email.status !== 'NOT_REQUESTED'}
                       onClick={requestCustomerEmail}
                       className="text-white bg-custom-maroon hover:bg-primary-700 disabled:bg-gray-400 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
                     >
-                      {email.status === 'PENDING' ? 'Pending' : 'Request Email'}
+                      {email.status === 'NOT_REQUESTED'
+                        ? 'Request Email'
+                        : STATUS_LABEL[email.status]}
                     </button>
                   ) : (
                     <div className="flex flex-col md:flex-row">
@@ -103,8 +116,12 @@ function RequestDetailsProvider({ request }) {
                         Create Appointment
                       </button>
                       <break className="pt-2 md:pl-2 "></break>
-                      <button className="text-white bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
-                        <a href={`mailto:${email.email}`}>Send Email</a>
+                      <button
+                        className="text-white bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+                        onClick={openCustomerEmail}
+                        type="button"
+                      >
+                        Send Email
                       </button>
                     </div>
                   )}
