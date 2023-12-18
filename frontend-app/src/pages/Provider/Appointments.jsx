@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import NavBarProvider from 'components/Navbar/NavBarProvider'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
+import ServiceRequestModal from 'components/Customer/ServiceRequestModal'
+import RequestDetailsProvider from 'components/ServiceProviderHome/RequestDetailsProvider'
 
 function onSameDay(date1, date2) {
   return (
@@ -28,6 +30,7 @@ function appointmentPeriod(appointment) {
 export default function Appointments() {
   const [emailRequests, setEmailRequests] = useState([])
   const [appointments, setAppointments] = useState([])
+  const [openServiceRequest, setOpenServiceRequest] = useState(null)
 
   const navigate = useNavigate()
 
@@ -76,14 +79,16 @@ export default function Appointments() {
     getUpdatedAppointments()
   }, [])
 
-  useEffect(() => {
-    console.log(emailRequests)
-    console.log(appointments)
-  }, [emailRequests, appointments])
-
   return (
     <div>
       <NavBarProvider />
+      <ServiceRequestModal
+        isVisible={openServiceRequest != null}
+        onClose={() => setOpenServiceRequest(null)}
+        isFinal={true}
+      >
+        <RequestDetailsProvider request={openServiceRequest} />
+      </ServiceRequestModal>
       <div className="p-2 flex flex-row">
         <div className="w-1/2">
           <p className="text-center pb-2">
@@ -139,9 +144,19 @@ export default function Appointments() {
                     </span>
                   </div>
                 </div>
-                <p className="text-[1.75vh]">
-                  {emailRequest.serviceRequest.title}
-                </p>
+                <div className="flex flex-row justify-between">
+                  <p className="text-[1.75vh] break-words w-[80%]">
+                    {emailRequest.serviceRequest.title}
+                  </p>
+                  <button
+                    className="text-white bg-custom-maroon hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 my-auto"
+                    onClick={() =>
+                      setOpenServiceRequest(emailRequest.serviceRequest)
+                    }
+                  >
+                    Open
+                  </button>
+                </div>
                 <p className="text-gray-700 text-[1.5vh]">
                   {emailRequest.serviceRequest.description}
                 </p>
