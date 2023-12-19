@@ -1,16 +1,5 @@
 server:
-  # Compression is by default disabled???? Need compression for backend?
-  compression:
-    enabled: true
-  # Http 1.0 is default for some reason
-  http2:
-    enabled: true
   port: 8080
-logging:
-  level:
-    org:
-      springframework:
-        security: TRACE
 spring:
   jpa:
     hibernate:
@@ -29,8 +18,9 @@ spring:
       max-request-size: 5MB
 management:
   server:
-    port: 8085
+    # Accessible only via tunnel or on server
     address: 127.0.0.1
+    port: 8085
   defaults:
     metrics:
       export:

@@ -1,9 +1,9 @@
 # Repair Radar Backend
 
-### External dependencies
-[ImageMagick](https://imagemagick.org/script/download.php): Needs to be installed. This is used for resizing and striping metadata from images.\
-`other/policy.xml` must be installed into a path listed [here](https://imagemagick.org/script/resources.php#configure).
-This policy file restricts the allowed image formats for security and adds resource limits for ImageMagick.  
+### Requirements
+- Java 17+
+- [ImageMagick](https://imagemagick.org/script/download.php): This is used for resizing and striping metadata from images. Works with ImageMagick 6 or 7.
+- `other/policy.xml` must be installed into a path listed [here](https://imagemagick.org/script/resources.php#configure). This policy file restricts the allowed image formats for security and adds resource limits for ImageMagick.
 
 ### Running
 Linux: `./gradlew bootRun`\
