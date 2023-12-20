@@ -18,15 +18,15 @@ const ProviderMap = ({
   const classes = useStyles()
   const [map, setMap] = useState(null)
 
-  const handleMapChange = (map) => {
+  const handleMapChange = ({ bounds }) => {
     const newBounds = {
       ne: {
-        lat: map.bounds.eb.hi,
-        lng: map.bounds.La.hi,
+        lat: bounds.getNorthEast().lat(),
+        lng: bounds.getNorthEast().lng(),
       },
       sw: {
-        lat: map.bounds.eb.lo,
-        lng: map.bounds.La.lo,
+        lat: bounds.getSouthWest().lat(),
+        lng: bounds.getSouthWest().lng(),
       },
     }
 
